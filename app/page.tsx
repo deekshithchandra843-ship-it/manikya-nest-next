@@ -21,7 +21,7 @@ const whyCards = [
     title: "Verified listings",
     description: "Every property is verified by our team before going live",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -30,7 +30,7 @@ const whyCards = [
     title: "Zero broker fee",
     description: "Connect directly with owners — no middlemen, no extra charges",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -39,7 +39,7 @@ const whyCards = [
     title: "AI-powered match",
     description: "Our AI finds the best housing near your workplace or college",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
     ),
@@ -48,7 +48,7 @@ const whyCards = [
     title: "Flatmate finder",
     description: "Match with compatible flatmates based on lifestyle and preferences",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
@@ -60,7 +60,7 @@ const nextCards = [
     title: "Jobs",
     subtitle: "Find roles near your nest with top companies",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     ),
@@ -69,7 +69,7 @@ const nextCards = [
     title: "Commute",
     subtitle: "Plan the best route from your nest to work",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M8 17h8M8 17v4H6v-4m2 0H6m0 0V7a4 4 0 014-4h4a4 4 0 014 4v10m0 0v4h-2v-4m0 0h2M9 7h6M9 11h6" />
       </svg>
     ),
@@ -78,7 +78,7 @@ const nextCards = [
     title: "Upskill",
     subtitle: "Free and paid courses to grow your career",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff385c" strokeWidth="1.8">
         <path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
       </svg>
     ),
@@ -91,12 +91,12 @@ export default function HomePage() {
   return (
     <PageLayout>
       {/* Hero Section */}
-      <section className="bg-[#F1EFE8] -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-10 pb-8 mb-8 rounded-b-2xl md:rounded-b-none">
-        <div className="max-w-[640px] mx-auto text-center">
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">
+      <section className="bg-surface-soft -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-12 pb-10 mb-8 rounded-b-[32px] md:rounded-b-none">
+        <div className="max-w-[760px] mx-auto text-center">
+          <h1 className="text-[28px] font-bold text-ink mb-2 leading-tight">
             Find your nest. Plan your next.
           </h1>
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-base text-body mb-6">
             Housing, jobs &amp; commute — one platform for students and working professionals
           </p>
 
@@ -106,12 +106,11 @@ export default function HomePage() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors ${
                   activeCategory === cat
-                    ? "bg-[#1D9E75] text-white border-[#1D9E75]"
-                    : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
+                    ? "bg-ink text-white border-ink"
+                    : "bg-canvas text-body border-hairline hover:border-ink"
                 }`}
-                style={{ borderWidth: activeCategory === cat ? "1px" : "0.5px" }}
               >
                 {cat}
               </button>
@@ -126,8 +125,8 @@ export default function HomePage() {
       {/* Trending Listings */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-900">Trending near you</h2>
-          <Link href="/find-nest" className="text-sm text-[#1D9E75] font-medium hover:underline">
+          <h2 className="text-[21px] font-bold text-ink">Trending near you</h2>
+          <Link href="/find-nest" className="text-sm text-ink font-medium underline">
             See all
           </Link>
         </div>
@@ -144,19 +143,18 @@ export default function HomePage() {
 
       {/* What's Next Preview */}
       <section className="mb-10">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">What&apos;s next for you?</h2>
+        <h2 className="text-[21px] font-bold text-ink mb-4">What&apos;s next for you?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {nextCards.map((card) => (
             <Link
               key={card.title}
               href="/whats-next"
-              className="bg-white border border-gray-200 rounded-xl p-4 hover:border-[#1D9E75]/30 transition-colors group"
-              style={{ borderWidth: "0.5px" }}
+              className="bg-canvas border border-hairline rounded-[14px] p-5 hover:shadow-airbnb transition-shadow group"
             >
               <div className="mb-3">{card.icon}</div>
-              <h3 className="text-sm font-medium text-gray-900 mb-1">{card.title}</h3>
-              <p className="text-xs text-gray-500 mb-2">{card.subtitle}</p>
-              <span className="text-xs text-[#1D9E75] font-medium group-hover:underline">
+              <h3 className="text-base font-semibold text-ink mb-1">{card.title}</h3>
+              <p className="text-sm text-muted mb-2">{card.subtitle}</p>
+              <span className="text-sm text-rausch font-medium group-hover:underline">
                 Explore →
               </span>
             </Link>
@@ -166,17 +164,16 @@ export default function HomePage() {
 
       {/* Why NestNext */}
       <section className="mb-10">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Why NestNext?</h2>
+        <h2 className="text-[21px] font-bold text-ink mb-4">Why NestNext?</h2>
         <div className="grid grid-cols-2 gap-4">
           {whyCards.map((card) => (
             <div
               key={card.title}
-              className="bg-white border border-gray-200 rounded-xl p-4"
-              style={{ borderWidth: "0.5px" }}
+              className="bg-canvas border border-hairline rounded-[14px] p-5"
             >
               <div className="mb-2">{card.icon}</div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">{card.title}</h3>
-              <p className="text-xs text-gray-500">{card.description}</p>
+              <h3 className="text-base font-semibold text-ink mb-1">{card.title}</h3>
+              <p className="text-sm text-muted">{card.description}</p>
             </div>
           ))}
         </div>

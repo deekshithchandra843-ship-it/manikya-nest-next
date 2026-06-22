@@ -48,7 +48,7 @@ export default function WhatsNext() {
             onClick={() => setActiveTab(tab)}
             className={`whitespace-nowrap px-4 py-1.5 text-xs font-medium rounded-full border transition-colors ${
               activeTab === tab
-                ? "bg-[#1D9E75] text-white border-[#1D9E75]"
+                ? "bg-[#ff385c] text-white border-[#ff385c]"
                 : "bg-white text-gray-500 border-gray-300 hover:border-gray-400"
             }`}
             style={{ borderWidth: "0.5px" }}
@@ -62,7 +62,7 @@ export default function WhatsNext() {
       <section className="mb-8" id="jobs">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-medium text-gray-900">Jobs near your nest</h2>
-          <Link href="#" className="text-xs text-[#1D9E75] font-medium hover:underline">See all jobs</Link>
+          <Link href="/jobs" className="text-xs text-[#ff385c] font-medium hover:underline">See all jobs</Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {jobs.map((job) => (
@@ -88,8 +88,8 @@ export default function WhatsNext() {
                 ))}
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#1D9E75]">{job.salary}</span>
-                <button className="text-xs font-medium text-[#1D9E75] border border-[#1D9E75] rounded-lg px-3 py-1 hover:bg-[#1D9E75]/5 transition-colors">
+                <span className="text-sm font-semibold text-[#ff385c]">{job.salary}</span>
+                <button className="text-xs font-medium text-[#ff385c] border border-[#ff385c] rounded-lg px-3 py-1 hover:bg-[#ff385c]/5 transition-colors">
                   Apply
                 </button>
               </div>
@@ -105,11 +105,11 @@ export default function WhatsNext() {
           {/* Route */}
           <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#1D9E75]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#ff385c]" />
               <span className="text-xs text-gray-700">Koramangala 4th Block</span>
             </div>
             <div className="flex-1 border-t border-dashed border-gray-300" />
-            <span className="text-[10px] font-medium bg-[#1D9E75]/10 text-[#1D9E75] px-2 py-0.5 rounded-full">32 min</span>
+            <span className="text-[10px] font-medium bg-[#ff385c]/10 text-[#ff385c] px-2 py-0.5 rounded-full">32 min</span>
             <div className="flex-1 border-t border-dashed border-gray-300" />
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-[#534AB7]" />
@@ -124,7 +124,7 @@ export default function WhatsNext() {
                 key={m.mode}
                 className={`text-center py-3 px-2 rounded-lg border transition-colors ${
                   m.best
-                    ? "border-[#1D9E75] bg-[#1D9E75]/5"
+                    ? "border-[#ff385c] bg-[#ff385c]/5"
                     : "border-gray-200"
                 }`}
                 style={{ borderWidth: "0.5px" }}
@@ -132,7 +132,7 @@ export default function WhatsNext() {
                 <div className="text-xl mb-1">{m.icon}</div>
                 <p className="text-xs font-medium text-gray-800">{m.mode}</p>
                 <p className="text-xs text-gray-500">{m.time}</p>
-                <p className="text-xs text-[#1D9E75] font-medium">{m.cost}</p>
+                <p className="text-xs text-[#ff385c] font-medium">{m.cost}</p>
               </div>
             ))}
           </div>
@@ -145,7 +145,7 @@ export default function WhatsNext() {
       <section className="mb-8" id="upskill">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-medium text-gray-900">Upskill this week</h2>
-          <Link href="#" className="text-xs text-[#1D9E75] font-medium hover:underline">Browse all</Link>
+          <Link href="#" className="text-xs text-[#ff385c] font-medium hover:underline">Browse all</Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {courses.map((course) => (
@@ -159,7 +159,7 @@ export default function WhatsNext() {
               </span>
               <h3 className="text-sm font-medium text-gray-900 mt-2 mb-1">{course.title}</h3>
               <p className="text-xs text-gray-500 mb-3">{course.duration}</p>
-              <button className="w-full py-1.5 text-xs font-medium text-white bg-[#1D9E75] rounded-lg hover:bg-[#178c68] transition-colors">
+              <button className="w-full py-1.5 text-xs font-medium text-white bg-[#ff385c] rounded-lg hover:bg-[#e00b41] transition-colors">
                 Enroll
               </button>
             </div>
@@ -180,7 +180,7 @@ export default function WhatsNext() {
               <h3 className="text-sm font-medium text-gray-900 mb-1">{event.name}</h3>
               <p className="text-xs text-gray-500 mb-0.5">{event.date}</p>
               <p className="text-xs text-gray-400 mb-3">{event.location}</p>
-              <button className="px-4 py-1.5 text-xs font-medium text-[#1D9E75] border border-[#1D9E75] rounded-lg hover:bg-[#1D9E75]/5 transition-colors">
+              <button className="px-4 py-1.5 text-xs font-medium text-[#ff385c] border border-[#ff385c] rounded-lg hover:bg-[#ff385c]/5 transition-colors">
                 Join
               </button>
             </div>

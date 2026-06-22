@@ -41,7 +41,7 @@ export default function FindNest() {
             onClick={() => setActiveFilter(chip)}
             className={`whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
               activeFilter === chip
-                ? "bg-[#1D9E75]/10 border-[#1D9E75] text-[#1D9E75]"
+                ? "bg-[#ff385c]/10 border-[#ff385c] text-[#ff385c]"
                 : "bg-white border-gray-300 text-gray-500 hover:border-gray-400"
             }`}
             style={{ borderWidth: "0.5px" }}
@@ -59,7 +59,7 @@ export default function FindNest() {
           <div className="flex border border-gray-300 rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 ${viewMode === "list" ? "bg-[#1D9E75] text-white" : "bg-white text-gray-500"}`}
+              className={`p-1.5 ${viewMode === "list" ? "bg-[#ff385c] text-white" : "bg-white text-gray-500"}`}
               aria-label="List view"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -68,7 +68,7 @@ export default function FindNest() {
             </button>
             <button
               onClick={() => setViewMode("map")}
-              className={`p-1.5 ${viewMode === "map" ? "bg-[#1D9E75] text-white" : "bg-white text-gray-500"}`}
+              className={`p-1.5 ${viewMode === "map" ? "bg-[#ff385c] text-white" : "bg-white text-gray-500"}`}
               aria-label="Map view"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -112,7 +112,7 @@ export default function FindNest() {
                 style={{ borderBottomWidth: "0.5px" }}
               >
                 {/* Thumbnail */}
-                <div className="w-20 h-20 bg-[#F1EFE8] rounded-lg flex-shrink-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[#f7f7f7] rounded-lg flex-shrink-0 flex items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.2">
                     <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m4-10h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01" />
                   </svg>
@@ -141,9 +141,9 @@ export default function FindNest() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <span className="text-sm font-semibold text-[#1D9E75]">{listing.price}</span>
+                      <span className="text-sm font-semibold text-[#ff385c]">{listing.price}</span>
                       <div className="flex items-center gap-0.5 text-xs text-gray-500">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="#FBBF24" stroke="#FBBF24" strokeWidth="1">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="#222222" stroke="#222222" strokeWidth="1">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
                         <span>{listing.rating}</span>

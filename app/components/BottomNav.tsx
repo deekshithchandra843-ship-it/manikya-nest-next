@@ -55,8 +55,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden"
-      style={{ borderTopWidth: "0.5px" }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-canvas border-t border-hairline md:hidden"
     >
       <div className="flex items-center justify-around h-14 px-2">
         {items.map((item) => {
@@ -66,7 +65,7 @@ export default function BottomNav() {
               key={item.label}
               href={item.href}
               className={`flex flex-col items-center gap-0.5 min-w-[48px] py-1 transition-colors ${
-                isActive ? "text-[#1D9E75]" : "text-gray-400"
+                isActive ? "text-rausch" : "text-muted"
               }`}
             >
               {item.icon}
