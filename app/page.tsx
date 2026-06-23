@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import SearchBar from "./components/SearchBar";
 import ListingCard from "./components/ListingCard";
@@ -126,41 +126,89 @@ const nextCards = [
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("PG/Hostel");
+  const [introDone, setIntroDone] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const finishIntro = () => setIntroDone(true);
+  const skipIntro = () => {
+    videoRef.current?.pause();
+    setIntroDone(true);
+  };
+
+  // Force muted + kick off playback imperatively. React doesn't reliably apply
+  // the `muted` property on first render, which makes browsers block autoplay.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    const played = v.play();
+    if (played) played.catch(() => {});
+  }, []);
 
   return (
     <PageLayout>
       {/* Hero Section */}
-      <section className="bg-surface-soft -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-12 md:pt-16 pb-10 md:pb-12 mb-6 rounded-b-[32px] md:rounded-b-none">
-        <div className="max-w-[820px] mx-auto text-center">
-          <h1 className="text-[clamp(32px,5vw,56px)] font-bold text-ink tracking-tight leading-[1.05] mb-4">
-            A home near work — and the job to go with it.
-          </h1>
-          <p className="text-base md:text-lg text-body max-w-[600px] mx-auto mb-8">
-            Housing, jobs &amp; commute in one place. Find verified PGs, flats and
-            co-living near where you study or work — then discover roles nearby
-            and plan the route. Zero brokerage.
-          </p>
-
-          {/* Category pills */}
-          <div className="flex flex-wrap justify-center gap-2 mb-6">
-            {categories.map((cat) => (
+      <section className="bg-surface-soft -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-8 md:pt-12 pb-10 md:pb-12 mb-6 rounded-b-[32px] md:rounded-b-none">
+        <div className="max-w-[1120px] mx-auto">
+          {/* Intro video — reveals the hero content when it finishes */}
+          <div className="relative rounded-[20px] overflow-hidden shadow-airbnb bg-ink">
+            <video
+              ref={videoRef}
+              src="/hero-intro.mp4"
+              autoPlay
+              muted
+              playsInline
+              preload="auto"
+              onEnded={finishIntro}
+              onError={finishIntro}
+              aria-label="NestNext intro"
+              className="w-full aspect-video object-cover"
+            />
+            {!introDone && (
               <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                aria-pressed={activeCategory === cat}
-                className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-surface-soft ${
-                  activeCategory === cat
-                    ? "bg-ink text-white border-ink"
-                    : "bg-canvas text-body border-hairline hover:border-ink"
-                }`}
+                type="button"
+                onClick={skipIntro}
+                className="absolute bottom-3 right-3 px-3 py-1.5 text-xs font-medium text-white bg-ink/70 hover:bg-ink rounded-full backdrop-blur-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                {cat}
+                Skip intro →
               </button>
-            ))}
+            )}
           </div>
 
-          {/* Search Bar */}
-          <SearchBar />
+          {/* Hero content — opens after the video plays */}
+          {introDone && (
+            <div className="max-w-[820px] mx-auto text-center mt-8 animate-fade-up">
+              <h1 className="text-[clamp(32px,5vw,56px)] font-bold text-ink tracking-tight leading-[1.05] mb-4">
+                A home near work — and the job to go with it.
+              </h1>
+              <p className="text-base md:text-lg text-body max-w-[600px] mx-auto mb-8">
+                Housing, jobs &amp; commute in one place. Find verified PGs, flats and
+                co-living near where you study or work — then discover roles nearby
+                and plan the route. Zero brokerage.
+              </p>
+
+              {/* Category pills */}
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    aria-pressed={activeCategory === cat}
+                    className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-surface-soft ${
+                      activeCategory === cat
+                        ? "bg-ink text-white border-ink"
+                        : "bg-canvas text-body border-hairline hover:border-ink"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search Bar */}
+              <SearchBar />
+            </div>
+          )}
         </div>
       </section>
 
