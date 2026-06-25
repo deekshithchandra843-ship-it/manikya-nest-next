@@ -386,11 +386,6 @@ export default function HeroSearch() {
   const worldCategories = categoriesForWorld(world);
   const activeCategory = isJobs ? null : (worldCategories.find((c) => c.slug === activeSlug) ?? worldCategories[0]);
 
-  /* ── Gradient for the section background ── */
-  const sectionGradient = isJobs
-    ? "from-tab-jobs to-indigo"
-    : (activeCategory?.gradient ?? "from-rausch/80 to-rausch-active");
-
   /* ── Headline / subline ── */
   const headline = isJobs
     ? `Jobs in ${CITY}`
@@ -469,14 +464,9 @@ export default function HeroSearch() {
         className="pointer-events-none w-screen max-w-none relative left-1/2 -translate-x-1/2 aspect-video object-cover bg-ink mb-6 md:w-full md:left-0 md:translate-x-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
       />
 
-      {/* Mobile-only content backdrop — begins where the 16:9 video ends and
-          fills the search area with a rich, category-tinted gradient (instead
-          of flat black), softly blending out of the video's bottom edge so the
-          two halves feel like one designed surface. */}
-      <div
-        aria-hidden="true"
-        className={`md:hidden pointer-events-none absolute -left-4 -right-4 bottom-0 top-[56.25vw] bg-gradient-to-b ${sectionGradient} opacity-80 transition-[background] duration-300`}
-      />
+      {/* Mobile-only content backdrop — neutral dark fade beginning where the
+          16:9 video ends, blending out of the video's bottom edge into the
+          search area (no colour tint). */}
       <div
         aria-hidden="true"
         className="md:hidden pointer-events-none absolute -left-4 -right-4 bottom-0 top-[calc(56.25vw_-_2rem)] bg-gradient-to-b from-transparent via-black/45 to-black/85"
@@ -484,12 +474,6 @@ export default function HeroSearch() {
 
       {/* Desktop-only overlays (the video is a background there). On mobile the
           video has its own frame above, so these would needlessly dim it. */}
-      {/* Brand-tinted wash — shifts colour with the active category/tab. */}
-      <div
-        aria-hidden="true"
-        className={`hidden md:block pointer-events-none absolute inset-0 bg-gradient-to-br ${sectionGradient} opacity-20 transition-[opacity,background] duration-300`}
-      />
-
       {/* Dark scrim — kept light so the video reads; weighted to the bottom. */}
       <div aria-hidden="true" className="hidden md:block pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/15" />
 
