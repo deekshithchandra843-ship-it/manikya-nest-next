@@ -449,7 +449,7 @@ export default function HeroSearch() {
   return (
     <section
       aria-label="Search for housing and jobs"
-      className="relative overflow-hidden -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-8 md:pt-10 pb-10 md:pb-12 mb-6 bg-ink transition-[background] duration-300 md:flex md:flex-col md:justify-center md:min-h-[560px]"
+      className="relative overflow-hidden -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-0 md:pt-10 pb-10 md:pb-12 mb-6 bg-ink transition-[background] duration-300 md:flex md:flex-col md:justify-center md:min-h-[560px]"
     >
       {/* Looping hero video (home page only). The 16:9 clip is shown two ways:
           • Mobile: a full-bleed 16:9 frame at the top so the whole video is
@@ -466,7 +466,20 @@ export default function HeroSearch() {
         playsInline
         preload="auto"
         aria-hidden="true"
-        className="pointer-events-none w-full aspect-video object-cover bg-ink -mx-4 -mt-8 mb-6 md:mx-0 md:mt-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
+        className="pointer-events-none w-full aspect-video object-cover bg-ink -mx-4 mb-6 md:mx-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
+      />
+
+      {/* Mobile-only content backdrop — begins where the 16:9 video ends and
+          fills the search area with a rich, category-tinted gradient (instead
+          of flat black), softly blending out of the video's bottom edge so the
+          two halves feel like one designed surface. */}
+      <div
+        aria-hidden="true"
+        className={`md:hidden pointer-events-none absolute -left-4 -right-4 bottom-0 top-[56.25vw] bg-gradient-to-b ${sectionGradient} opacity-80 transition-[background] duration-300`}
+      />
+      <div
+        aria-hidden="true"
+        className="md:hidden pointer-events-none absolute -left-4 -right-4 bottom-0 top-[calc(56.25vw_-_2rem)] bg-gradient-to-b from-transparent via-black/45 to-black/85"
       />
 
       {/* Desktop-only overlays (the video is a background there). On mobile the
