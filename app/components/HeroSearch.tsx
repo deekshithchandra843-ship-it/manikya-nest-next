@@ -466,7 +466,7 @@ export default function HeroSearch() {
         playsInline
         preload="auto"
         aria-hidden="true"
-        className="pointer-events-none w-full aspect-video object-cover bg-ink -mx-4 mb-6 md:mx-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
+        className="pointer-events-none w-screen max-w-none relative left-1/2 -translate-x-1/2 aspect-video object-cover bg-ink mb-6 md:w-full md:left-0 md:translate-x-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
       />
 
       {/* Mobile-only content backdrop — begins where the 16:9 video ends and
