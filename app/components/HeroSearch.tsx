@@ -449,10 +449,14 @@ export default function HeroSearch() {
   return (
     <section
       aria-label="Search for housing and jobs"
-      className="relative overflow-hidden -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-8 md:pt-10 pb-10 md:pb-12 mb-6 bg-ink transition-[background] duration-300 flex flex-col justify-center min-h-[600px] md:min-h-[560px]"
+      className="relative overflow-hidden -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-8 md:pt-10 pb-10 md:pb-12 mb-6 bg-ink transition-[background] duration-300 md:flex md:flex-col md:justify-center md:min-h-[560px]"
     >
-      {/* Looping hero background video — home page only. `bg-ink` above shows
-          while it loads. Autoplay is forced muted in the effect above. */}
+      {/* Looping hero video (home page only). The 16:9 clip is shown two ways:
+          • Mobile: a full-bleed 16:9 frame at the top so the whole video is
+            visible without cropping; the search content sits below it.
+          • Desktop (md+): an absolute background the content overlays.
+          One element, repositioned responsively, so it loads once.
+          Autoplay is forced muted in the effect above. */}
       <video
         ref={videoRef}
         src="/hero-home.mp4"
@@ -462,28 +466,27 @@ export default function HeroSearch() {
         playsInline
         preload="auto"
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 w-full h-full object-cover"
+        className="pointer-events-none w-full aspect-video object-cover bg-ink -mx-4 -mt-8 mb-6 md:mx-0 md:mt-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
       />
 
-      {/* Brand-tinted wash over the video — light touch so the video stays
-          clearly visible; shifts colour with the active category/tab. */}
+      {/* Desktop-only overlays (the video is a background there). On mobile the
+          video has its own frame above, so these would needlessly dim it. */}
+      {/* Brand-tinted wash — shifts colour with the active category/tab. */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${sectionGradient} opacity-20 transition-[opacity,background] duration-300`}
+        className={`hidden md:block pointer-events-none absolute inset-0 bg-gradient-to-br ${sectionGradient} opacity-20 transition-[opacity,background] duration-300`}
       />
 
-      {/* Dark scrim — kept light so the video reads; weighted to the bottom
-          where the search bar sits. Headline legibility comes from its own
-          localized scrim below. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/15" />
+      {/* Dark scrim — kept light so the video reads; weighted to the bottom. */}
+      <div aria-hidden="true" className="hidden md:block pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/15" />
 
-      {/* Decorative blob — subtle, reads over the video. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Decorative blob. */}
+      <div aria-hidden="true" className="hidden md:block pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
       </div>
 
-      {/* City skyline illustration — light over the darker video backdrop. */}
-      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 right-0 text-white/15">
+      {/* City skyline illustration. */}
+      <div aria-hidden="true" className="hidden md:block pointer-events-none absolute bottom-0 left-0 right-0 text-white/15">
         <CitySkyline className="w-full h-28 md:h-36" />
       </div>
 
