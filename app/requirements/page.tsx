@@ -2,6 +2,7 @@
 import { useState } from "react";
 import PageLayout from "../components/PageLayout";
 import RequirementCard from "../components/RequirementCard";
+import RespondModal from "../components/RespondModal";
 import { Role, roleList, getRole, Requirement, REQUIREMENTS } from "../lib/requirements";
 import { World, categoriesForWorld } from "../lib/categories";
 
@@ -82,9 +83,6 @@ export default function RequirementsPage() {
   const [respondTarget, setRespondTarget] = useState<Requirement | null>(null);
 
   const feed = requirements.filter((r) => filterRole === "all" || r.role === filterRole);
-
-  // respondTarget drives the modal wired in a later task.
-  void respondTarget;
 
   const chooseRole = (r: Role) => {
     setRole(r);
@@ -327,6 +325,14 @@ export default function RequirementsPage() {
           </div>
         )}
       </section>
+
+      {respondTarget && (
+        <RespondModal
+          req={respondTarget}
+          onClose={() => setRespondTarget(null)}
+          onSent={(id) => setRequirements((p) => p.map((r) => (r.id === id ? { ...r, responseCount: r.responseCount + 1 } : r)))}
+        />
+      )}
     </PageLayout>
   );
 }
