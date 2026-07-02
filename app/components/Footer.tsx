@@ -12,9 +12,8 @@ const aboutLinks = [
 const quickLinks = [
   { label: "Find PG/Hostel", href: "/c/pg" },
   { label: "Find Rental Flat", href: "/c/rent" },
-  { label: "Jobs & Internships", href: "/whats-next" },
-  { label: "Commute Planner", href: "/whats-next" },
-  { label: "Upskilling", href: "/whats-next" },
+  { label: "Jobs & Internships", href: "/jobs" },
+  { label: "Upskilling", href: "/jobs#upskill" },
 ];
 
 const cities = ["Bengaluru", "Mumbai", "Hyderabad", "Pune", "Delhi"];
@@ -24,11 +23,11 @@ export default function Footer() {
     <footer className="bg-canvas text-ink border-t border-hairline mt-12 hidden md:block">
       <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* About NestNext */}
+          {/* About FindWay */}
           <div>
             <Logo size={30} className="mb-4" />
             <p className="text-sm leading-relaxed text-muted mb-4">
-              NestNext is a platform for students and working professionals in Indian cities.
+              FindWay is a platform for students and working professionals in Indian cities.
               Find verified housing with zero broker fee, discover jobs, plan your commute,
               and upskill — all in one place.
             </p>
@@ -77,7 +76,7 @@ export default function Footer() {
       <div className="border-t border-hairline">
         <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-2">
           <p className="text-[13px] text-muted">
-            © {new Date().getFullYear()} NestNext, Inc. All rights reserved.
+            © {new Date().getFullYear()} FindWay, Inc. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link href="#" className="text-[13px] text-muted hover:underline transition-colors">

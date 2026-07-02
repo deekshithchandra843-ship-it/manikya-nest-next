@@ -94,6 +94,7 @@ const nextCards = [
   {
     title: "Jobs",
     subtitle: "Find roles near your nest with top companies",
+    href: "/jobs#roles",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-rausch" aria-hidden="true">
         <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -101,17 +102,9 @@ const nextCards = [
     ),
   },
   {
-    title: "Commute",
-    subtitle: "Plan the best route from your nest to work",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-rausch" aria-hidden="true">
-        <path d="M8 17h8M8 17v4H6v-4m2 0H6m0 0V7a4 4 0 014-4h4a4 4 0 014 4v10m0 0v4h-2v-4m0 0h2M9 7h6M9 11h6" />
-      </svg>
-    ),
-  },
-  {
     title: "Upskill",
     subtitle: "Free and paid courses to grow your career",
+    href: "/jobs#upskill",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-rausch" aria-hidden="true">
         <path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
@@ -127,7 +120,7 @@ export default function HomePage() {
       <HeroSearch />
 
       {/* Trust strip — proof points mirroring our core promise */}
-      <section aria-label="Why renters trust NestNext" className="mb-10">
+      <section aria-label="Why renters trust FindWay" className="mb-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline-soft rounded-[14px] overflow-hidden border border-hairline-soft">
           {trustPoints.map((point) => (
             <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4">
@@ -160,14 +153,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What's Next Preview */}
+      {/* Jobs hub teaser */}
       <section className="mb-10">
-        <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink mb-4">What&apos;s next for you?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Grow your career</h2>
+          <Link href="/jobs" className="text-sm text-ink font-medium underline">Open Jobs</Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {nextCards.map((card) => (
             <Link
               key={card.title}
-              href="/whats-next"
+              href={card.href}
               className="bg-canvas border border-hairline rounded-[14px] p-5 hover:shadow-airbnb transition-shadow group"
             >
               <div className="mb-3">{card.icon}</div>
@@ -181,9 +177,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why NestNext */}
+      {/* Why FindWay */}
       <section className="mb-10">
-        <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink mb-4">Why NestNext?</h2>
+        <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink mb-4">Why FindWay?</h2>
         <div className="grid grid-cols-2 gap-4">
           {whyCards.map((card) => (
             <div

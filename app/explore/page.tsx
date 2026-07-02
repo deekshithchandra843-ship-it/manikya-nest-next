@@ -534,7 +534,7 @@ export default function ExplorePage() {
       </section>
 
       {/* Trust strip */}
-      <section aria-label="Why renters trust NestNext" className="mb-12">
+      <section aria-label="Why renters trust FindWay" className="mb-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline-soft rounded-[14px] overflow-hidden border border-hairline-soft">
           {trustPoints.map((point) => (
             <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4">

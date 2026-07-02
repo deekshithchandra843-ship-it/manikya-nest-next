@@ -77,6 +77,22 @@
     rgba(0, 0, 0, 0.1) 0 4px 8px 0;
 }
 
+/* Raised 3D card elevation — a bright inset top edge (the lifted lip) plus a
+   soft, wide floating shadow. Used on the /post wizard frame, step nav, and
+   publish modals so they read as tactile, elevated panels. */
+.shadow-3d {
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 18px 36px -14px rgba(0, 0, 0, 0.22);
+}
+.shadow-3d-soft {
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 12px 24px -12px rgba(0, 0, 0, 0.16);
+}
+
 /* Card hover lift — pairs with .shadow-airbnb on hover. The card rises a
    couple of pixels on an ease-out curve for a tactile, premium feel. */
 .hover-lift {

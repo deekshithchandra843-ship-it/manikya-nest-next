@@ -33,7 +33,7 @@ function listingMatchesChip(l: Listing, chip: string): boolean {
   return hay.includes(needle);
 }
 
-/** NestNext's differentiator — surfaces jobs/commute next to the homes. */
+/** FindWay's differentiator — surfaces jobs/commute next to the homes. */
 function CrossSellCard() {
   return (
     <div className="rounded-[14px] border border-hairline-soft bg-gradient-to-br from-rausch/5 to-luxe/5 p-5">
@@ -44,7 +44,7 @@ function CrossSellCard() {
           </svg>
         </span>
         <div className="min-w-0">
-          <h3 className="text-[15px] font-bold text-ink">Only on NestNext</h3>
+          <h3 className="text-[15px] font-bold text-ink">Only on FindWay</h3>
           <p className="text-sm text-muted mt-0.5">
             See the homes alongside the work that pays for them — and how you&apos;ll get there.
           </p>
@@ -57,12 +57,6 @@ function CrossSellCard() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
-            </Link>
-            <Link
-              href="/whats-next"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-ink border border-hairline rounded-[8px] hover:bg-surface-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
-            >
-              Plan your commute
             </Link>
           </div>
         </div>

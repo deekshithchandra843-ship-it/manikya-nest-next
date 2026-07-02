@@ -334,7 +334,7 @@ export default function ListingDetail() {
                 This {category?.label.toLowerCase() ?? "place"} is 12 min from 3 companies hiring for your profile.
                 {listing.metroDistance ? ` ${listing.metroDistance}.` : ""} Plan your commute and explore roles nearby.
               </p>
-              <Link href="/whats-next" className="text-sm text-rausch font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch rounded-sm">
+              <Link href="/jobs" className="text-sm text-rausch font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch rounded-sm">
                 View matches →
               </Link>
             </div>

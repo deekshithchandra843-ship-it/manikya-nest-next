@@ -22,7 +22,7 @@ export const ROLES: Record<Role, RoleDef> = {
 };
 
 export function roleList(): RoleDef[] {
-  return (["tenant", "buyer", "seller", "agent"] as Role[]).map((r) => ROLES[r]);
+  return (["tenant", "buyer"] as Role[]).map((r) => ROLES[r]);
 }
 
 export function getRole(role: Role): RoleDef | undefined {
@@ -56,12 +56,6 @@ export const REQUIREMENTS: Requirement[] = [
   { id: 4, role: "buyer", category: "buy", name: "Nikhil & Priya", city: "Bengaluru", areas: ["Sarjapur Road", "HSR Layout"], budgetMin: 11000000, budgetMax: 15000000, budgetLabel: "₹1.1–1.5 Cr", bhk: "3 BHK", notes: "Ready to move, loan pre-approved.", tags: ["Ready to move", "Loan needed"], postedAt: "3h ago", responseCount: 6, verified: true },
   { id: 5, role: "buyer", category: "buy", name: "Rohit K.", city: "Bengaluru", areas: ["Electronic City"], budgetMin: 6000000, budgetMax: 8000000, budgetLabel: "₹60–80 L", bhk: "2 BHK", tags: ["Under construction", "Investor"], postedAt: "6h ago", responseCount: 2 },
   { id: 6, role: "buyer", category: "land", name: "Sunil Traders", city: "Bengaluru", areas: ["Devanahalli"], budgetMin: 25000000, budgetMax: 35000000, budgetLabel: "₹2.5–3.5 Cr", notes: "Commercial corner plot near airport road.", tags: ["Corner plot", "Clear title"], postedAt: "2d ago", responseCount: 1 },
-  { id: 7, role: "seller", category: "rent", name: "Lakshmi N.", city: "Bengaluru", areas: ["Jayanagar"], budgetMin: 28000, budgetMax: 28000, budgetLabel: "₹28k/mo asking", bhk: "2 BHK", furnishing: "Furnished", notes: "Available from next month, prefer family.", tags: ["Open to agents", "Family only"], postedAt: "4h ago", responseCount: 5 },
-  { id: 8, role: "seller", category: "buy", name: "George M.", city: "Bengaluru", areas: ["Indiranagar"], budgetMin: 18500000, budgetMax: 18500000, budgetLabel: "₹1.85 Cr asking", bhk: "3 BHK", notes: "Resale, RERA project. Sell within 60 days.", tags: ["Open to agents", "Resale"], postedAt: "1d ago", responseCount: 7, verified: true },
-  { id: 9, role: "seller", category: "commercial-shop", name: "Anil Stores", city: "Bengaluru", areas: ["Jayanagar 4th Block"], budgetMin: 95000, budgetMax: 95000, budgetLabel: "₹95k/mo asking", notes: "High-street showroom, ground floor.", tags: ["High street"], postedAt: "3d ago", responseCount: 2 },
-  { id: 10, role: "agent", name: "Bengaluru Homes Co.", city: "Bengaluru", areas: ["Indiranagar", "Koramangala", "HSR Layout"], budgetMin: 0, budgetMax: 0, budgetLabel: "Residential rentals & resale", notes: "8 yrs · 120+ live properties · English, Hindi, Kannada.", tags: ["Residential", "Luxury"], postedAt: "2h ago", responseCount: 0, verified: true },
-  { id: 11, role: "agent", name: "Prime Commercial", city: "Bengaluru", areas: ["Outer Ring Road", "Whitefield"], budgetMin: 0, budgetMax: 0, budgetLabel: "Office & warehouse leasing", notes: "12 yrs · Grade-A office specialist.", tags: ["Commercial", "Leasing"], postedAt: "1d ago", responseCount: 0 },
-  { id: 12, role: "agent", name: "StayWise Rentals", city: "Bengaluru", areas: ["MG Road", "Indiranagar"], budgetMin: 0, budgetMax: 0, budgetLabel: "Service apartments & homestays", notes: "5 yrs · short & long stay.", tags: ["Stay", "Furnished"], postedAt: "2d ago", responseCount: 0 },
 ];
 
 export function requirementsForRole(role: Role): Requirement[] {

@@ -1,23 +1,48 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import PageLayout from "../components/PageLayout";
+import PublishRoleModal, { type ListingRole } from "../components/PublishRoleModal";
+import PublishAuthModal from "../components/PublishAuthModal";
 import { World, categoriesForWorld, getCategory } from "../lib/categories";
 
 const cities = ["Bengaluru", "Hyderabad", "Chennai", "Mumbai", "Pune", "Delhi NCR", "Kolkata"];
 
-const benefits = [
-  { title: "Zero brokerage", desc: "List free — connect directly with tenants, no middlemen." },
-  { title: "Faster tenants", desc: "Verified, ready-to-move seekers reach out within days." },
-  { title: "10 lakh+ connections", desc: "Tap into a large pool of tenants and buyers across India." },
-];
+// Per-world colour theme — gives the page a distinct, colourful mood depending
+// on what the user is listing. Threads through the hero band AND the form
+// accents (progress bar, step nav, category chips, primary button).
+type Theme = {
+  band: string; blobA: string; blobB: string; // hero
+  accent: string; chip: string;               // text accent + solid pill
+  solid: string; ring: string; bar: string; soft: string; // form accents
+  barGradient: string; headerTint: string;    // form card frame
+};
+const WORLD_THEME: Record<World, Theme> = {
+  residential: {
+    band: "from-rausch/15 via-violet/10 to-indigo/15", blobA: "bg-rausch/25", blobB: "bg-violet/25",
+    accent: "text-rausch", chip: "bg-rausch text-white",
+    solid: "bg-rausch hover:bg-rausch-active", ring: "focus-visible:ring-rausch", bar: "bg-rausch",
+    soft: "bg-rausch/10 border-rausch text-rausch",
+    barGradient: "from-rausch via-violet to-indigo", headerTint: "from-rausch/8 to-violet/5",
+  },
+  commercial: {
+    band: "from-indigo/15 via-violet/10 to-luxe/20", blobA: "bg-indigo/25", blobB: "bg-luxe/30",
+    accent: "text-indigo", chip: "bg-indigo text-white",
+    solid: "bg-indigo hover:opacity-90", ring: "focus-visible:ring-indigo", bar: "bg-indigo",
+    soft: "bg-indigo/10 border-indigo text-indigo",
+    barGradient: "from-indigo via-violet to-luxe", headerTint: "from-indigo/8 to-luxe/5",
+  },
+  stay: {
+    band: "from-patina/20 via-violet/10 to-terracotta/15", blobA: "bg-patina/30", blobB: "bg-terracotta/25",
+    accent: "text-terracotta", chip: "bg-terracotta text-white",
+    solid: "bg-terracotta hover:opacity-90", ring: "focus-visible:ring-terracotta", bar: "bg-terracotta",
+    soft: "bg-terracotta/10 border-terracotta text-terracotta",
+    barGradient: "from-patina via-umber to-terracotta", headerTint: "from-patina/10 to-terracotta/5",
+  },
+};
 
-const ownerPerks = [
-  { title: "Privacy", desc: "Your number stays masked" },
-  { title: "Promoted listing", desc: "Show up higher in search" },
-  { title: "Social marketing", desc: "Promoted across channels" },
-  { title: "Price consultation", desc: "Get the right rent advice" },
-];
+const heroPills = ["Verified seekers", "Number stays masked", "Promoted free"];
 
 const amenityOptions = ["Wi-Fi", "AC", "Meals", "Laundry", "Security", "Parking", "Power backup", "Hot water", "Gym", "Housekeeping", "Lift", "Gas pipeline"];
 const visitDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -159,19 +184,9 @@ function pricingFields(slug: string): FieldDef[] {
 }
 
 export default function PostListing() {
-  const [step, setStep] = useState<"landing" | "wizard">("landing");
-
-  // Landing lead-capture state
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [city, setCity] = useState("");
-  const [whatsapp, setWhatsapp] = useState(true);
+  // Property-type selector (now lives at the top of the wizard's first step)
   const [world, setWorld] = useState<World>("residential");
   const [slug, setSlug] = useState("rent");
-
-  // Poster-type tab on landing card (visual toggle only)
-  const [poster, setPoster] = useState<"owner" | "broker">("owner");
 
   // Wizard state
   const [active, setActive] = useState(0);
@@ -180,16 +195,31 @@ export default function PostListing() {
   const [days, setDays] = useState<string[]>(["Sat", "Sun"]);
   const [images, setImages] = useState<string[]>([]);
 
-  // Urgency countdown (kicks off when the wizard opens)
+  // Publish flow: role picker → log in / sign up → published
+  const [publishStage, setPublishStage] = useState<null | "role" | "auth">(null);
+  const [listingRole, setListingRole] = useState<ListingRole | null>(null);
+  const [published, setPublished] = useState(false);
+
+  // Full-page brand intro video — plays muted on entry, then reveals the wizard.
+  const [showIntro, setShowIntro] = useState(true);
+
+  // Urgency countdown (kicks off as soon as the wizard loads)
   const [secondsLeft, setSecondsLeft] = useState(120);
   useEffect(() => {
-    if (step !== "wizard") return;
     const t = setInterval(() => setSecondsLeft((s) => (s <= 0 ? 0 : s - 1)), 1000);
     return () => clearInterval(t);
-  }, [step]);
+  }, []);
 
   const category = getCategory(slug);
   const worldCategories = categoriesForWorld(world);
+  const theme = WORLD_THEME[world];
+  const heroSrc = category?.image ?? "/categories/rent.jpg";
+
+  // Hero photo loading: track which src has loaded so the skeleton shows
+  // automatically whenever the selected category (and image) changes — derived,
+  // no effect needed.
+  const [heroLoadedSrc, setHeroLoadedSrc] = useState<string | null>(null);
+  const heroLoaded = heroLoadedSrc === heroSrc;
 
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
   const toggleAmenity = (a: string) =>
@@ -268,265 +298,100 @@ export default function PostListing() {
     </div>
   );
 
-  // ─── STEP 1: Landing ──────────────────────────────────────────────────────
-  if (step === "landing") {
+  // ─── Full-page brand intro video — framed inside a retro "TV box" ─────────
+  if (showIntro) {
     return (
-      <PageLayout breadcrumbs={[{ label: "Home", href: "/" }, { label: "List your property" }]}>
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 overflow-hidden bg-gradient-to-br from-rausch/30 via-violet/30 to-indigo/40"
+        role="dialog"
+        aria-label="FindWay intro"
+      >
+        {/* Colourful decorative blobs */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-32 -left-24 w-[26rem] h-[26rem] rounded-full bg-rausch/30 blur-3xl" />
+          <div className="absolute -bottom-40 -right-24 w-[26rem] h-[26rem] rounded-full bg-indigo/30 blur-3xl" />
+          <div className="absolute top-1/4 right-1/3 w-40 h-40 rounded-full bg-violet/25 blur-2xl" />
+        </div>
 
-        {/* ── Hero band ── full-width bleed matching explore/home hero pattern */}
-        <section
-          aria-label="List your property"
-          className="relative overflow-hidden bg-gradient-to-br from-surface-soft via-violet/10 to-violet/25 -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-8 md:pt-12 pb-10 md:pb-0 mb-8 rounded-b-[32px]"
-        >
-          {/* Decorative themed background */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-24 -right-16 w-80 h-80 rounded-full bg-violet/25 blur-3xl" />
-            <div className="absolute -bottom-28 -left-24 w-80 h-80 rounded-full bg-indigo/20 blur-3xl" />
-            <div className="absolute top-12 right-1/4 w-24 h-24 rounded-[20px] rotate-12 bg-violet/15" />
-            <div className="absolute bottom-10 left-1/3 w-16 h-16 rounded-full border border-violet/30" />
-          </div>
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,420px)] gap-8 lg:gap-12 items-start max-w-[1100px] mx-auto">
-
-            {/* ── Left: headline + trust + testimonial ── */}
-            <div className="lg:py-10 lg:pb-16">
-              <p className="text-sm font-semibold text-rausch uppercase tracking-wider mb-3">
-                Free property listing
-              </p>
-              <h1 className="text-[clamp(28px,4vw,46px)] font-bold text-ink tracking-tight leading-[1.1] mb-4">
-                Sell or rent your property{" "}
-                <span className="text-rausch">for free</span>
-              </h1>
-              <p className="text-base text-body max-w-[480px] mb-8 leading-relaxed">
-                Post your property in under 3 minutes. Reach verified buyers and
-                tenants across India — with zero brokerage.
-              </p>
-
-              {/* Trust bullets */}
-              <ul className="space-y-4 mb-10" aria-label="Why list with us">
-                {benefits.map((b) => (
-                  <li key={b.title} className="flex items-start gap-3">
-                    <span
-                      className="mt-0.5 shrink-0 w-6 h-6 rounded-full bg-rausch/10 flex items-center justify-center text-rausch"
-                      aria-hidden="true"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                        <path d="M5 12l4 4L19 7" />
-                      </svg>
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-ink">{b.title}</span>
-                      <span className="block text-[13px] text-muted">{b.desc}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Testimonial */}
-              <figure className="bg-canvas border border-hairline rounded-[14px] p-5 max-w-[420px] shadow-airbnb">
-                <p className="text-base font-semibold text-ink mb-2">30 lakh+ owners trust us</p>
-                <blockquote className="text-[13px] text-body leading-relaxed mb-3">
-                  &ldquo;I posted my flat on NestNext and despite my busy schedule they
-                  reached out at the right times and found a great tenant as per my
-                  needs.&rdquo;
-                </blockquote>
-                <figcaption className="flex items-center justify-between">
-                  <span className="text-[13px] font-medium text-ink">Aldrin · Bengaluru</span>
-                  <span className="text-rausch text-sm" aria-label="5 star rating">★★★★★</span>
-                </figcaption>
-              </figure>
-
-              {/* "Looking for a home?" link */}
-              <p className="text-sm text-muted mt-6">
-                Looking for a home?{" "}
-                <Link
-                  href="/explore"
-                  className="text-ink font-semibold underline underline-offset-2 hover:text-rausch transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink rounded-sm"
-                >
-                  Explore listings
-                </Link>
-              </p>
+        {/* TV set */}
+        <div className="relative z-10 w-full max-w-[860px]">
+          {/* TV body — chunky dark bezel */}
+          <div className="relative rounded-[28px] p-4 sm:p-5 bg-gradient-to-b from-[#33333a] to-[#161617] border border-white/10 shadow-[0_30px_70px_-18px_rgba(0,0,0,0.65)]">
+            {/* Screen — video is scaled from the top-left so the bottom-right
+                corner (the Gemini watermark) is cropped out of view. */}
+            <div className="relative rounded-[18px] overflow-hidden bg-black ring-1 ring-white/10 aspect-video">
+              <video
+                src="/post-intro.mp4"
+                autoPlay
+                muted
+                playsInline
+                onEnded={() => setShowIntro(false)}
+                className="absolute inset-0 w-full h-full object-cover object-left-top origin-top-left scale-[1.14]"
+              />
+              {/* Screen glare */}
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10" />
             </div>
 
-            {/* ── Right: floating lead-capture card ── */}
-            <div className="animate-fade-up lg:-mb-10 lg:mt-6">
-              <div className="bg-canvas rounded-[20px] shadow-airbnb border border-hairline-soft p-6">
-
-                {/* Poster-type segmented tabs: Owner | Broker / Builder */}
-                <div
-                  role="group"
-                  aria-label="Poster type"
-                  className="flex items-center bg-surface-soft rounded-[8px] p-1 mb-5"
-                >
-                  {(["owner", "broker"] as const).map((p) => {
-                    const on = poster === p;
-                    return (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setPoster(p)}
-                        aria-pressed={on}
-                        className={`flex-1 py-2 text-sm font-semibold rounded-[6px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                          on
-                            ? "bg-ink text-white shadow-airbnb"
-                            : "text-muted hover:text-ink"
-                        }`}
-                      >
-                        {p === "owner" ? "Owner" : "Broker / Builder"}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Property type: Residential | Commercial */}
-                <label className={labelCls}>Property type</label>
-                <div
-                  role="group"
-                  aria-label="Property type"
-                  className="inline-flex items-center gap-1 bg-surface-soft border border-hairline-soft rounded-full p-1 mb-5 w-full"
-                >
-                  {(["residential", "commercial"] as World[]).map((w) => {
-                    const on = world === w;
-                    return (
-                      <button
-                        key={w}
-                        type="button"
-                        onClick={() => chooseWorld(w)}
-                        aria-pressed={on}
-                        className={`flex-1 py-2 text-sm font-semibold rounded-full capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                          on ? "bg-ink text-white" : "text-muted hover:text-ink"
-                        }`}
-                      >
-                        {w}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Category chips: "What are you listing?" */}
-                <label className={labelCls}>What are you listing?</label>
-                <div
-                  className="flex flex-wrap gap-2 mb-5"
-                  role="group"
-                  aria-label="Listing category"
-                >
-                  {worldCategories.map((c) => {
-                    const on = slug === c.slug;
-                    return (
-                      <button
-                        key={c.slug}
-                        type="button"
-                        onClick={() => setSlug(c.slug)}
-                        aria-pressed={on}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-[8px] border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                          on
-                            ? "bg-rausch text-white border-rausch"
-                            : "bg-canvas text-body border-hairline hover:border-ink"
-                        }`}
-                      >
-                        {c.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Compact Name + City row */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div>
-                    <label className={labelCls}>Name</label>
-                    <input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className={field}
-                      placeholder="Your name"
-                      autoComplete="name"
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>City</label>
-                    <select
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className={`${field} ${city ? "text-ink" : "text-muted"}`}
-                    >
-                      <option value="">Select</option>
-                      {cities.map((c) => (
-                        <option key={c} value={c} className="text-ink">{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Mobile number with +91 prefix */}
-                <div className="mb-4">
-                  <label className={labelCls}>Mobile number</label>
-                  <div className="flex items-center border border-hairline rounded-[8px] h-12 px-3 focus-within:border-ink focus-within:border-2 transition-colors bg-canvas">
-                    <span className="text-ink text-sm pr-2 border-r border-hairline mr-2 shrink-0">+91</span>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
-                      placeholder="98765 43210"
-                      autoComplete="tel"
-                      className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
-                    />
-                  </div>
-                </div>
-
-                {/* Email (compact, below mobile) */}
-                <div className="mb-4">
-                  <label className={labelCls}>Email</label>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={field}
-                    placeholder="name@gmail.com"
-                    autoComplete="email"
-                    type="email"
-                  />
-                </div>
-
-                {/* WhatsApp toggle */}
-                <button
-                  type="button"
-                  onClick={() => setWhatsapp((w) => !w)}
-                  aria-pressed={whatsapp}
-                  className="flex items-center gap-2.5 mb-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink rounded-full"
-                >
-                  <span
-                    className={`relative w-10 h-6 rounded-full transition-colors ${
-                      whatsapp ? "bg-rausch" : "bg-surface-strong"
-                    }`}
-                    aria-hidden="true"
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                        whatsapp ? "translate-x-4" : ""
-                      }`}
-                    />
-                  </span>
-                  <span className="text-sm text-body">Get updates on WhatsApp</span>
-                </button>
-
-                {/* Primary CTA */}
-                <button
-                  type="button"
-                  onClick={() => { setStep("wizard"); setActive(0); setSecondsLeft(120); }}
-                  className="w-full h-12 bg-rausch text-white text-base font-semibold rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2"
-                >
-                  Proceed
-                </button>
-
-                {/* Reassurance line */}
-                <p className="text-[12px] text-muted text-center mt-3">
-                  Free forever · No brokerage · Listings reviewed before going live.
-                </p>
+            {/* Nameplate row — brand, power LED, knobs */}
+            <div className="flex items-center justify-between px-1.5 pt-3">
+              <span className="text-white/85 text-sm font-bold tracking-[0.2em] uppercase">FindWay</span>
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-rausch shadow-[0_0_8px_2px_rgba(255,56,92,0.7)]" aria-hidden="true" />
+                <span className="w-3.5 h-3.5 rounded-full bg-white/15 ring-1 ring-white/10" aria-hidden="true" />
+                <span className="w-3.5 h-3.5 rounded-full bg-white/15 ring-1 ring-white/10" aria-hidden="true" />
               </div>
             </div>
-
           </div>
-        </section>
 
+          {/* TV stand + shadow */}
+          <div className="mx-auto h-3.5 w-28 bg-[#161617] rounded-b-[10px]" />
+          <div className="mx-auto mt-1 h-2 w-56 max-w-[70%] rounded-full bg-black/25 blur-md" />
+
+          {/* Caption under the set */}
+          <p className="text-center text-white/90 text-sm font-medium mt-5 drop-shadow">
+            A home near work, and the job to go with it.
+          </p>
+        </div>
+
+        {/* Skip — top right */}
+        <button
+          type="button"
+          onClick={() => setShowIntro(false)}
+          className="absolute top-5 right-5 z-20 h-10 px-4 inline-flex items-center gap-1.5 rounded-full bg-white text-ink text-sm font-semibold hover:bg-white/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          Skip intro
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    );
+  }
+
+  // ─── Published success state ──────────────────────────────────────────────
+  if (published) {
+    return (
+      <PageLayout breadcrumbs={[{ label: "Home", href: "/" }, { label: "List your property", href: "/post" }, { label: "Published" }]}>
+        <div className="max-w-[480px] mx-auto text-center py-16">
+          <span className="inline-flex w-16 h-16 rounded-full bg-rausch/10 text-rausch items-center justify-center mb-5" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M20 6L9 17l-5-5" /></svg>
+          </span>
+          <h1 className="text-[26px] font-bold text-ink tracking-tight mb-2">Your listing is live</h1>
+          <p className="text-base text-body mb-8">
+            Posted as <span className="font-medium text-ink">{listingRole ? listingRole[0].toUpperCase() + listingRole.slice(1) : "you"}</span>.
+            We&apos;ll notify you on WhatsApp when seekers respond.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/explore" className="h-12 px-6 inline-flex items-center justify-center bg-rausch text-white text-sm font-semibold rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2">
+              Browse listings
+            </Link>
+            <button
+              type="button"
+              onClick={() => { setPublished(false); setActive(0); setForm({}); setImages([]); setListingRole(null); }}
+              className="h-12 px-6 inline-flex items-center justify-center border border-hairline text-ink text-sm font-medium rounded-[8px] hover:bg-surface-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+            >
+              List another property
+            </button>
+          </div>
+        </div>
       </PageLayout>
     );
   }
@@ -537,6 +402,64 @@ export default function PostListing() {
 
   return (
     <PageLayout breadcrumbs={[{ label: "Home", href: "/" }, { label: "List your property", href: "/post" }, { label: category?.label ?? "Post" }]}>
+      {/* ── Colourful, world-themed hero band ── full-bleed, with a live category photo */}
+      <section
+        aria-label="List your property"
+        className={`relative overflow-hidden -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-8 md:pt-10 pb-8 md:pb-9 mb-6 rounded-b-[32px] bg-gradient-to-br ${theme.band} transition-colors duration-500`}
+      >
+        {/* Decorative themed blobs */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className={`absolute -top-24 -right-12 w-72 h-72 rounded-full blur-3xl transition-colors duration-500 ${theme.blobA}`} />
+          <div className={`absolute -bottom-28 -left-20 w-72 h-72 rounded-full blur-3xl transition-colors duration-500 ${theme.blobB}`} />
+          <div className="absolute top-10 right-1/3 w-20 h-20 rounded-[18px] rotate-12 bg-white/25" />
+          <div className="absolute bottom-8 left-1/4 w-12 h-12 rounded-full border border-white/40" />
+        </div>
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,360px)] gap-6 lg:gap-10 items-center max-w-[1100px] mx-auto">
+          {/* Left: headline + trust pills */}
+          <div>
+            <p className={`text-sm font-semibold uppercase tracking-wider mb-3 ${theme.accent}`}>Free listing · Zero brokerage</p>
+            <h1 className="text-[clamp(26px,4vw,42px)] font-bold text-ink tracking-tight leading-[1.1] mb-3">
+              List your property <span className={theme.accent}>in minutes</span>
+            </h1>
+            <p className="text-base text-body max-w-[460px] mb-5 leading-relaxed">
+              Reach verified tenants and buyers across India. Add details, photos and visiting hours — we&apos;ll do the rest.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {heroPills.map((t) => (
+                <span key={t} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink bg-white/70 backdrop-blur-sm border border-white/60 rounded-full px-3 py-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={theme.accent} aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: live category photo (updates as the user picks a type) */}
+          <div className="hidden lg:block">
+            <div className="relative aspect-[4/3] rounded-[20px] overflow-hidden shadow-airbnb border border-white/60">
+              {!heroLoaded && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
+              <Image
+                key={heroSrc}
+                src={heroSrc}
+                alt={`${category?.label ?? "Property"} listing preview`}
+                fill
+                sizes="360px"
+                className="object-cover photo-enhance"
+                onLoad={() => setHeroLoadedSrc(heroSrc)}
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <span className={`inline-block text-[11px] font-semibold capitalize rounded-full px-2.5 py-1 mb-1.5 ${theme.chip}`}>{world}</span>
+                <p className="text-white text-lg font-bold leading-tight drop-shadow-sm">{category?.label}</p>
+                <p className="text-white/85 text-[13px]">{category?.subtitle}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Urgency strip */}
       <div className="flex items-center gap-3 mb-5 px-4 py-2.5 rounded-[14px] bg-rausch/5 border border-rausch/30">
         <span className="shrink-0 w-8 h-8 rounded-full bg-rausch/10 text-rausch flex items-center justify-center" aria-hidden="true">
@@ -556,23 +479,22 @@ export default function PostListing() {
         )}
       </div>
 
-      {/* Top bar: home + progress + preview */}
+      {/* Top bar: progress + preview */}
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => setStep("landing")} className="shrink-0 text-muted hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink rounded-sm" aria-label="Back to start">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-        </button>
         <div className="flex-1">
           <div className="h-1.5 bg-surface-strong rounded-full overflow-hidden">
-            <div className="h-full bg-rausch rounded-full transition-all" style={{ width: `${progress}%` }} />
+            <div className={`h-full rounded-full transition-all duration-300 ${theme.bar}`} style={{ width: `${progress}%` }} />
           </div>
         </div>
         <span className="shrink-0 text-[13px] font-medium text-muted">{progress}% done</span>
         <button className="shrink-0 px-4 h-9 border border-rausch text-rausch text-sm font-medium rounded-[8px] hover:bg-rausch/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch">Preview</button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_240px] gap-6">
-        {/* Left: step nav */}
-        <nav className="bg-canvas border border-hairline rounded-[14px] p-2 h-fit lg:sticky lg:top-24" aria-label="Posting steps">
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
+        {/* Left: step nav — matching elevated 3D frame */}
+        <nav className="relative bg-canvas border border-hairline-soft rounded-[18px] overflow-hidden shadow-3d-soft h-fit lg:sticky lg:top-24" aria-label="Posting steps">
+          <div className={`h-1.5 w-full bg-gradient-to-r ${theme.barGradient} transition-colors duration-500`} />
+          <div className="p-2">
           {WIZARD_STEPS.map((s, i) => {
             const isActive = i === active;
             const done = i < active;
@@ -585,7 +507,7 @@ export default function PostListing() {
                   isActive ? "bg-surface-soft text-ink" : "text-muted hover:bg-surface-soft hover:text-ink"
                 }`}
               >
-                <span className={isActive || done ? "text-rausch" : ""}>
+                <span className={isActive || done ? theme.accent : ""}>
                   {done ? (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
                   ) : (
@@ -593,7 +515,7 @@ export default function PostListing() {
                   )}
                 </span>
                 <span className={`text-sm font-medium ${isActive ? "text-ink" : ""}`}>{s.label}</span>
-                {isActive && <span className="ml-auto w-1.5 h-6 bg-rausch rounded-full" />}
+                {isActive && <span className={`ml-auto w-1.5 h-6 rounded-full ${theme.bar}`} />}
               </button>
             );
           })}
@@ -605,24 +527,82 @@ export default function PostListing() {
               <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="text-rausch font-medium hover:underline">WhatsApp ›</a>
             </p>
           </div>
+          </div>
         </nav>
 
-        {/* Middle: form */}
-        <div className="bg-canvas border border-hairline rounded-[14px] p-6 min-h-[420px]">
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-hairline">
-            <h2 className="text-[19px] font-bold text-ink">{WIZARD_STEPS[active].label}</h2>
-            <span className="text-[12px] font-medium text-muted bg-surface-soft px-2.5 py-1 rounded-full">{category?.label}</span>
-          </div>
+        {/* Middle: form — elevated 3D frame with a themed accent */}
+        <div className="relative rounded-[18px] bg-canvas border border-hairline-soft overflow-hidden min-h-[440px] shadow-3d">
+          {/* Themed top accent bar */}
+          <div className={`h-1.5 w-full bg-gradient-to-r ${theme.barGradient} transition-colors duration-500`} />
+          <div className="p-6">
+            {/* Tinted header band — bleeds to the card edges under the accent bar */}
+            <div className={`flex items-center justify-between -mx-6 -mt-6 mb-6 px-6 py-4 border-b border-hairline bg-gradient-to-r ${theme.headerTint} transition-colors duration-500`}>
+              <h2 className="text-[19px] font-bold text-ink">{WIZARD_STEPS[active].label}</h2>
+              <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-colors duration-300 ${theme.chip}`}>{category?.label}</span>
+            </div>
 
-          {/* Step: category-aware details */}
-          {active === 0 && renderFieldGroup(detailFields(slug))}
+          {/* Step: property-type selector + category-aware details */}
+          {active === 0 && (
+            <div className="space-y-6">
+              {/* Residential | Commercial */}
+              <div>
+                <label className={labelCls}>Property type</label>
+                <div role="group" aria-label="Property type" className="inline-flex items-center gap-1 bg-surface-soft border border-hairline-soft rounded-full p-1 w-full">
+                  {(["residential", "commercial"] as World[]).map((w) => {
+                    const on = world === w;
+                    return (
+                      <button
+                        key={w}
+                        type="button"
+                        onClick={() => chooseWorld(w)}
+                        aria-pressed={on}
+                        className={`flex-1 py-2 text-sm font-semibold rounded-full capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
+                          on ? "bg-ink text-white" : "text-muted hover:text-ink"
+                        }`}
+                      >
+                        {w}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* What are you listing? */}
+              <div>
+                <label className={labelCls}>What are you listing?</label>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Listing category">
+                  {worldCategories.map((c) => {
+                    const on = slug === c.slug;
+                    return (
+                      <button
+                        key={c.slug}
+                        type="button"
+                        onClick={() => setSlug(c.slug)}
+                        aria-pressed={on}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-[8px] border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
+                          on ? `${theme.chip} border-transparent` : "bg-canvas text-body border-hairline hover:border-ink"
+                        }`}
+                      >
+                        {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category-aware detail fields */}
+              <div className="pt-2 border-t border-hairline">
+                {renderFieldGroup(detailFields(slug))}
+              </div>
+            </div>
+          )}
 
           {/* Step: locality */}
           {active === 1 && (
             <div className="space-y-5">
               <div>
                 <label className={labelCls}>City<span className="text-rausch"> *</span></label>
-                <select value={form.city ?? city} onChange={(e) => set("city", e.target.value)} className={`${field} ${(form.city ?? city) ? "text-ink" : "text-muted"}`}>
+                <select value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} className={`${field} ${form.city ? "text-ink" : "text-muted"}`}>
                   <option value="">Select city</option>
                   {cities.map((c) => (<option key={c} value={c} className="text-ink">{c}</option>))}
                 </select>
@@ -713,36 +693,33 @@ export default function PostListing() {
               ← Back
             </button>
             <button
-              onClick={() => (last ? undefined : setActive((i) => i + 1))}
-              className="px-6 h-11 bg-rausch text-white text-sm font-semibold rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2"
+              onClick={() => (last ? setPublishStage("role") : setActive((i) => i + 1))}
+              className={`px-6 h-11 text-white text-sm font-semibold rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${theme.solid} ${theme.ring}`}
             >
               {last ? "Publish listing" : "Save & continue"}
             </button>
           </div>
-        </div>
-
-        {/* Right: owner perks rail */}
-        <aside className="hidden lg:block h-fit lg:sticky lg:top-24">
-          <div className="bg-surface-soft border border-hairline rounded-[14px] p-5">
-            <p className="text-base font-semibold text-ink leading-snug mb-1">Get tenants faster</p>
-            <p className="text-[12px] text-muted mb-4">Subscribe to an owner plan and find tenants quickly.</p>
-            <ul className="space-y-3">
-              {ownerPerks.map((p) => (
-                <li key={p.title} className="flex gap-3 items-start">
-                  <span className="shrink-0 w-8 h-8 rounded-full bg-rausch/10 text-rausch flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6z" /></svg>
-                  </span>
-                  <span>
-                    <span className="block text-[13px] font-semibold text-ink">{p.title}</span>
-                    <span className="block text-[12px] text-muted">{p.desc}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <button className="w-full h-10 mt-4 bg-ink text-white text-sm font-medium rounded-[8px] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">Show interest</button>
           </div>
-        </aside>
+        </div>
       </div>
+
+      {/* Publish flow — step 1: choose listing role */}
+      {publishStage === "role" && (
+        <PublishRoleModal
+          onClose={() => setPublishStage(null)}
+          onSelect={(role) => { setListingRole(role); setPublishStage("auth"); }}
+        />
+      )}
+
+      {/* Publish flow — step 2: log in / sign up */}
+      {publishStage === "auth" && listingRole && (
+        <PublishAuthModal
+          listingRole={listingRole}
+          onBack={() => setPublishStage("role")}
+          onClose={() => setPublishStage(null)}
+          onSuccess={() => { setPublishStage(null); setPublished(true); }}
+        />
+      )}
     </PageLayout>
   );
 }

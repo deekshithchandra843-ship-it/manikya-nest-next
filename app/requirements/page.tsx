@@ -321,7 +321,7 @@ export default function RequirementsPage() {
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Recent requirements</h2>
           <div role="group" aria-label="Filter by role" className="inline-flex items-center gap-1 bg-surface-soft border border-hairline-soft rounded-full p-1">
-            {(["all", "tenant", "buyer", "seller", "agent"] as const).map((r) => {
+            {(["all", "tenant", "buyer"] as const).map((r) => {
               const on = filterRole === r;
               return (
                 <button key={r} type="button" onClick={() => setFilterRole(r)} aria-pressed={on}
