@@ -59,7 +59,7 @@ export default function ListingCard({
     >
       <div className="bg-canvas rounded-[14px] hover-lift hover:shadow-airbnb">
         {/* Image area — real photo when available, skeleton → icon otherwise */}
-        <div className="relative h-44 bg-surface-strong rounded-[14px] overflow-hidden flex items-center justify-center">
+        <div className="relative aspect-[4/3] md:aspect-none md:h-48 lg:h-52 w-full bg-surface-strong rounded-[14px] overflow-hidden flex items-center justify-center">
           {image ? (
             <>
               {!imgLoaded && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
@@ -68,7 +68,7 @@ export default function ListingCard({
                 alt={`${title} — ${badge} in ${location}`}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                className="object-cover photo-enhance"
+                className="object-cover photo-enhance transition-transform duration-500 ease-out group-hover:scale-105"
                 onLoad={() => setImgLoaded(true)}
                 loading="lazy"
               />

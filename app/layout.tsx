@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-IN" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans bg-canvas text-ink">
+    <html lang="en-IN" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans bg-canvas text-ink" suppressHydrationWarning>
         <Navbar />
         <div className="flex-1">{children}</div>
         <Footer />

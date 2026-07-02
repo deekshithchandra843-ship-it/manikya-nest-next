@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import PageLayout from "../../components/PageLayout";
+import ListingGallery from "../../components/ListingGallery";
 import { LISTINGS, getCategory, Listing } from "../../lib/categories";
 
 const amenityIcons: Record<string, string> = {
@@ -196,6 +197,37 @@ export default function ListingDetail() {
   const facts = buildFacts(listing);
   const [saved, setSaved] = useState(false);
 
+  const galleryImages = useMemo(() => {
+    if (!category) return [];
+    const world = category.world;
+    const pool =
+      world === "residential"
+        ? [
+            "/categories/rent.jpg",
+            "/categories/buy.jpg",
+            "/categories/pg.jpg",
+            "/categories/coliving.jpg",
+            "/categories/flatmate.jpg",
+          ]
+        : world === "commercial"
+        ? [
+            "/categories/commercial-office.jpg",
+            "/categories/commercial-shop.jpg",
+            "/categories/coworking.jpg",
+            "/categories/warehouse.jpg",
+            "/categories/lease.jpg",
+          ]
+        : [
+            "/categories/homestay.jpg",
+            "/categories/resort.jpg",
+            "/categories/service-apartment.jpg",
+            "/categories/hotel.jpg",
+            "/categories/rent.jpg",
+          ];
+    const unique = [category.image, ...pool.filter((img) => img !== category.image)];
+    return unique.slice(0, 5);
+  }, [category]);
+
   return (
     <PageLayout
       breadcrumbs={[
@@ -206,56 +238,12 @@ export default function ListingDetail() {
       ]}
     >
       {/* Photo Gallery */}
-      <section className="mb-5">
-        {/* Main image */}
-        <div className="h-[280px] md:h-[360px] bg-surface-soft rounded-[14px] overflow-hidden mb-2 relative">
-          {category?.image ? (
-            <Image
-              src={category.image}
-              alt={`${listing.title} — ${category.label} in ${listing.location}`}
-              fill
-              sizes="(max-width: 768px) 100vw, 80vw"
-              className="object-cover photo-enhance"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-muted-soft" aria-hidden="true">
-                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m4-10h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01" />
-              </svg>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => setSaved(!saved)}
-            aria-pressed={saved}
-            className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-canvas/90 shadow-airbnb hover:scale-105 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
-            aria-label={saved ? "Remove from saved" : "Save listing"}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={saved ? "text-rausch" : "text-muted"} aria-hidden="true">
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </button>
-        </div>
-        {/* Thumbnail strip — same image with slight opacity to simulate alternate views */}
-        {category?.image && (
-          <div className="grid grid-cols-3 gap-2">
-            {[0.85, 0.7, 0.55].map((opacity, i) => (
-              <div key={i} className="h-[60px] md:h-[80px] rounded-[8px] overflow-hidden relative">
-                <Image
-                  src={category.image}
-                  alt={`${listing.title} — view ${i + 2}`}
-                  fill
-                  sizes="(max-width: 768px) 33vw, 20vw"
-                  className="object-cover photo-enhance"
-                  style={{ opacity }}
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <ListingGallery
+        images={galleryImages}
+        alt={`${listing.title} — ${category?.label ?? ""} in ${listing.location}`}
+        saved={saved}
+        onToggleSave={() => setSaved(!saved)}
+      />
 
       {/* Two-column: content + sticky contact card */}
       <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8 lg:items-start">

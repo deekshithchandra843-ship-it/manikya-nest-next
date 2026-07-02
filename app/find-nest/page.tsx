@@ -278,7 +278,7 @@ export default function FindNest() {
                 <li key={listing.id}>
                   <Link
                     href={`/listing/${listing.id}`}
-                    className="flex gap-3 py-3 px-2 -mx-2 rounded-[14px] hover:bg-surface-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+                    className="group flex gap-3 py-3 px-2 -mx-2 rounded-[14px] hover:bg-surface-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
                   >
                     {/* Thumbnail */}
                     <div className="w-24 h-24 bg-surface-strong rounded-[14px] shrink-0 overflow-hidden relative">
@@ -288,7 +288,7 @@ export default function FindNest() {
                           alt={`${listing.title} thumbnail`}
                           fill
                           sizes="96px"
-                          className="object-cover"
+                          className="object-cover photo-enhance transition-transform duration-500 ease-out group-hover:scale-105"
                           loading="lazy"
                         />
                       ) : (
