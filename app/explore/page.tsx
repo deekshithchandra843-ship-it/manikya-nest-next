@@ -175,10 +175,12 @@ export default function ExplorePage() {
       <section aria-label={`${world} categories`} className="mb-12">
         <div
           key={world}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-fade-up"
+          className="flex flex-wrap justify-center gap-4 animate-fade-up"
         >
           {tiles.map((cat) => (
-            <CategoryTile key={cat.slug} cat={cat} />
+            <div key={cat.slug} className="w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] xl:w-[190px] shrink-0">
+              <CategoryTile cat={cat} />
+            </div>
           ))}
         </div>
       </section>
