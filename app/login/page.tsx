@@ -158,27 +158,40 @@ const FEATURES = [
 export default function LoginPage() {
   return (
     <main className="relative pb-20 md:pb-0 bg-canvas">
-      {/* ── Hero: the split Home/Job artwork as a full-bleed backdrop, with
-             the single-door auth card centred over it. The min-height is
-             pinned to the TALLEST tab (sign up) so switching tabs never
-             resizes the section — the backdrop stays perfectly static. ── */}
-      <section className="relative min-h-[max(calc(100vh-80px),960px)] flex items-center justify-center overflow-hidden px-4 py-10">
+      {/* ── Hero: the split Home/Job artwork with the single-door auth card.
+             Desktop (lg+): artwork is a full-bleed backdrop behind the centred
+             card; min-height is pinned to the TALLEST tab (sign up) so
+             switching tabs never resizes the section — the backdrop stays
+             perfectly static. Mobile: object-cover would crop the wide artwork
+             down to its centre seam, hiding the theme — so the FULL artwork
+             renders as a banner at its natural aspect ratio with the card
+             overlapping it below. ── */}
+      <section className="relative overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/login-hero.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="hidden lg:block absolute inset-0 w-full h-full object-cover object-center"
         />
-        <div className="relative w-full max-w-[400px]">
-          <Suspense fallback={<AuthCardFallback />}>
-            <AuthCard />
-          </Suspense>
+        <div className="lg:min-h-[max(calc(100vh-80px),960px)] lg:flex lg:items-center lg:justify-center lg:px-4 lg:py-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/login-hero.png"
+            alt=""
+            aria-hidden="true"
+            className="lg:hidden w-full h-auto"
+          />
+          <div className="relative w-full max-w-[400px] mx-auto -mt-14 px-4 pb-4 lg:mt-0 lg:px-0 lg:pb-0">
+            <Suspense fallback={<AuthCardFallback />}>
+              <AuthCard />
+            </Suspense>
+          </div>
         </div>
       </section>
 
       {/* ── Trust feature bar ── */}
-      <div className="relative max-w-[1120px] mx-auto px-4 md:px-6 -mt-12 pb-8">
+      <div className="relative max-w-[1120px] mx-auto px-4 md:px-6 mt-4 lg:-mt-12 pb-8">
         <div className="bg-canvas rounded-[20px] shadow-airbnb border border-hairline-soft px-2 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-5">
           {FEATURES.map((f, i) => (
             <div key={f.title} className={`flex items-center gap-3 px-5 ${i > 0 ? "lg:border-l lg:border-hairline-soft" : ""}`}>
