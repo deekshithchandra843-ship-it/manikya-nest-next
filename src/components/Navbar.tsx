@@ -25,6 +25,23 @@ export default function Navbar() {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const [scrolled, setScrolled] = useState(false);
+  const isHome = pathname === "/";
+
+  // Check scroll position to dynamically adapt navbar on home page
+  useEffect(() => {
+    if (!isHome) {
+      setScrolled(false);
+      return;
+    }
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHome]);
+
   // Close the avatar dropdown on outside click / Escape.
   useEffect(() => {
     if (!menuOpen) return;
@@ -51,13 +68,63 @@ export default function Navbar() {
 
   const loggedIn = hydrated && session;
 
+  // Dynamic classes for translucent/transparent overlay styling
+  const navClass = isHome
+    ? `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-canvas/95 backdrop-blur-md border-b border-hairline shadow-sm py-0"
+          : "bg-transparent border-b border-transparent py-2"
+      }`
+    : "sticky top-0 z-50 bg-canvas border-b border-hairline py-0";
+
+  const navLinkClass = (isActive: boolean) => {
+    if (isHome && !scrolled) {
+      return `relative text-base font-semibold pb-1 transition-colors ${
+        isActive ? "text-white" : "text-white/70 hover:text-white"
+      }`;
+    }
+    return `relative text-base font-semibold pb-1 transition-colors ${
+      isActive ? "text-ink" : "text-muted hover:text-ink"
+    }`;
+  };
+
+  const activeUnderlineClass = isHome && !scrolled ? "bg-white" : "bg-ink";
+
+  const listBtnClass = isHome && !scrolled
+    ? "px-4 py-2.5 text-base font-medium text-white rounded-full hover:bg-white/10 transition-colors"
+    : "px-4 py-2.5 text-base font-medium text-ink rounded-full hover:bg-surface-soft transition-colors";
+
+  const loginBtnClass = isHome && !scrolled
+    ? "px-4 py-2.5 text-base font-medium text-white rounded-[8px] hover:bg-white/10 transition-colors"
+    : "px-4 py-2.5 text-base font-medium text-ink rounded-[8px] hover:bg-surface-soft transition-colors";
+
+  const signupBtnClass = isHome && !scrolled
+    ? "px-5 py-2.5 text-base font-medium text-ink bg-white rounded-[8px] hover:bg-white/90 transition-colors"
+    : "px-5 py-2.5 text-base font-medium text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors";
+
+  const avatarPillClass = isHome && !scrolled
+    ? "flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border border-white/20 hover:bg-white/10 text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+    : `flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all hover:shadow-airbnb focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
+        pathname === "/profile" ? "border-rausch ring-1 ring-rausch" : "border-hairline"
+      } text-ink`;
+
+  const avatarCircleClass = isHome && !scrolled
+    ? "bg-white/20 text-white"
+    : session?.activeView === "business"
+      ? "bg-gradient-to-r from-rausch to-tab-rent text-white"
+      : "bg-rausch/10 text-rausch";
+
+  const avatarTextClass = isHome && !scrolled ? "text-white" : "text-ink";
+  const arrowColorClass = isHome && !scrolled ? "text-white/85" : "text-muted";
+  const hamburgerLineClass = isHome && !scrolled ? "block w-5 h-[2px] bg-white" : "block w-5 h-[2px] bg-ink";
+
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-canvas border-b border-hairline">
+      <nav className={navClass}>
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 md:px-6 lg:px-10 h-20">
           {/* Logo */}
           <Link href="/" aria-label="FindWay home">
-            <Logo size={34} />
+            <Logo size={34} lightText={isHome && !scrolled} />
           </Link>
 
           {/* Desktop nav links */}
@@ -68,13 +135,11 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative text-base font-semibold pb-1 transition-colors ${
-                    isActive ? "text-ink" : "text-muted hover:text-ink"
-                  }`}
+                  className={navLinkClass(isActive)}
                 >
                   {link.label}
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ink rounded-full" />
+                    <span className={`absolute bottom-0 left-0 right-0 h-[2px] rounded-full ${activeUnderlineClass}`} />
                   )}
                 </Link>
               );
@@ -83,7 +148,7 @@ export default function Navbar() {
 
           {/* Desktop auth area */}
           <div className="hidden md:flex items-center gap-2">
-            <Link href="/post" className="px-4 py-2.5 text-base font-medium text-ink rounded-full hover:bg-surface-soft transition-colors">
+            <Link href="/post" className={listBtnClass}>
               List your property
             </Link>
 
@@ -94,18 +159,12 @@ export default function Navbar() {
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
                   aria-label="Account menu"
-                  className={`flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all hover:shadow-airbnb focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                    pathname === "/profile" ? "border-rausch ring-1 ring-rausch" : "border-hairline"
-                  }`}
+                  className={avatarPillClass}
                 >
-                  <span className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold ${
-                    session.activeView === "business"
-                      ? "bg-gradient-to-r from-rausch to-tab-rent text-white"
-                      : "bg-rausch/10 text-rausch"
-                  }`}>
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold ${avatarCircleClass}`}>
                     {initialsOf(session.name)}
                   </span>
-                  <span className="text-sm font-medium text-ink max-w-[120px] truncate">
+                  <span className={`text-sm font-medium max-w-[120px] truncate ${avatarTextClass}`}>
                     {session.name.split(" ")[0]}
                   </span>
                   <svg
@@ -116,7 +175,7 @@ export default function Navbar() {
                     stroke="currentColor"
                     strokeWidth="2.4"
                     aria-hidden="true"
-                    className={`text-muted transition-transform ${menuOpen ? "rotate-180" : ""}`}
+                    className={`${arrowColorClass} transition-transform ${menuOpen ? "rotate-180" : ""}`}
                   >
                     <path d="M6 9l6 6 6-6" />
                   </svg>
@@ -184,10 +243,10 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <Link href="/login" className="px-4 py-2.5 text-base font-medium text-ink rounded-[8px] hover:bg-surface-soft transition-colors">
+                <Link href="/login" className={loginBtnClass}>
                   Log in
                 </Link>
-                <Link href="/login?mode=signup" className="px-5 py-2.5 text-base font-medium text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors">
+                <Link href="/login?mode=signup" className={signupBtnClass}>
                   Sign up
                 </Link>
               </>
@@ -200,9 +259,9 @@ export default function Navbar() {
             onClick={() => setDrawerOpen(true)}
             aria-label="Open menu"
           >
-            <span className="block w-5 h-[2px] bg-ink" />
-            <span className="block w-5 h-[2px] bg-ink" />
-            <span className="block w-5 h-[2px] bg-ink" />
+            <span className={hamburgerLineClass} />
+            <span className={hamburgerLineClass} />
+            <span className={hamburgerLineClass} />
           </button>
         </div>
       </nav>
@@ -231,11 +290,10 @@ export default function Navbar() {
                 onClick={() => setDrawerOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 border-b border-hairline hover:bg-surface-soft transition-colors"
               >
-                <span className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 ${
-                  session.activeView === "business"
+                <span className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 ${session.activeView === "business"
                     ? "bg-gradient-to-r from-rausch to-tab-rent text-white"
                     : "bg-rausch/10 text-rausch"
-                }`}>
+                  }`}>
                   {initialsOf(session.name)}
                 </span>
                 <span className="min-w-0">
@@ -253,9 +311,8 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setDrawerOpen(false)}
-                    className={`px-3 py-2.5 rounded-[8px] text-base font-medium transition-colors ${
-                      isActive ? "bg-surface-soft text-ink" : "text-body hover:bg-surface-soft"
-                    }`}
+                    className={`px-3 py-2.5 rounded-[8px] text-base font-medium transition-colors ${isActive ? "bg-surface-soft text-ink" : "text-body hover:bg-surface-soft"
+                      }`}
                   >
                     {link.label}
                   </Link>

@@ -451,7 +451,7 @@ export default function HeroSearch() {
   return (
     <section
       aria-label="Search for housing and jobs"
-      className="relative overflow-hidden -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 pt-0 md:pt-10 pb-10 md:pb-12 mb-6 bg-ink transition-[background] duration-300 md:flex md:flex-col md:justify-center md:min-h-[560px] rounded-b-[24px]"
+      className="relative overflow-hidden w-full h-[100dvh] min-h-[550px] bg-ink transition-[background] duration-300 flex flex-col justify-center"
     >
       {/* Looping hero video (home page only) */}
       <video
@@ -463,7 +463,7 @@ export default function HeroSearch() {
         playsInline
         preload="auto"
         aria-hidden="true"
-        className="pointer-events-none w-screen max-w-none relative left-1/2 -translate-x-1/2 aspect-video object-cover bg-ink mb-6 md:w-full md:left-0 md:translate-x-0 md:mb-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
+        className="pointer-events-none absolute inset-0 w-full h-full object-cover bg-ink"
       />
       {/* Background scrim */}
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-black/35 pointer-events-none" />
@@ -478,7 +478,7 @@ export default function HeroSearch() {
         <CitySkyline className="w-full h-28 md:h-36" />
       </div>
 
-      <div className="relative z-10 max-w-[1280px] mx-auto w-full flex flex-col items-center">
+      <div className="relative z-10 max-w-[1200px] mx-auto w-full px-4 md:px-6 lg:px-10 pt-20 md:pt-24 flex flex-col items-center">
 
         {/* ── Row 1: World toggle + Jobs button ── */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-5 w-full">

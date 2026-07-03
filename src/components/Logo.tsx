@@ -6,6 +6,7 @@ interface LogoProps {
   /** Show the "FindWay" wordmark beside the mark. Default true. */
   showText?: boolean;
   className?: string;
+  lightText?: boolean;
 }
 
 /**
@@ -19,7 +20,7 @@ interface LogoProps {
  * It is interactive: on hover the badge lifts and the F nudges up-and-forward
  * while the pin "drops in", animating the moment of arriving at the destination.
  */
-export default function Logo({ size = 32, showText = true, className = "" }: LogoProps) {
+export default function Logo({ size = 32, showText = true, className = "", lightText = false }: LogoProps) {
   return (
     <span className={`group inline-flex items-center gap-2 select-none ${className}`}>
       <svg
@@ -89,7 +90,7 @@ export default function Logo({ size = 32, showText = true, className = "" }: Log
           className="font-semibold tracking-tight leading-none"
           style={{ fontSize: size * 0.6 }}
         >
-          <span className="text-ink">Find</span>
+          <span className={lightText ? "text-white" : "text-ink"}>Find</span>
           <span className="text-rausch">Way</span>
           <span className="inline-block w-[0.28em] h-[0.28em] ml-[0.12em] rounded-full bg-rausch align-baseline transition-transform duration-300 group-hover:scale-150" />
         </span>

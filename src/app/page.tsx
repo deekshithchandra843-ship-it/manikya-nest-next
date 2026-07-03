@@ -115,9 +115,11 @@ const nextCards = [
 
 export default function HomePage() {
   return (
-    <PageLayout>
+    <>
       {/* Hero Section — tabbed Housing.com-style hero with search */}
       <HeroSearch />
+
+      <PageLayout>
 
       {/* Trust strip — proof points mirroring our core promise */}
       <section aria-label="Why renters trust FindWay" className="mb-10">
@@ -194,5 +196,6 @@ export default function HomePage() {
         </div>
       </section>
     </PageLayout>
+    </>
   );
 }
