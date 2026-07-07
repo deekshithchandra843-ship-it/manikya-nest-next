@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Logo from "./Logo";
-import { signOut, switchProfileMode } from "@/lib/demoAuth";
+import { signOut, switchProfileMode } from "@/lib/auth";
 import { useHydrated, useSession } from "@/lib/useSession";
 import { initialsOf } from "@/lib/roleTheme";
 

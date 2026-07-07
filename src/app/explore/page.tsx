@@ -1,17 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SearchBar from "@/components/SearchBar";
 import ListingCard from "@/components/ListingCard";
 import PageLayout from "@/components/PageLayout";
+import { apiClient } from "@/lib/apiClient";
 import {
   World,
   CategoryDef,
   categoriesForWorld,
-  categoryCount,
   getCategory,
   LISTINGS,
+  Listing,
 } from "@/lib/categories";
 
 // Trust proof-points — mirrors the home page strip so Explore feels of-a-piece.
@@ -54,22 +55,13 @@ const trustPoints = [
   },
 ];
 
-// A small set of cross-category listings to surface as "Popular near you".
-const popularIds = [6, 9, 1, 13, 16, 11];
-const popular = popularIds
-  .map((id) => LISTINGS.find((l) => l.id === id))
-  .filter((l): l is (typeof LISTINGS)[number] => Boolean(l));
-
 const WORLDS: { value: World; label: string }[] = [
   { value: "residential", label: "Residential" },
   { value: "commercial", label: "Commercial" },
   { value: "stay", label: "Stays" },
 ];
 
-
-
-function CategoryTile({ cat }: { cat: CategoryDef }) {
-  const count = categoryCount(cat.slug);
+function CategoryTile({ cat, count }: { cat: CategoryDef; count: number }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   return (
     <Link
@@ -118,7 +110,33 @@ function CategoryTile({ cat }: { cat: CategoryDef }) {
 
 export default function ExplorePage() {
   const [world, setWorld] = useState<World>("residential");
+  const [listings, setListings] = useState<Listing[]>(LISTINGS);
+
+  useEffect(() => {
+    apiClient.get("/listings")
+      .then((res) => {
+        if (res.data && res.data.success && res.data.data.length > 0) {
+          setListings(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch listings for explore page:", err);
+      });
+  }, []);
+
+  const getCount = (slug: string) => {
+    return listings.filter((l) => l.category === slug).length;
+  };
+
   const tiles = categoriesForWorld(world);
+
+  // Compute popular listings dynamically
+  const popular = useMemo(() => {
+    const popularIds = ["6", "9", "1", "13", "16", "11"];
+    const matched = listings.filter((l) => popularIds.includes(String(l.id)));
+    if (matched.length > 0) return matched.slice(0, 6);
+    return listings.slice(0, 6);
+  }, [listings]);
 
   return (
     <PageLayout>
@@ -179,7 +197,7 @@ export default function ExplorePage() {
         >
           {tiles.map((cat) => (
             <div key={cat.slug} className="w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] xl:w-[190px] shrink-0">
-              <CategoryTile cat={cat} />
+              <CategoryTile cat={cat} count={getCount(cat.slug)} />
             </div>
           ))}
         </div>
@@ -211,7 +229,7 @@ export default function ExplorePage() {
         <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
           {popular.map((listing) => (
             <div key={listing.id} className="min-w-[260px] md:min-w-0">
-              <ListingCard {...listing} image={getCategory(listing.category)?.image} />
+              <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
             </div>
           ))}
         </div>

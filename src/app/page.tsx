@@ -1,7 +1,10 @@
+"use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import ListingCard from "@/components/ListingCard";
 import PageLayout from "@/components/PageLayout";
 import HeroSearch from "@/components/HeroSearch";
+import { apiClient } from "@/lib/apiClient";
 
 const trustPoints = [
   {
@@ -18,25 +21,25 @@ const trustPoints = [
     sub: "Deal direct with owners",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
   },
   {
-    title: "Rated 4.6★",
-    sub: "By 12,000+ users",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" aria-hidden="true">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Housing + Jobs",
-    sub: "All in one place",
+    title: "Job-nest mapping",
+    sub: "See jobs near your home",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
         <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    title: "Commute helper",
+    sub: "Built-in travel times",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
   },
@@ -71,7 +74,7 @@ const whyCards = [
     ),
   },
   {
-    title: "AI-powered match",
+    title: "Commute match",
     description: "Our AI finds the best housing near your workplace or college",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-rausch" aria-hidden="true">
@@ -114,6 +117,20 @@ const nextCards = [
 ];
 
 export default function HomePage() {
+  const [listings, setListings] = useState<any[]>(trendingListings);
+
+  useEffect(() => {
+    apiClient.get("/listings")
+      .then((res) => {
+        if (res.data && res.data.success && res.data.data.length > 0) {
+          setListings(res.data.data.slice(0, 6));
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch trending listings, using fallback:", err);
+      });
+  }, []);
+
   return (
     <>
       {/* Hero Section — tabbed Housing.com-style hero with search */}
@@ -147,7 +164,7 @@ export default function HomePage() {
 
         {/* Horizontal scroll on mobile, 3-col grid on desktop */}
         <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
-          {trendingListings.map((listing) => (
+          {listings.map((listing) => (
             <div key={listing.id} className="min-w-[260px] md:min-w-0">
               <ListingCard {...listing} />
             </div>

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageLayout from "@/components/PageLayout";
-import { signOut, switchProfileMode, enableRole, type Role } from "@/lib/demoAuth";
+import { signOut, switchProfileMode, enableRole, type Role } from "@/lib/auth";
 import { useHydrated, useSession } from "@/lib/useSession";
 import BusinessDashboard from "@/components/profile/BusinessDashboard";
 import AccountBlock from "@/components/profile/AccountBlock";
@@ -18,11 +18,8 @@ import StatGrid from "@/components/profile/StatGrid";
 import { SectionSkeleton } from "@/components/profile/ui";
 import {
   PROPERTY_STATS,
-  DEMO_PROPERTY_STAT_VALUES,
   CAREER_STATS,
-  DEMO_CAREER_STAT_VALUES,
-  DEMO_SAVED_NESTS,
-} from "@/components/profile/mockData";
+} from "@/components/profile/profileData";
 import SavedNestsGrid from "@/components/profile/SavedNestsGrid";
 import RequirementsBlock from "@/components/profile/RequirementsBlock";
 
@@ -80,9 +77,9 @@ const NEXT_MENU: MenuItem[] = [
 
 /**
  * ONE common profile for every member. Everything comes from getSession();
- * demo accounts show mock activity, fresh sign-ups get the designed empty
- * states. While the session is read (client-only) the layout renders
- * skeletons so the later backend swap has no layout shift.
+ * members start with the designed empty states and fill them in as they use
+ * the app. While the session is read (client-only) the layout renders
+ * skeletons so hydration has no layout shift.
  */
 export default function UserProfile() {
   const router = useRouter();
@@ -135,17 +132,13 @@ export default function UserProfile() {
   }
 
 
-  // Demo accounts carry a stable "demo-…" id and show sample activity;
-  // sign-ups get a UUID, start fresh and see real empty states.
-  const isDemo = session.id.startsWith("demo-");
-
   const activeStatsDef = activeSegment === "property" ? PROPERTY_STATS : CAREER_STATS;
-  const activeStatValues = activeSegment === "property" ? DEMO_PROPERTY_STAT_VALUES : DEMO_CAREER_STAT_VALUES;
 
-  const stats = activeStatsDef.map((s, i) => ({
+  // Every member starts from zero; real counts arrive once backend endpoints
+  // (saved nests, visits, applications, …) are wired.
+  const stats = activeStatsDef.map((s) => ({
     ...s,
-    value: isDemo ? activeStatValues[i] : 0,
-    sub: isDemo ? s.sub : "—",
+    value: 0,
   }));
 
   const handleSwitchMode = (mode: "personal" | "business") => {
@@ -156,7 +149,7 @@ export default function UserProfile() {
     <PageLayout>
       <ProfileHeader
         session={session}
-        verified={isDemo}
+        verified={false}
         onEdit={() => setEditOpen(true)}
         onSwitchMode={handleSwitchMode}
         onShare={() => setShareOpen(true)}
@@ -285,7 +278,7 @@ export default function UserProfile() {
             {activeSegment === "property" ? (
               <div className="space-y-6">
                 <StatGrid stats={stats} />
-                <SavedNestsGrid nests={isDemo ? DEMO_SAVED_NESTS : []} />
+                <SavedNestsGrid nests={[]} />
                 <RequirementsBlock userName={session.name} />
                 <MenuBlock title="My Nest" items={NEST_MENU} />
                 <NotificationsBlock />
@@ -294,9 +287,9 @@ export default function UserProfile() {
             ) : (
               <div className="space-y-6">
                 <StatGrid stats={stats} />
-                <ResumeBlock initialUploaded={isDemo} />
-                <CandidateBlock hasData={isDemo} />
-                <ApplicationsBlock hasData={isDemo} />
+                <ResumeBlock initialUploaded={false} />
+                <CandidateBlock />
+                <ApplicationsBlock />
                 <MenuBlock title="My Next" items={NEXT_MENU} />
                 <NotificationsBlock />
                 <AccountBlock />

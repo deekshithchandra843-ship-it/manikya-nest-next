@@ -1,10 +1,9 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import type { DemoSession } from "@/lib/demoAuth";
+import type { Session } from "@/lib/auth";
 
-// Mock listings for demo accounts. Fresh accounts will get an empty state.
-interface MockListing {
+interface Listing {
   id: string;
   title: string;
   type: string;
@@ -16,43 +15,7 @@ interface MockListing {
   postedDate: string;
 }
 
-const MOCK_LISTINGS: MockListing[] = [
-  {
-    id: "lst-1",
-    title: "Sunrise Co-living Space",
-    type: "Co-living",
-    locality: "HSR Layout, Bengaluru",
-    price: "₹12,000/mo",
-    views: 342,
-    leads: 9,
-    status: "Live",
-    postedDate: "June 25, 2026",
-  },
-  {
-    id: "lst-2",
-    title: "Lakeside 1BHK Rental Flat",
-    type: "Flat",
-    locality: "Indiranagar, Bengaluru",
-    price: "₹18,500/mo",
-    views: 215,
-    leads: 5,
-    status: "Live",
-    postedDate: "June 28, 2026",
-  },
-  {
-    id: "lst-3",
-    title: "Commercial Office near HSR Metro",
-    type: "Office Space",
-    locality: "Sector 3, HSR Layout",
-    price: "₹45,000/mo",
-    views: 89,
-    leads: 2,
-    status: "Under Review",
-    postedDate: "July 01, 2026",
-  },
-];
-
-interface MockLead {
+interface Lead {
   id: string;
   name: string;
   interest: string;
@@ -62,42 +25,13 @@ interface MockLead {
   status: "new" | "contacted" | "closed";
 }
 
-const MOCK_LEADS: MockLead[] = [
-  {
-    id: "ld-1",
-    name: "Aarav S.",
-    interest: "Lakeside 1BHK Rental Flat",
-    phone: "+91 98765 43210",
-    matchScore: 95,
-    time: "2 hours ago",
-    status: "new",
-  },
-  {
-    id: "ld-2",
-    name: "Meera R.",
-    interest: "Sunrise Co-living Space",
-    phone: "+91 99887 76655",
-    matchScore: 88,
-    time: "5 hours ago",
-    status: "new",
-  },
-  {
-    id: "ld-3",
-    name: "Dev P.",
-    interest: "Sunrise Co-living Space",
-    phone: "+91 91234 56789",
-    matchScore: 78,
-    time: "1 day ago",
-    status: "contacted",
-  },
-];
-
-export default function BusinessDashboard({ session }: { session: DemoSession }) {
+export default function BusinessDashboard({ session: _session }: { session: Session }) {
   const [activeTab, setActiveTab] = useState<"listings" | "leads" | "analytics">("listings");
-  const isDemo = session.id.startsWith("demo-");
 
-  const listings = isDemo ? MOCK_LISTINGS : [];
-  const leads = isDemo ? MOCK_LEADS : [];
+  // TODO: wire these to the backend (GET /listings?owner=me, GET /leads).
+  // Until those endpoints exist, every real user starts from an empty state.
+  const listings: Listing[] = [];
+  const leads: Lead[] = [];
 
   // Derived metrics
   const totalViews = listings.reduce((sum, item) => sum + item.views, 0);
@@ -159,7 +93,7 @@ export default function BusinessDashboard({ session }: { session: DemoSession })
               </svg>
             </span>
           </div>
-          <p className="text-2xl font-extrabold text-ink">{isDemo ? "88%" : "—"}</p>
+          <p className="text-2xl font-extrabold text-ink">—</p>
           <p className="text-xs text-muted mt-1">Avg matching accuracy</p>
         </div>
       </div>
@@ -343,24 +277,7 @@ export default function BusinessDashboard({ session }: { session: DemoSession })
             <p className="text-sm text-muted max-w-[420px] mx-auto">
               Get details on listing impressions, click-through rates, and average response speed over time.
             </p>
-            {isDemo ? (
-              <div className="grid grid-cols-3 gap-3 max-w-[500px] mx-auto pt-4">
-                <div className="bg-canvas p-3 rounded-[12px] border border-hairline">
-                  <p className="text-xs text-muted">Conversion</p>
-                  <p className="text-lg font-bold text-ink">4.2%</p>
-                </div>
-                <div className="bg-canvas p-3 rounded-[12px] border border-hairline">
-                  <p className="text-xs text-muted">Weekly growth</p>
-                  <p className="text-lg font-bold text-green-600">+18%</p>
-                </div>
-                <div className="bg-canvas p-3 rounded-[12px] border border-hairline">
-                  <p className="text-xs text-muted">Response Speed</p>
-                  <p className="text-lg font-bold text-ink">1.5 hrs</p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-muted pt-4">Available once you list properties and receive visits.</p>
-            )}
+            <p className="text-xs text-muted pt-4">Available once you list properties and receive visits.</p>
           </div>
         )}
       </div>

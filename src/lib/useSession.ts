@@ -1,6 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { getSession, SESSION_EVENT, type DemoSession } from "./demoAuth";
+import { getSession, SESSION_EVENT, type Session } from "./auth";
 
 function subscribe(onChange: () => void): () => void {
   // Same-tab changes fire SESSION_EVENT; "storage" covers other tabs.
@@ -15,11 +15,11 @@ function subscribe(onChange: () => void): () => void {
 const getServerSnapshot = () => null;
 
 /**
- * Subscribe to the localStorage demo session. Hydration-safe: the server (and
+ * Subscribe to the localStorage session. Hydration-safe: the server (and
  * first client paint) sees null, then React syncs to the real value — so
  * always render the logged-out/skeleton state until useHydrated() is true.
  */
-export function useSession(): DemoSession | null {
+export function useSession(): Session | null {
   return useSyncExternalStore(subscribe, getSession, getServerSnapshot);
 }
 

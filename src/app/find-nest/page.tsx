@@ -1,10 +1,11 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import ListingCard from "@/components/ListingCard";
 import PageLayout from "@/components/PageLayout";
+import { apiClient } from "@/lib/apiClient";
 
 const filterChips = [
   "PG/Hostel", "1 BHK", "2 BHK", "Co-living", "Homestay",
@@ -12,7 +13,7 @@ const filterChips = [
 ];
 
 interface Listing {
-  id: number;
+  id: string | number;
   title: string;
   location: string;
   metroDistance?: string;
@@ -69,6 +70,19 @@ export default function FindNest() {
   const [budget, setBudget] = useState(MAX_BUDGET);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [sortBy, setSortBy] = useState("Relevance");
+  const [dbListings, setDbListings] = useState<Listing[]>(listings);
+
+  useEffect(() => {
+    apiClient.get("/listings")
+      .then((res) => {
+        if (res.data && res.data.success && res.data.data.length > 0) {
+          setDbListings(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch listings for find-nest page:", err);
+      });
+  }, []);
 
   const toggleFilter = (chip: string) =>
     setActiveFilters((prev) =>
@@ -84,7 +98,7 @@ export default function FindNest() {
   const hasAppliedFilters = activeFilters.length > 0 || budgetActive;
 
   const filtered = useMemo(() => {
-    const result = listings.filter(
+    const result = dbListings.filter(
       (l) =>
         activeFilters.every((f) => matchesChip(l, f)) &&
         parsePrice(l.price) <= budget

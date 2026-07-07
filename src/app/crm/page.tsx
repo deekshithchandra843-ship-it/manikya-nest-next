@@ -324,7 +324,7 @@ export default function FindWayCRM() {
               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-850 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-lg py-2 z-50 text-xs text-slate-700 dark:text-slate-200">
                 <div className="px-4 py-2.5 border-b border-slate-50 dark:border-slate-800">
                   <p className="font-bold text-slate-900 dark:text-slate-100">Mahadev 👋</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">mahadev@findway.demo</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">mahadev@findway.app</p>
                 </div>
                 <button onClick={() => { setActiveTab("settings"); setProfileOpen(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
                   Account Settings

@@ -247,7 +247,7 @@ export function getCategory(slug: string): CategoryDef | undefined {
 // ---------------------------------------------------------------------------
 
 export interface Listing {
-  id: number;
+  id: string | number;
   category: string; // CategoryDef.slug
   title: string;
   location: string;
@@ -268,6 +268,7 @@ export interface Listing {
   spec?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   roomTypes?: any[];
+  image?: string;
 }
 
 export const LISTINGS: Listing[] = [

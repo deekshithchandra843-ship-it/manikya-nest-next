@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -7,6 +7,7 @@ import PageLayout from "@/components/PageLayout";
 import ListingGallery from "@/components/ListingGallery";
 import RoomTypesPricing from "@/components/RoomTypesPricing";
 import { LISTINGS, getCategory, Listing } from "@/lib/categories";
+import { apiClient } from "@/lib/apiClient";
 import {
   Wifi,
   Wind,
@@ -726,8 +727,32 @@ function ReviewsSection({
 
 export default function ListingDetail() {
   const params = useParams();
-  const id = Number(params.id);
-  const listing = LISTINGS.find((l) => l.id === id) ?? LISTINGS[0];
+  const idStr = String(params.id);
+
+  // Use local mock as initial fallback
+  const initialListing = useMemo(() => {
+    return LISTINGS.find((l) => String(l.id) === idStr) ?? LISTINGS[0];
+  }, [idStr]);
+
+  const [listing, setListing] = useState<Listing>(initialListing);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    apiClient.get(`/listings/${idStr}`)
+      .then((res) => {
+        if (res.data && res.data.success) {
+          setListing(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch listing detail from database:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [idStr]);
+
   const category = getCategory(listing.category);
   const facts = buildFacts(listing);
   const [saved, setSaved] = useState(false);
@@ -767,7 +792,8 @@ export default function ListingDetail() {
             "/categories/hotel.jpg",
             "/categories/rent.jpg",
           ];
-    const unique = [category.image, ...pool.filter((img) => img !== category.image)];
+    const primaryImage = listing.image || category.image;
+    const unique = [primaryImage, ...pool.filter((img) => img !== primaryImage)];
     return unique.slice(0, 5);
   }, [category, listing]);
 

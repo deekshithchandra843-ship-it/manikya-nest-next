@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import PageLayout from "@/components/PageLayout";
 import PublishRoleModal, { type ListingRole } from "@/components/PublishRoleModal";
-import PublishAuthModal from "@/components/PublishAuthModal";
 import { World, categoriesForWorld, getCategory } from "@/lib/categories";
+import { apiClient } from "@/lib/apiClient";
 
 const cities = ["Bengaluru", "Hyderabad", "Chennai", "Mumbai", "Pune", "Delhi NCR", "Kolkata"];
 
@@ -194,11 +194,115 @@ export default function PostListing() {
   const [amenities, setAmenities] = useState<string[]>(["Wi-Fi"]);
   const [days, setDays] = useState<string[]>(["Sat", "Sun"]);
   const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Publish flow: role picker → log in / sign up → published
-  const [publishStage, setPublishStage] = useState<null | "role" | "auth">(null);
+  // Publish flow: role picker → published (no login/OTP gate)
+  const [publishStage, setPublishStage] = useState<null | "role">(null);
   const [listingRole, setListingRole] = useState<ListingRole | null>(null);
   const [published, setPublished] = useState(false);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await apiClient.post("/listings/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (res.data && res.data.success && res.data.url) {
+        setImages((p) => [...p, res.data.url]);
+      } else {
+        alert("Upload failed: " + (res.data.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      alert("Failed to upload image to the server.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const publishListing = async (role: ListingRole) => {
+    try {
+      // Determine title based on category config
+      let title = "";
+      if (slug === "pg") {
+        title = form.pgName || "Premium PG Stay";
+      } else if (slug === "coliving") {
+        title = form.spaceName || "Premium Co-living Space";
+      } else {
+        const typeStr = form.apartmentType || getCategory(slug)?.label || "Property";
+        const bhkStr = form.bhk ? `${form.bhk} ` : "";
+        title = `${bhkStr}${typeStr} in ${form.locality || form.city || "Bengaluru"}`;
+      }
+
+      // Determine price and label
+      const isSale = slug === "buy" || slug === "land" || slug === "lease";
+      const rawPrice = isSale ? form.price : form.rent;
+      const numericPrice = parseInt(rawPrice || "0", 10) || 0;
+      
+      let priceStr = "";
+      if (isSale) {
+        if (numericPrice >= 10000000) {
+          priceStr = `₹${(numericPrice / 10000000).toFixed(2).replace(/\.00$/, "")} Cr`;
+        } else if (numericPrice >= 100000) {
+          priceStr = `₹${(numericPrice / 100000).toFixed(2).replace(/\.00$/, "")} L`;
+        } else {
+          priceStr = `₹${numericPrice.toLocaleString("en-IN")}`;
+        }
+      } else {
+        priceStr = `₹${numericPrice.toLocaleString("en-IN")}/mo`;
+      }
+
+      const defaultImage = `/categories/${slug}.jpg`;
+
+      // Build payload matching backend requirements and JSON details column
+      const payload = {
+        title,
+        location: `${form.locality || ""}, ${form.city || "Bengaluru"}`,
+        price: priceStr,
+        priceValue: numericPrice,
+        image: images.length > 0 ? images[0] : defaultImage,
+        images: images.length > 0 ? images : [defaultImage],
+        badge: slug === "pg" || slug === "coliving" ? "PG" : "Flat",
+        rating: 5.0,
+        category: slug,
+        metroDistance: "300m from metro",
+        reviewCount: 0,
+        amenities: amenities,
+        verified: true,
+        noBrokerage: true,
+        furnishing: form.furnishing || "Semi furnished",
+        availableFrom: form.available || "Available now",
+        area: form.area ? `${form.area} sq ft` : undefined,
+        spec: form.bhk || undefined,
+        roomTypes: []
+      };
+
+      const res = await apiClient.post("/listings", payload);
+      if (res.data && res.data.success) {
+        setListingRole(role);
+        setPublishStage(null);
+        setPublished(true);
+      } else {
+        alert("Failed to publish listing: " + (res.data.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      console.error("Error publishing listing:", err);
+      alert("Failed to connect to the backend server to publish listing.");
+    }
+  };
 
   // Full-page brand intro video — plays muted on entry, then reveals the wizard.
   const [showIntro, setShowIntro] = useState(true);
@@ -236,7 +340,6 @@ export default function PostListing() {
     setAmenities((p) => (p.includes(a) ? p.filter((x) => x !== a) : [...p, a]));
   const toggleDay = (d: string) =>
     setDays((p) => (p.includes(d) ? p.filter((x) => x !== d) : [...p, d]));
-  const addImage = () => setImages((p) => [...p, `Photo ${p.length + 1}`].slice(0, 8));
 
   const chooseWorld = (w: World) => {
     setWorld(w);
@@ -651,17 +754,35 @@ export default function PostListing() {
               <label className={labelCls}>Add photos of your property</label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-2">
                 {images.map((img) => (
-                  <div key={img} className="relative aspect-square bg-surface-strong rounded-[14px] flex items-center justify-center text-[11px] text-muted">
-                    {img}
-                    <button onClick={() => setImages((p) => p.filter((x) => x !== img))} className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-ink text-white text-xs flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink" aria-label="Remove photo">✕</button>
+                  <div key={img} className="relative aspect-square bg-surface-strong rounded-[14px] overflow-hidden">
+                    <img src={img} alt="Uploaded property photo" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => setImages((p) => p.filter((x) => x !== img))} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-ink/80 backdrop-blur-sm text-white text-xs flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink" aria-label="Remove photo">✕</button>
                   </div>
                 ))}
                 {images.length < 8 && (
-                  <button onClick={addImage} className="aspect-square border-2 border-dashed border-hairline rounded-[14px] flex flex-col items-center justify-center text-muted hover:border-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-                    <span className="text-[11px] mt-1">Upload</span>
+                  <button
+                    type="button"
+                    onClick={handleUploadClick}
+                    disabled={uploading}
+                    className="aspect-square border-2 border-dashed border-hairline rounded-[14px] flex flex-col items-center justify-center text-muted hover:border-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+                  >
+                    {uploading ? (
+                      <span className="text-[11px] font-semibold">Uploading...</span>
+                    ) : (
+                      <>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                        <span className="text-[11px] mt-1">Upload</span>
+                      </>
+                    )}
                   </button>
                 )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  style={{ display: "none" }}
+                />
               </div>
               <p className="text-[12px] text-muted mt-3">Properties with photos get up to 5× more responses.</p>
             </div>
@@ -714,21 +835,11 @@ export default function PostListing() {
         </div>
       </div>
 
-      {/* Publish flow — step 1: choose listing role */}
+      {/* Publish flow — choose listing role, then publish directly */}
       {publishStage === "role" && (
         <PublishRoleModal
           onClose={() => setPublishStage(null)}
-          onSelect={(role) => { setListingRole(role); setPublishStage("auth"); }}
-        />
-      )}
-
-      {/* Publish flow — step 2: log in / sign up */}
-      {publishStage === "auth" && listingRole && (
-        <PublishAuthModal
-          listingRole={listingRole}
-          onBack={() => setPublishStage("role")}
-          onClose={() => setPublishStage(null)}
-          onSuccess={() => { setPublishStage(null); setPublished(true); }}
+          onSelect={(role) => publishListing(role)}
         />
       )}
     </PageLayout>

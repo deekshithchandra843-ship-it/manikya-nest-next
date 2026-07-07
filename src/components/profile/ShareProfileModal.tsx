@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { DemoSession } from "@/lib/demoAuth";
+import type { Session } from "@/lib/auth";
 
 export default function ShareProfileModal({
   session,
   onClose,
 }: {
-  session: DemoSession;
+  session: Session;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -15,7 +15,7 @@ export default function ShareProfileModal({
   // Dynamic public share URL
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/profile/share/${session.id}`
-    : `https://findway.demo/profile/share/${session.id}`;
+    : `/profile/share/${session.id}`;
 
   // Close on Escape key press
   useEffect(() => {
@@ -47,10 +47,11 @@ export default function ShareProfileModal({
         .slice(0, 2)
     : "B";
 
-  // Public activity metrics for share card (non-sensitive)
-  const activeListingsCount = 2; // Sunrise Co-living Space & Lakeside 1BHK Rental Flat
-  const totalLeads = 12;
-  const satisfactionRate = "88%";
+  // Public activity metrics for share card (non-sensitive).
+  // TODO: populate from the backend once listing/lead endpoints exist.
+  const activeListingsCount = 0;
+  const totalLeads = 0;
+  const satisfactionRate = "—";
 
   return (
     <div

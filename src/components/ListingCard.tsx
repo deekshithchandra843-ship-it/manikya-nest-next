@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface ListingCardProps {
-  id: number;
+  id: string | number;
   title: string;
   location: string;
   metroDistance?: string;

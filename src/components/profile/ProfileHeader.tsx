@@ -1,5 +1,5 @@
 "use client";
-import type { DemoSession } from "@/lib/demoAuth";
+import type { Session } from "@/lib/auth";
 import { initialsOf } from "@/lib/roleTheme";
 
 /**
@@ -14,7 +14,7 @@ export default function ProfileHeader({
   onSwitchMode,
   onShare,
 }: {
-  session: DemoSession;
+  session: Session;
   verified: boolean;
   onEdit: () => void;
   onSwitchMode?: (mode: "personal" | "business") => void;

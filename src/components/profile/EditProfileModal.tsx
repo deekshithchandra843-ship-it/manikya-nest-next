@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { updateSession, type DemoSession } from "@/lib/demoAuth";
+import { updateSession, type Session } from "@/lib/auth";
 
 const compressImage = (base64Str: string, maxWidth = 200, maxHeight = 200): Promise<string> => {
   return new Promise((resolve) => {
@@ -47,7 +47,7 @@ export default function EditProfileModal({
   session,
   onClose,
 }: {
-  session: DemoSession;
+  session: Session;
   onClose: () => void;
 }) {
   const [name, setName] = useState(session.name);

@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import type { MockSavedNest } from "./mockData";
+import type { SavedNest } from "./profileData";
 
-export default function SavedNestsGrid({ nests }: { nests: MockSavedNest[] }) {
+export default function SavedNestsGrid({ nests }: { nests: SavedNest[] }) {
   if (nests.length === 0) {
     return (
       <div className="text-center py-12 border border-dashed border-hairline rounded-[18px] bg-surface-soft p-8 animate-fade-up">

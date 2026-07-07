@@ -18,100 +18,30 @@
 - `Listing.price` stays a plain `String` column (not `Decimal` as drafted in the plan doc). Nothing in the codebase parses or computes on listing price today — grep confirms no frontend page calls the `/api/listings` endpoints at all yet (they exist in the backend but aren't wired to any UI), so there is no real payload format to convert against. Forcing a numeric parse now would be inventing a currency-parsing scheme nothing requires. `priceLabel`, `locality`, `world`, `details` are added as nullable/defaulted extra columns for schema completeness (per the "full schema" scope decision) but are not populated by any controller today.
 - `Requirement.postedAt` stays a plain `String` column (not `TIMESTAMP` as drafted in the plan doc), because the frontend sends and displays it as a literal relative string (`"Just now"`, `"2h ago"` — see `manikya-nest-next/src/app/requirements/page.tsx:176` and `manikya-nest-next/src/components/RequirementCard.tsx:41`), never a real timestamp.
 - Only the session (`/api/auth/*`) and requirements (`/api/requirements`) endpoints are actually called by the running frontend today (confirmed via grep — only `demoAuth.ts` and `requirements.ts` import `apiClient`). Listings and jobs endpoints exist and must keep working, but are verified via `curl` only, not a frontend click-through, since no frontend page calls them yet.
+- **Prisma 7 correction (discovered while executing Task 1):** the installed Prisma version (7.8.0) removed `url`/`directUrl` from the `datasource` block in `schema.prisma`, and `PrismaClient` no longer reads `DATABASE_URL` implicitly — it requires an explicit driver `adapter` (`@prisma/adapter-pg`, wrapping `pg`) or `accelerateUrl`. Connection URLs for CLI operations (`migrate dev`, `db seed`, `studio`) now live in a new root-level `prisma.config.ts` file instead. This plan was originally written against the pre-7 convention; the tasks below have been corrected in place. `schema.prisma`'s datasource block is just `provider = "postgresql"` (no url), `prisma.config.ts` holds `datasource.url` pointed at `DIRECT_URL` for CLI/migrations, and `src/lib/prisma.ts` constructs a `PrismaPg` adapter from `DATABASE_URL` (pooled) for the running app. The generator provider stays `prisma-client-js` (the legacy-style output to `node_modules/@prisma/client`, imported the normal way) rather than switching to the new default `prisma-client` provider (which generates to a custom output folder and needs different import paths) — this keeps every other task's `import { PrismaClient } from "@prisma/client"`-style code working unchanged.
 
 ---
 
-### Task 1: Git init, Supabase project, and Prisma installation
+### Task 1: Git init, Supabase project, and Prisma installation — COMPLETE
 
-**Files:**
-- Create: `manikya-backend/.gitignore`
-- Create: `manikya-backend/.env` (gitignored, never committed)
-- Modify: `manikya-backend/package.json` (add `prisma`, `@prisma/client`)
-- Create: `manikya-backend/prisma/schema.prisma` (scaffold only — full models added in Task 2)
+**Status: done.** This task was executed directly (not via subagent dispatch) because it required
+live back-and-forth with the user for manual browser/credential steps. Recorded here for the
+ledger and for anyone resuming this plan later. Two commits exist in `manikya-backend`:
 
-**Interfaces:**
-- Produces: a working `DATABASE_URL` and `DIRECT_URL` in `.env` that Task 2's `prisma migrate dev` will connect with.
+1. `chore: bring pre-existing Express backend under version control` — baseline commit of the
+   pre-existing `src/`, `tsconfig.json`, `nodemon.json`, `data/db.json` (this code predates the
+   migration and was never in git before).
+2. `chore: install Prisma and configure Supabase datasource` — adds `.gitignore`, installs
+   `@prisma/client`, `prisma`, and `@prisma/adapter-pg`, adds `prisma/schema.prisma` (datasource
+   block is just `provider = "postgresql"` — no `url`/`directUrl`, per the Prisma 7 correction in
+   Global Constraints) and `prisma.config.ts` (holds `datasource.url = process.env["DIRECT_URL"]`
+   for CLI operations, plus `migrations.seed` for Task 3's seed command).
 
-- [ ] **Step 1: Initialize git in the backend**
+`manikya-backend/.env` (gitignored, not committed) contains a working `DATABASE_URL` (Transaction
+pooler, port 6543, `?pgbouncer=true`) and `DIRECT_URL` (direct connection, port 5432) pointed at a
+real Supabase project. `npx prisma validate` passes.
 
-```bash
-cd "C:\Users\mahad\OneDrive\Desktop\new manikya_app\manikya-backend"
-git init
-```
-
-Expected: `Initialized empty Git repository in ...manikya-backend/.git/`
-
-- [ ] **Step 2: Create `.gitignore`**
-
-Create `manikya-backend/.gitignore`:
-
-```
-node_modules
-dist
-.env
-```
-
-- [ ] **Step 3: Create a Supabase project (manual, in your browser)**
-
-1. Go to https://supabase.com, sign in (or create an account).
-2. Click "New Project". Choose an organization, name it e.g. `manikya`, set a database password (save it somewhere — you'll need it below), pick the region closest to you.
-3. Wait ~2 minutes for provisioning to finish.
-4. Once ready, go to **Project Settings → Database**.
-5. Under **Connection string**, switch the dropdown to **Transaction pooler** and copy the URI — this is your `DATABASE_URL`. It looks like:
-   `postgresql://postgres.xxxxxxxx:[YOUR-PASSWORD]@aws-0-xx-xxxx-1.pooler.supabase.com:6543/postgres?pgbouncer=true`
-6. Switch the dropdown to **Direct connection** and copy that URI — this is your `DIRECT_URL`. It looks like:
-   `postgresql://postgres.xxxxxxxx:[YOUR-PASSWORD]@aws-0-xx-xxxx-1.pooler.supabase.com:5432/postgres`
-7. Replace `[YOUR-PASSWORD]` in both with the database password from step 2.
-
-- [ ] **Step 4: Create `.env`**
-
-Create `manikya-backend/.env` (paste your own values from Step 3):
-
-```
-DATABASE_URL="postgresql://postgres.xxxxxxxx:YOUR-PASSWORD@aws-0-xx-xxxx-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.xxxxxxxx:YOUR-PASSWORD@aws-0-xx-xxxx-1.pooler.supabase.com:5432/postgres"
-```
-
-- [ ] **Step 5: Install Prisma**
-
-```bash
-cd "C:\Users\mahad\OneDrive\Desktop\new manikya_app\manikya-backend"
-npm install @prisma/client
-npm install -D prisma
-```
-
-Expected: both packages added to `package.json` (`@prisma/client` under `dependencies`, `prisma` under `devDependencies`).
-
-- [ ] **Step 6: Scaffold `prisma/schema.prisma`**
-
-Create `manikya-backend/prisma/schema.prisma`:
-
-```prisma
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-```
-
-- [ ] **Step 7: Validate the schema**
-
-```bash
-npx prisma validate
-```
-
-Expected: `The schema at prisma/schema.prisma is valid 🚀`
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add .gitignore package.json package-lock.json prisma/schema.prisma
-git commit -m "chore: install Prisma and configure Supabase datasource"
-```
+**No action needed — proceed to Task 2.**
 
 ---
 
@@ -121,12 +51,12 @@ git commit -m "chore: install Prisma and configure Supabase datasource"
 - Modify: `manikya-backend/prisma/schema.prisma`
 
 **Interfaces:**
-- Consumes: `DATABASE_URL` / `DIRECT_URL` from Task 1's `.env`.
+- Consumes: `prisma.config.ts` (Task 1) resolves the datasource URL for CLI operations from `DIRECT_URL`.
 - Produces: 9 Postgres tables (`users`, `business_profiles`, `listings`, `requirements`, `wishlists`, `visits`, `analytics_events`, `jobs`, `job_applications`) and the generated `@prisma/client` types (`PrismaClient`, `User`, `Listing`, `Requirement`, `Job`, `JobApplication`, etc.) that Task 3+ import from `@prisma/client`.
 
 - [ ] **Step 1: Write the full schema**
 
-Replace the contents of `manikya-backend/prisma/schema.prisma` with:
+Replace the contents of `manikya-backend/prisma/schema.prisma` with (the `generator`/`datasource` blocks at the top are unchanged from Task 1 — no `url`/`directUrl` here, that lives in `prisma.config.ts`):
 
 ```prisma
 generator client {
@@ -134,9 +64,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model User {
@@ -332,21 +260,33 @@ git commit -m "feat: define full Prisma schema and run initial migration"
 **Files:**
 - Create: `manikya-backend/src/lib/prisma.ts`
 - Create: `manikya-backend/prisma/seed.ts`
-- Modify: `manikya-backend/package.json` (add `"prisma": { "seed": ... }` block)
 
 **Interfaces:**
-- Produces: `export const prisma: PrismaClient` from `src/lib/prisma.ts`, imported by `src/services/db.ts` in Task 4.
+- Produces: `export const prisma: PrismaClient` from `src/lib/prisma.ts`, imported by `src/services/db.ts` in Task 4 (and reused directly by `prisma/seed.ts` in this task — one adapter-configured client, not two).
+
+**Note on Prisma 7:** `PrismaClient` no longer reads `DATABASE_URL` implicitly — it requires an
+explicit driver adapter. `src/lib/prisma.ts` constructs a `PrismaPg` adapter (from
+`@prisma/adapter-pg`, already installed in Task 1) using `DATABASE_URL` (the pooled connection).
+Because `prisma.ts` reads `process.env.DATABASE_URL` at module-load time, and `dotenv.config()`
+in `src/server.ts` only runs *after* `import app from "./app"` is evaluated (import/require
+statements execute before subsequent lines in the same file, regardless of source order), this
+file must load its own env vars via `import "dotenv/config"` as its first line — don't rely on
+`server.ts` having loaded them first.
 
 - [ ] **Step 1: Create the Prisma client singleton**
 
 Create `manikya-backend/src/lib/prisma.ts`:
 
 ```typescript
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
@@ -355,12 +295,10 @@ if (process.env.NODE_ENV !== "production") {
 
 - [ ] **Step 2: Write the seed script**
 
-Create `manikya-backend/prisma/seed.ts`. This reproduces exactly the seed data `mockDb.ts` writes on first run today (the demo user Ravi Sharma, and the 3 jobs — including `job-002` already marked applied):
+Create `manikya-backend/prisma/seed.ts`. This reproduces exactly the seed data `mockDb.ts` writes on first run today (the demo user Ravi Sharma, and the 3 jobs — including `job-002` already marked applied). It reuses the same adapter-configured singleton from Step 1 rather than constructing a second `PrismaClient`:
 
 ```typescript
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../src/lib/prisma";
 
 async function main() {
   await prisma.user.upsert({
@@ -431,25 +369,20 @@ main()
   });
 ```
 
-- [ ] **Step 3: Wire up `prisma db seed`**
+`npx prisma db seed` is already wired to run this file — `prisma.config.ts`'s `migrations.seed`
+field (set in Task 1) points at `ts-node prisma/seed.ts`; Prisma 7 reads the seed command from
+`prisma.config.ts`, not from a `"prisma"` key in `package.json`.
 
-In `manikya-backend/package.json`, add a top-level `"prisma"` key (sibling to `"scripts"`, `"dependencies"`):
-
-```json
-"prisma": {
-  "seed": "ts-node prisma/seed.ts"
-}
-```
-
-- [ ] **Step 4: Run the seed**
+- [ ] **Step 3: Run the seed**
 
 ```bash
+cd "C:\Users\mahad\OneDrive\Desktop\new manikya_app\manikya-backend"
 npx prisma db seed
 ```
 
 Expected: `Seed complete: 1 user, 3 jobs, 1 job application.`
 
-- [ ] **Step 5: Verify in Prisma Studio**
+- [ ] **Step 4: Verify in Prisma Studio**
 
 ```bash
 npx prisma studio
@@ -457,10 +390,10 @@ npx prisma studio
 
 Expected: `User` table has 1 row (`demo-9000000001`, Ravi Sharma), `Job` table has 3 rows, `JobApplication` table has 1 row (`demo-9000000001` / `job-002`). Stop the process when confirmed.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/prisma.ts prisma/seed.ts package.json
+git add src/lib/prisma.ts prisma/seed.ts
 git commit -m "feat: add Prisma client singleton and seed script"
 ```
 
@@ -749,6 +682,196 @@ Expected: `{"success":true,"message":"Listing deleted successfully"}`. Confirm i
 ```bash
 git add src/services/db.ts src/controllers/authController.ts src/controllers/listingController.ts
 git commit -m "feat: migrate session and listings to Prisma/Postgres"
+```
+
+---
+
+### Task 4a: Central async error handling + deleteListing P2025 fix
+
+**Context:** Inserted after Task 4's review, per user decision. Task 4 turned the controllers
+`async`, but Express 4.19.2 (the installed version — see `package.json`) does **not** auto-catch
+promises rejected inside async route handlers, and `app.ts` registers no error-handling
+middleware. Result: if any data-layer call throws (e.g. `findUniqueOrThrow` when the demo user row
+is missing), the request hangs with no response and Node logs an unhandled rejection. Separately,
+`deleteListing`'s blanket `catch { return false }` reports *any* DB failure to the client as a
+misleading `404 "Listing not found"`. This task fixes both centrally, so the jobs and requirements
+controllers added in Tasks 5-6 inherit the robustness. The old mock DB could never throw, so this
+restores the error-resilience the migration would otherwise regress.
+
+**Files:**
+- Create: `manikya-backend/src/middleware/asyncHandler.ts`
+- Modify: `manikya-backend/src/routes/api.ts` (wrap every handler in `asyncHandler`)
+- Modify: `manikya-backend/src/app.ts` (add error-handling middleware last)
+- Modify: `manikya-backend/src/services/db.ts` (`deleteListing` only swallows Prisma P2025)
+
+**Interfaces:**
+- Consumes: the existing controller exports from Task 4 and the `prisma` singleton.
+- Produces: `asyncHandler(fn)` wrapper that forwards async rejections to Express's error
+  middleware; a JSON 500 fallback for any unhandled error.
+
+- [ ] **Step 1: Create the async handler wrapper**
+
+Create `manikya-backend/src/middleware/asyncHandler.ts`:
+
+```typescript
+import { Request, Response, NextFunction } from "express";
+
+/**
+ * Wraps an async Express handler so any thrown error / rejected promise is
+ * forwarded to Express's error-handling middleware instead of becoming an
+ * unhandled rejection that hangs the request. Express 4 does not do this
+ * automatically for async handlers.
+ */
+export const asyncHandler =
+  (fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+```
+
+- [ ] **Step 2: Wrap every route handler in `asyncHandler`**
+
+Replace the contents of `manikya-backend/src/routes/api.ts` with:
+
+```typescript
+import { Router } from "express";
+import * as authController from "../controllers/authController";
+import * as listingController from "../controllers/listingController";
+import * as jobController from "../controllers/jobController";
+import * as requirementsController from "../controllers/requirementsController";
+import { asyncHandler } from "../middleware/asyncHandler";
+
+const router = Router();
+
+// Authentication / Profile routes
+router.get("/auth/session", asyncHandler(authController.getSession));
+router.post("/auth/session/switch", asyncHandler(authController.switchProfileMode));
+router.patch("/auth/session", asyncHandler(authController.updateSession));
+
+// Listings routes
+router.get("/listings", asyncHandler(listingController.getListings));
+router.post("/listings", asyncHandler(listingController.createListing));
+router.delete("/listings/:id", asyncHandler(listingController.deleteListing));
+
+// Jobs routes
+router.get("/jobs", asyncHandler(jobController.getJobs));
+router.post("/jobs/apply", asyncHandler(jobController.applyToJob));
+
+// Requirements routes
+router.get("/requirements", asyncHandler(requirementsController.getRequirements));
+router.post("/requirements", asyncHandler(requirementsController.createRequirement));
+router.put("/requirements/:id", asyncHandler(requirementsController.updateRequirement));
+router.delete("/requirements/:id", asyncHandler(requirementsController.deleteRequirement));
+
+export default router;
+```
+
+(Note: `jobController` and `requirementsController` still import from `../services/mockDb` at this
+point — Tasks 5 and 6 swap them. Wrapping them in `asyncHandler` now is harmless: they are
+currently sync functions, and `Promise.resolve()` of a sync return works fine. This keeps the
+route file consistent so Tasks 5-6 don't need to touch it again.)
+
+- [ ] **Step 3: Add error-handling middleware to `app.ts`**
+
+Replace the contents of `manikya-backend/src/app.ts` with:
+
+```typescript
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import apiRouter from "./routes/api";
+
+const app = express();
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use("/api", apiRouter);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ success: true, status: "healthy", timestamp: new Date() });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: "API Route not found" });
+});
+
+// Central error handler — must be last and must take 4 args for Express to
+// recognize it as error-handling middleware.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+  console.error("Unhandled error in request:", err);
+  res.status(500).json({ success: false, error: "Internal server error" });
+});
+
+export default app;
+```
+
+- [ ] **Step 4: Make `deleteListing` only swallow "record not found"**
+
+In `manikya-backend/src/services/db.ts`, replace the `deleteListing` function. Add this import at
+the top of the file (just below the existing `import { prisma } from "../lib/prisma";`):
+
+```typescript
+import { Prisma } from "@prisma/client";
+```
+
+Then replace the existing `deleteListing`:
+
+```typescript
+export async function deleteListing(id: string): Promise<boolean> {
+  try {
+    await prisma.listing.delete({ where: { id } });
+    return true;
+  } catch (e) {
+    // P2025 = "record to delete does not exist" → treat as a clean 404.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return false;
+    }
+    throw e; // any other error (e.g. DB outage) bubbles to the error middleware → 500
+  }
+}
+```
+
+- [ ] **Step 5: Verify the happy path still works and errors return 500 (not a hang)**
+
+Start the server in the background (`npm run dev`), wait for the banner, then:
+
+```bash
+# Happy path unchanged:
+curl http://localhost:4000/api/auth/session
+```
+Expected: `200` with the demo user JSON (city may be "Mumbai" from Task 4).
+
+```bash
+# Deleting a non-existent listing still cleanly 404s (P2025 path):
+curl -X DELETE http://localhost:4000/api/listings/does-not-exist-id
+```
+Expected: `404` `{"success":false,"error":"Listing not found"}` — proving the P2025 branch returns
+false rather than throwing.
+
+```bash
+# Unknown route still 404s via the 404 handler (not the error handler):
+curl http://localhost:4000/api/nope
+```
+Expected: `404` `{"success":false,"error":"API Route not found"}`.
+
+Stop the server when done (kill the process on port 4000).
+
+To prove the error middleware actually catches a thrown async error, temporarily confirm by
+reasoning: `getSession` calls `findUniqueOrThrow`; with the demo user present it returns 200 (shown
+above). The wrapper + middleware path is exercised structurally by every route now. A full
+fault-injection test (dropping the user row) is out of scope — do not mutate seeded data to test
+this.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/middleware/asyncHandler.ts src/routes/api.ts src/app.ts src/services/db.ts
+git commit -m "feat: add central async error handling; deleteListing only 404s on P2025"
 ```
 
 ---
@@ -1105,7 +1228,14 @@ git commit -m "feat: migrate requirements to Prisma/Postgres"
 
 ---
 
-### Task 7: Delete the file-based mock database and run full end-to-end verification
+### Task 7: Delete the file-based mock database and run full end-to-end verification — COMPLETE
+
+**Status: done.** `mockDb.ts` and `data/` deleted; backend re-verified booting and serving persisted
+data from Postgres (session `city:"Mumbai"` and job applied-state survived the file deletion);
+frontend `/profile` and `/requirements` compile and serve 200 against the live backend; the
+requirement create → top-of-feed → delete round-trip was verified through the migrated endpoints.
+Committed as `90199db chore: remove file-based mock database, cutover complete`. Tasks 2–6 were also
+executed and committed (see git log) though their per-step checkboxes below were left unticked.
 
 **Files:**
 - Delete: `manikya-backend/src/services/mockDb.ts`

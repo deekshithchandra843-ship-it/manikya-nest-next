@@ -6,6 +6,7 @@ import PageLayout from "@/components/PageLayout";
 import ListingCard from "@/components/ListingCard";
 import FiltersDrawer from "@/components/FiltersDrawer";
 import CategoryHero from "@/components/category-heroes/CategoryHero";
+import { apiClient } from "@/lib/apiClient";
 import {
   getCategory,
   listingsForCategory,
@@ -87,7 +88,25 @@ export default function CategoryPage() {
   const slug = String(params.category);
   const category = getCategory(slug);
 
-  const baseListings = useMemo(() => listingsForCategory(slug), [slug]);
+  const [baseListings, setBaseListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    apiClient.get(`/listings?category=${slug}`)
+      .then((res) => {
+        if (res.data && res.data.success) {
+          setBaseListings(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch listings for category page, using fallback:", err);
+        setBaseListings(listingsForCategory(slug));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [slug]);
 
   const [minBudget, maxBudget] = useMemo(() => {
     if (baseListings.length === 0) return [0, 0];
@@ -96,12 +115,11 @@ export default function CategoryPage() {
   }, [baseListings]);
 
   const [selected, setSelected] = useState<string[]>([]);
-  const [budget, setBudget] = useState(maxBudget);
+  const [budget, setBudget] = useState(0);
   const [sortBy, setSortBy] = useState("Relevance");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [savedSearch, setSavedSearch] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   // Reset filters during render when the category changes (React's recommended
   // pattern over an effect — avoids cascading re-renders).
@@ -109,18 +127,18 @@ export default function CategoryPage() {
   if (prevSlug !== slug) {
     setPrevSlug(slug);
     setSelected([]);
-    setBudget(maxBudget);
+    setBudget(0);
     setSortBy("Relevance");
     setViewMode("list");
     setSavedSearch(false);
-    setLoading(true);
   }
 
-  // Replay the loading→content transition whenever the category changes.
+  // Update budget when maxBudget changes (loaded async)
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, [slug]);
+    if (maxBudget > 0 && budget === 0) {
+      setBudget(maxBudget);
+    }
+  }, [maxBudget, budget]);
 
   const toggleFilter = (chip: string) =>
     setSelected((prev) =>
@@ -132,12 +150,12 @@ export default function CategoryPage() {
     setBudget(maxBudget);
   };
 
-  const budgetActive = budget < maxBudget;
+  const budgetActive = budget > 0 && budget < maxBudget;
   const hasAppliedFilters = selected.length > 0 || budgetActive;
 
   const filtered = useMemo(() => {
     const result = baseListings.filter(
-      (l) => selected.every((c) => listingMatchesChip(l, c)) && l.priceValue <= budget
+      (l) => selected.every((c) => listingMatchesChip(l, c)) && (budget === 0 || l.priceValue <= budget)
     );
     const sorted = [...result];
     if (sortBy === "Price: Low to High") sorted.sort((a, b) => a.priceValue - b.priceValue);
@@ -372,7 +390,7 @@ export default function CategoryPage() {
             <div className="flex flex-col gap-4">
               {filtered.map((listing, i) => (
                 <div key={listing.id} className="contents">
-                  <ListingCard {...listing} showCta image={category.image} />
+                  <ListingCard {...listing} showCta image={listing.image || category.image} />
                   {i === 5 && <CrossSellCard />}
                 </div>
               ))}
