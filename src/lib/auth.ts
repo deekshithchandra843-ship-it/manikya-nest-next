@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { apiClient } from "./apiClient";
 import { supabase } from "./supabase";
 
-export type Role = "tenant" | "owner" | "agent" | "builder";
+export type Role = "tenant" | "owner" | "agent" | "builder" | "admin";
 
 const SESSION_KEY = "findway.session";
 
