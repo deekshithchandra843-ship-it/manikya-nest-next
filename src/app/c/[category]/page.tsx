@@ -1,8 +1,15 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import PageLayout from "@/components/PageLayout";
+
+// Leaflet touches `window`, so the map must never render on the server.
+const ListingsMap = dynamic(() => import("@/components/ListingsMap"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full skeleton rounded-[14px]" aria-hidden="true" />,
+});
 import ListingCard from "@/components/ListingCard";
 import FiltersDrawer from "@/components/FiltersDrawer";
 import CategoryHero from "@/components/category-heroes/CategoryHero";
@@ -21,17 +28,24 @@ function formatBudget(value: number): string {
   return `₹${value.toLocaleString("en-IN")}`;
 }
 
-function listingMatchesChip(l: Listing, chip: string): boolean {
-  const needle = chip.toLowerCase();
-  if (needle === "near metro") return !!l.metroDistance;
-  const hay = [
-    l.title, l.spec, l.furnishing, l.availableFrom, l.area, l.badge,
-    l.metroDistance, ...l.amenities,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  return hay.includes(needle);
+const SORT_PARAM: Record<string, string> = {
+  "Price: Low to High": "price_asc",
+  "Price: High to Low": "price_desc",
+  Rating: "rating",
+};
+
+/** Translates chip/budget/sort UI state into API query params (matching is server-side now). */
+function buildQuery(slug: string, selected: string[], budget: number, maxBudget: number, sortBy: string): string {
+  const params = new URLSearchParams({ category: slug });
+  const chips: string[] = [];
+  for (const chip of selected) {
+    if (chip.toLowerCase() === "near metro") params.set("nearMetro", "true");
+    else chips.push(chip);
+  }
+  if (chips.length) params.set("chips", chips.join(","));
+  if (budget > 0 && budget < maxBudget) params.set("maxPrice", String(budget));
+  if (SORT_PARAM[sortBy]) params.set("sort", SORT_PARAM[sortBy]);
+  return params.toString();
 }
 
 /** FindWay's differentiator — surfaces jobs/commute next to the homes. */
@@ -90,29 +104,39 @@ export default function CategoryPage() {
 
   const [baseListings, setBaseListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  // Slider bounds come from the initial unfiltered load and stay fixed while
+  // filtering, so narrowing the budget doesn't shrink the slider's own range.
+  const [bounds, setBounds] = useState<[number, number]>([0, 0]);
 
   useEffect(() => {
     setLoading(true);
+    setBounds([0, 0]);
     apiClient.get(`/listings?category=${slug}`)
       .then((res) => {
         if (res.data && res.data.success) {
-          setBaseListings(res.data.data);
+          const data: Listing[] = res.data.data;
+          setBaseListings(data);
+          if (data.length > 0) {
+            const prices = data.map((l) => l.priceValue);
+            setBounds([Math.min(...prices), Math.max(...prices)]);
+          }
         }
       })
       .catch((err) => {
         console.error("Failed to fetch listings for category page, using fallback:", err);
-        setBaseListings(listingsForCategory(slug));
+        const fallback = listingsForCategory(slug);
+        setBaseListings(fallback);
+        if (fallback.length > 0) {
+          const prices = fallback.map((l) => l.priceValue);
+          setBounds([Math.min(...prices), Math.max(...prices)]);
+        }
       })
       .finally(() => {
         setLoading(false);
       });
   }, [slug]);
 
-  const [minBudget, maxBudget] = useMemo(() => {
-    if (baseListings.length === 0) return [0, 0];
-    const prices = baseListings.map((l) => l.priceValue);
-    return [Math.min(...prices), Math.max(...prices)];
-  }, [baseListings]);
+  const [minBudget, maxBudget] = bounds;
 
   const [selected, setSelected] = useState<string[]>([]);
   const [budget, setBudget] = useState(0);
@@ -120,6 +144,32 @@ export default function CategoryPage() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [savedSearch, setSavedSearch] = useState(false);
+
+  // Refetch with server-side filters whenever chips/budget/sort change.
+  // Also refetches once, unfiltered, when the last filter is cleared.
+  const filtersActive =
+    selected.length > 0 || (budget > 0 && maxBudget > 0 && budget < maxBudget) || sortBy !== "Relevance";
+  const wasActiveRef = useRef(false);
+  useEffect(() => {
+    if (!filtersActive && !wasActiveRef.current) return;
+    wasActiveRef.current = filtersActive;
+    const query = filtersActive
+      ? buildQuery(slug, selected, budget, maxBudget, sortBy)
+      : new URLSearchParams({ category: slug }).toString();
+    const timer = setTimeout(() => {
+      apiClient.get(`/listings?${query}`)
+        .then((res) => {
+          if (res.data && res.data.success) {
+            setBaseListings(res.data.data);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch filtered listings:", err);
+        });
+    }, 250); // debounce the budget slider
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, budget, sortBy]);
 
   // Reset filters during render when the category changes (React's recommended
   // pattern over an effect — avoids cascading re-renders).
@@ -153,16 +203,8 @@ export default function CategoryPage() {
   const budgetActive = budget > 0 && budget < maxBudget;
   const hasAppliedFilters = selected.length > 0 || budgetActive;
 
-  const filtered = useMemo(() => {
-    const result = baseListings.filter(
-      (l) => selected.every((c) => listingMatchesChip(l, c)) && (budget === 0 || l.priceValue <= budget)
-    );
-    const sorted = [...result];
-    if (sortBy === "Price: Low to High") sorted.sort((a, b) => a.priceValue - b.priceValue);
-    else if (sortBy === "Price: High to Low") sorted.sort((a, b) => b.priceValue - a.priceValue);
-    else if (sortBy === "Rating") sorted.sort((a, b) => b.rating - a.rating);
-    return sorted;
-  }, [baseListings, selected, budget, sortBy]);
+  // Filtering and sorting are done server-side; the API response is the result set.
+  const filtered = baseListings;
 
   // Unknown category — friendly fallback.
   if (!category) {
@@ -401,15 +443,8 @@ export default function CategoryPage() {
 
         {/* Map column */}
         <div className={viewMode === "list" ? "hidden md:block" : "block"}>
-          <div className="md:sticky md:top-40 h-[320px] md:h-[calc(100vh-12rem)] bg-surface-soft border border-hairline-soft rounded-[14px] flex flex-col items-center justify-center gap-2 text-center px-6">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-muted-soft" aria-hidden="true">
-              <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <p className="text-sm font-medium text-ink">Map view</p>
-            <p className="text-xs text-muted max-w-[220px]">
-              {filtered.length} {filtered.length === 1 ? noun.replace(/s$/, "") : noun} will appear here once maps are connected.
-            </p>
+          <div className="md:sticky md:top-40 h-[320px] md:h-[calc(100vh-12rem)] bg-surface-soft border border-hairline-soft rounded-[14px] overflow-hidden">
+            <ListingsMap />
           </div>
         </div>
       </div>

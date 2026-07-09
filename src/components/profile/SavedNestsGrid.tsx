@@ -92,7 +92,7 @@ export default function SavedNestsGrid({ nests }: { nests: SavedNest[] }) {
               {/* Action buttons */}
               <div className="flex gap-2 mt-4 pt-3 border-t border-hairline-soft">
                 <Link
-                  href="/explore"
+                  href={`/listing/${nest.id}`}
                   className="flex-1 text-center py-2 text-xs font-semibold text-ink border border-hairline rounded-[8px] hover:bg-surface-soft transition-colors"
                 >
                   View info

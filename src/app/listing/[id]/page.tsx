@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import PageLayout from "@/components/PageLayout";
 import ListingGallery from "@/components/ListingGallery";
 import RoomTypesPricing from "@/components/RoomTypesPricing";
@@ -159,12 +159,16 @@ function ContactCard({
   listing,
   saved,
   onToggleSave,
+  onScheduleVisit,
+  onWhatsAppClick,
   currentRating,
   currentReviewsCount,
 }: {
   listing: Listing;
   saved: boolean;
   onToggleSave: () => void;
+  onScheduleVisit: () => void;
+  onWhatsAppClick: () => void;
   currentRating: number;
   currentReviewsCount: number;
 }) {
@@ -210,6 +214,7 @@ function ContactCard({
       <div className="flex gap-2 mt-2">
         <button
           type="button"
+          onClick={onScheduleVisit}
           className="flex-1 py-2 text-sm font-medium text-ink border border-hairline rounded-[8px] hover:bg-surface-soft active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
         >
           Schedule visit
@@ -227,6 +232,7 @@ function ContactCard({
         href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi, I'm interested in ${listing.title}`)}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={onWhatsAppClick}
         className="mt-2 w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-white bg-[#25D366] rounded-[8px] hover:brightness-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -725,8 +731,106 @@ function ReviewsSection({
   );
 }
 
+function ScheduleVisitModal({
+  open,
+  onClose,
+  listingId,
+  onUnauthorized,
+}: {
+  open: boolean;
+  onClose: () => void;
+  listingId: string;
+  onUnauthorized: () => void;
+}) {
+  // Default slot: tomorrow at 10:30 local time.
+  const defaultTime = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(10, 30, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }, []);
+  const [visitTime, setVisitTime] = useState(defaultTime);
+  const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
+
+  if (!open) return null;
+
+  const submit = () => {
+    setState("saving");
+    apiClient.post("/visits", { listingId, visitTime: new Date(visitTime).toISOString() })
+      .then(() => setState("done"))
+      .catch((err) => {
+        if (err?.response?.status === 401) {
+          onClose();
+          onUnauthorized();
+          return;
+        }
+        setState("error");
+      });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-ink/40" />
+      <div className="relative w-full max-w-sm bg-canvas rounded-[14px] shadow-airbnb p-5">
+        {state === "done" ? (
+          <div className="text-center py-4">
+            <div className="w-12 h-12 rounded-full bg-rausch/10 text-rausch flex items-center justify-center mx-auto mb-3">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-ink mb-1">Visit requested</h3>
+            <p className="text-sm text-muted mb-4">The owner will confirm your slot. Track it from your profile.</p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 text-sm font-semibold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-base font-bold text-ink mb-1">Schedule a visit</h3>
+            <p className="text-sm text-muted mb-4">Pick a date and time that works for you.</p>
+            <input
+              type="datetime-local"
+              value={visitTime}
+              onChange={(e) => setVisitTime(e.target.value)}
+              aria-label="Visit date and time"
+              className="w-full text-sm text-ink border border-hairline rounded-[8px] px-3 py-2.5 bg-canvas outline-none focus-visible:ring-2 focus-visible:ring-ink mb-4"
+            />
+            {state === "error" && (
+              <p className="text-xs text-error mb-3">Could not schedule the visit. Please try again.</p>
+            )}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2 text-sm font-medium text-ink border border-hairline rounded-[8px] hover:bg-surface-soft transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={state === "saving"}
+                className="flex-1 py-2 text-sm font-semibold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors disabled:opacity-60"
+              >
+                {state === "saving" ? "Scheduling…" : "Confirm visit"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ListingDetail() {
   const params = useParams();
+  const router = useRouter();
   const idStr = String(params.id);
 
   // Use local mock as initial fallback
@@ -751,11 +855,37 @@ export default function ListingDetail() {
       .finally(() => {
         setLoading(false);
       });
+    // Record a page view for the owner's analytics (fire-and-forget).
+    apiClient.post("/events", { listingId: idStr, eventType: "view" }).catch(() => {});
   }, [idStr]);
 
   const category = getCategory(listing.category);
   const facts = buildFacts(listing);
   const [saved, setSaved] = useState(false);
+  const [visitOpen, setVisitOpen] = useState(false);
+
+  // Optimistic wishlist toggle backed by the API; 401 → login.
+  const toggleSaved = () => {
+    const next = !saved;
+    setSaved(next);
+    const req = next
+      ? apiClient.post("/wishlist", { listingId: idStr })
+      : apiClient.delete(`/wishlist/${idStr}`);
+    req
+      .then(() => {
+        if (next) {
+          apiClient.post("/events", { listingId: idStr, eventType: "wishlist_add" }).catch(() => {});
+        }
+      })
+      .catch((err) => {
+        setSaved(!next);
+        if (err?.response?.status === 401) router.push("/login");
+      });
+  };
+
+  const trackWhatsApp = () => {
+    apiClient.post("/events", { listingId: idStr, eventType: "whatsapp_click" }).catch(() => {});
+  };
   const [reviewsList, setReviewsList] = useState<Review[]>(DEFAULT_REVIEWS);
 
   const currentReviewsCount = reviewsList.length;
@@ -811,7 +941,7 @@ export default function ListingDetail() {
         images={galleryImages}
         alt={`${listing.title} — ${category?.label ?? ""} in ${listing.location}`}
         saved={saved}
-        onToggleSave={() => setSaved(!saved)}
+        onToggleSave={toggleSaved}
       />
 
       {/* Two-column: content + sticky contact card */}
@@ -956,7 +1086,9 @@ export default function ListingDetail() {
             <ContactCard
               listing={listing}
               saved={saved}
-              onToggleSave={() => setSaved(!saved)}
+              onToggleSave={toggleSaved}
+              onScheduleVisit={() => setVisitOpen(true)}
+              onWhatsAppClick={trackWhatsApp}
               currentRating={currentRating}
               currentReviewsCount={currentReviewsCount}
             />
@@ -969,7 +1101,9 @@ export default function ListingDetail() {
             <ContactCard
               listing={listing}
               saved={saved}
-              onToggleSave={() => setSaved(!saved)}
+              onToggleSave={toggleSaved}
+              onScheduleVisit={() => setVisitOpen(true)}
+              onWhatsAppClick={trackWhatsApp}
               currentRating={currentRating}
               currentReviewsCount={currentReviewsCount}
             />
@@ -990,6 +1124,14 @@ export default function ListingDetail() {
           {getCategory(listing.category)?.world === "commercial" ? "Contact agent" : "Contact owner"}
         </button>
       </div>
+
+      {/* Schedule visit modal */}
+      <ScheduleVisitModal
+        open={visitOpen}
+        onClose={() => setVisitOpen(false)}
+        listingId={idStr}
+        onUnauthorized={() => router.push("/login")}
+      />
     </PageLayout>
   );
 }

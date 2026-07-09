@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
@@ -42,27 +42,41 @@ const listings: Listing[] = [
 
 const MAX_BUDGET = 30000;
 
-const parsePrice = (p: string) => parseInt(p.replace(/[^\d]/g, ""), 10);
+const SORT_PARAM: Record<string, string> = {
+  "Price: Low to High": "price_asc",
+  "Price: High to Low": "price_desc",
+  Rating: "rating",
+};
 
-function matchesChip(listing: Listing, chip: string): boolean {
-  switch (chip) {
-    case "PG/Hostel":
-      return listing.badge === "PG" || listing.badge === "Hostel";
-    case "1 BHK":
-      return /1\s?bhk/i.test(listing.title);
-    case "2 BHK":
-      return /2\s?bhk/i.test(listing.title);
-    case "Co-living":
-      return listing.badge === "Co-living";
-    case "Homestay":
-      return listing.badge === "Homestay";
-    case "Furnished":
-      return !!listing.furnishing && /furnished/i.test(listing.furnishing);
-    case "Near metro":
-      return !!listing.metroDistance;
-    default:
-      return listing.amenities.includes(chip);
+// Chips that map to whole categories rather than listing attributes.
+const CATEGORY_CHIPS: Record<string, string> = {
+  "PG/Hostel": "pg",
+  "Co-living": "coliving",
+  Homestay: "homestay",
+};
+const AMENITY_CHIPS = ["Wi-Fi", "Meals"];
+
+/** Translates the chip/budget/sort UI state into API query params. */
+function buildQuery(activeFilters: string[], budget: number, sortBy: string): string {
+  const params = new URLSearchParams();
+  const categories: string[] = [];
+  const amenities: string[] = [];
+  const chips: string[] = [];
+
+  for (const chip of activeFilters) {
+    if (CATEGORY_CHIPS[chip]) categories.push(CATEGORY_CHIPS[chip]);
+    else if (AMENITY_CHIPS.includes(chip)) amenities.push(chip);
+    else if (chip === "Near metro") params.set("nearMetro", "true");
+    else if (chip === "Furnished") params.set("furnishing", "furnished");
+    else chips.push(chip);
   }
+
+  if (categories.length) params.set("category", categories.join(","));
+  if (amenities.length) params.set("amenities", amenities.join(","));
+  if (chips.length) params.set("chips", chips.join(","));
+  if (budget < MAX_BUDGET) params.set("maxPrice", String(budget));
+  if (SORT_PARAM[sortBy]) params.set("sort", SORT_PARAM[sortBy]);
+  return params.toString();
 }
 
 export default function FindNest() {
@@ -72,17 +86,22 @@ export default function FindNest() {
   const [sortBy, setSortBy] = useState("Relevance");
   const [dbListings, setDbListings] = useState<Listing[]>(listings);
 
+  // Filtering and sorting now happen server-side; refetch when they change.
   useEffect(() => {
-    apiClient.get("/listings")
-      .then((res) => {
-        if (res.data && res.data.success && res.data.data.length > 0) {
-          setDbListings(res.data.data);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch listings for find-nest page:", err);
-      });
-  }, []);
+    const query = buildQuery(activeFilters, budget, sortBy);
+    const timer = setTimeout(() => {
+      apiClient.get(`/listings${query ? `?${query}` : ""}`)
+        .then((res) => {
+          if (res.data && res.data.success) {
+            setDbListings(res.data.data);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch listings for find-nest page:", err);
+        });
+    }, 250); // debounce the budget slider
+    return () => clearTimeout(timer);
+  }, [activeFilters, budget, sortBy]);
 
   const toggleFilter = (chip: string) =>
     setActiveFilters((prev) =>
@@ -97,18 +116,7 @@ export default function FindNest() {
   const budgetActive = budget < MAX_BUDGET;
   const hasAppliedFilters = activeFilters.length > 0 || budgetActive;
 
-  const filtered = useMemo(() => {
-    const result = dbListings.filter(
-      (l) =>
-        activeFilters.every((f) => matchesChip(l, f)) &&
-        parsePrice(l.price) <= budget
-    );
-    const sorted = [...result];
-    if (sortBy === "Price: Low to High") sorted.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
-    else if (sortBy === "Price: High to Low") sorted.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
-    else if (sortBy === "Rating") sorted.sort((a, b) => b.rating - a.rating);
-    return sorted;
-  }, [activeFilters, budget, sortBy]);
+  const filtered = dbListings;
 
   return (
     <PageLayout breadcrumbs={[{ label: "Home", href: "/" }, { label: "Find Nest" }]}>

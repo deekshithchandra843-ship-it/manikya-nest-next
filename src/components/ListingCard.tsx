@@ -2,6 +2,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/apiClient";
 
 interface ListingCardProps {
   id: string | number;
@@ -46,9 +48,29 @@ export default function ListingCard({
   showCta,
   image,
 }: ListingCardProps) {
+  const router = useRouter();
   const [saved, setSaved] = useState(false);
   // imgLoaded tracks when next/image fires onLoad; until then the skeleton shows.
   const [imgLoaded, setImgLoaded] = useState(false);
+
+  // Optimistic wishlist toggle; reverts and sends to /login when not signed in.
+  const toggleSaved = () => {
+    const next = !saved;
+    setSaved(next);
+    const req = next
+      ? apiClient.post("/wishlist", { listingId: String(id) })
+      : apiClient.delete(`/wishlist/${id}`);
+    req
+      .then(() => {
+        if (next) {
+          apiClient.post("/events", { listingId: String(id), eventType: "wishlist_add" }).catch(() => {});
+        }
+      })
+      .catch((err) => {
+        setSaved(!next);
+        if (err?.response?.status === 401) router.push("/login");
+      });
+  };
 
   const hasTags = verified || noBrokerage || furnishing || availableFrom;
 
@@ -84,7 +106,7 @@ export default function ListingCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setSaved(!saved);
+              toggleSaved();
             }}
             className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-canvas rounded-full"
             aria-label={saved ? "Remove from saved" : "Save listing"}

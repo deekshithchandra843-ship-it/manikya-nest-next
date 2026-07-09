@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Session } from "@/lib/auth";
+import { apiClient } from "@/lib/apiClient";
 
 interface Listing {
   id: string;
@@ -25,12 +26,41 @@ interface Lead {
   status: "new" | "contacted" | "closed";
 }
 
+const STATUS_LABEL: Record<string, Listing["status"]> = {
+  live: "Live",
+  pending_review: "Under Review",
+  paused: "Paused",
+};
+
 export default function BusinessDashboard({ session: _session }: { session: Session }) {
   const [activeTab, setActiveTab] = useState<"listings" | "leads" | "analytics">("listings");
+  const [listings, setListings] = useState<Listing[]>([]);
 
-  // TODO: wire these to the backend (GET /listings?owner=me, GET /leads).
-  // Until those endpoints exist, every real user starts from an empty state.
-  const listings: Listing[] = [];
+  // My listings + view/enquiry counts come from GET /listings/mine/stats.
+  // Leads stay empty until the CRM leads endpoints exist.
+  useEffect(() => {
+    apiClient.get("/listings/mine/stats")
+      .then((res) => {
+        if (res.data?.success) {
+          setListings(
+            res.data.data.listings.map(
+              (s: { listingId: string; title: string; status: string; category: string; locality: string | null; price: string; createdAt: string; views: number; whatsappClicks: number; wishlists: number }) => ({
+                id: s.listingId,
+                title: s.title,
+                type: s.category,
+                locality: s.locality ?? "—",
+                price: s.price,
+                views: s.views,
+                leads: s.whatsappClicks + s.wishlists,
+                status: STATUS_LABEL[s.status] ?? "Live",
+                postedDate: new Date(s.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+              })
+            )
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
   const leads: Lead[] = [];
 
   // Derived metrics

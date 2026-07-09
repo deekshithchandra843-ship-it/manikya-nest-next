@@ -21,7 +21,7 @@ export const CAREER_STATS: { label: string; sub: string }[] = [
 ];
 
 export interface SavedNest {
-  id: number;
+  id: number | string;
   title: string;
   location: string;
   price: string;
