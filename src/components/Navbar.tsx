@@ -6,6 +6,7 @@ import Logo from "./Logo";
 import { signOut, switchProfileMode } from "@/lib/auth";
 import { useHydrated, useSession } from "@/lib/useSession";
 import { initialsOf } from "@/lib/roleTheme";
+import NotificationBell from "./NotificationBell";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -153,7 +154,9 @@ export default function Navbar() {
             </Link>
 
             {loggedIn && session ? (
-              <div className="relative" ref={menuRef}>
+              <div className="flex items-center gap-3">
+                <NotificationBell />
+                <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
                   aria-haspopup="menu"
@@ -264,6 +267,7 @@ export default function Navbar() {
                     </button>
                   </div>
                 )}
+                </div>
               </div>
             ) : (
               <>
