@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import type { Role, Session } from "@/lib/auth";
 import { initialsOf } from "@/lib/roleTheme";
 import { profileTheme } from "./theme";
@@ -40,7 +41,13 @@ export default function ProfileHeader({
               <div className={`p-[3px] rounded-full bg-gradient-to-br transition-all duration-500 ${theme.ringGradient}`}>
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-canvas flex items-center justify-center overflow-hidden">
                   {session.avatarUrl ? (
-                    <img src={session.avatarUrl} alt={session.name} className="w-full h-full object-cover" />
+                    <Image
+                      src={session.avatarUrl}
+                      alt={session.name}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <span className={`text-xl md:text-2xl font-bold transition-colors duration-500 ${theme.accentText}`}>
                       {initialsOf(session.name)}

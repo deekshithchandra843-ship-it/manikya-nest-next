@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { updateSession, type Session } from "@/lib/auth";
 
 const compressImage = (base64Str: string, maxWidth = 200, maxHeight = 200): Promise<string> => {
@@ -100,10 +101,12 @@ export default function EditProfileModal({
         <div className="flex flex-col items-center mb-6">
           <div className="relative group">
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt="Profile Preview"
-                className="w-20 h-20 rounded-full object-cover border border-hairline shadow-sm"
+                width={80}
+                height={80}
+                className="rounded-full object-cover border border-hairline shadow-sm"
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-rausch/10 text-rausch flex items-center justify-center font-bold text-xl uppercase border border-hairline shadow-sm">

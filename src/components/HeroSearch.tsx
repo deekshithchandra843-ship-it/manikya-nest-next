@@ -8,6 +8,7 @@ import {
   CategoryDef,
   World,
 } from "@/lib/categories";
+import { useTypewriterPlaceholder } from "@/hooks/useTypewriter";
 
 /* ─── Constants ─────────────────────────────────────────────────────────── */
 
@@ -30,6 +31,56 @@ const WORLDS: { value: World; label: string }[] = [
 
 /** slugs that get Variant B (area dropdown + gender chips) */
 const VARIANT_B_SLUGS = new Set(["pg", "coliving"]);
+
+const RENT_WORDS = [
+  "Search 2 BHK in HSR Layout...",
+  "Search flats near Indiranagar...",
+  "Search bachelors apartments...",
+  "Search pet-friendly homes...",
+  "Search apartments near Metro..."
+];
+
+const BUY_WORDS = [
+  "Search villas in Whitefield...",
+  "Search ready-to-move 3BHK...",
+  "Search new projects in Sarjapur...",
+  "Search gated community plots..."
+];
+
+const STAYS_WORDS = [
+  "Search homestays near MG Road...",
+  "Search resorts near Nandi Hills...",
+  "Search budget hotels in Majestic...",
+  "Search serviced studio apartments..."
+];
+
+const COMMERCIAL_WORDS = [
+  "Search office space in ORR...",
+  "Search shops in Jayanagar...",
+  "Search co-working desks...",
+  "Search warehouses in Hoskote..."
+];
+
+const PG_WORDS = [
+  "Search single room PG in Koramangala...",
+  "Search girls hostel near BTM Layout...",
+  "Search boys PG near Electronic City...",
+  "Search sharing rooms with food..."
+];
+
+const JOBS_WORDS = [
+  "Search Software Engineer roles...",
+  "Search Product Manager jobs...",
+  "Search sales jobs in Bengaluru...",
+  "Search remote developer work...",
+  "Search operations coordinator..."
+];
+
+const DEFAULT_WORDS = [
+  "Search locality, area, or landmark...",
+  "Search near metro stations...",
+  "Search properties near you..."
+];
 
 /* ─── Inline city skyline SVG illustration ─────────────────────────────── */
 function CitySkyline({ className }: { className?: string }) {
@@ -201,25 +252,48 @@ function SearchButton({ onClick, label = "Search" }: SearchButtonProps) {
 
 /* ─── Variant A: magnifier + full-width input + Search ──────────────────── */
 interface VariantAProps {
+  category: CategoryDef | null;
   placeholder: string;
   onSubmit: (payload: Record<string, string>) => void;
 }
 
-function VariantA({ placeholder, onSubmit }: VariantAProps) {
+function VariantA({ category, placeholder, onSubmit }: VariantAProps) {
   const [query, setQuery] = useState("");
 
+  let words = DEFAULT_WORDS;
+  if (category?.slug === "rent") words = RENT_WORDS;
+  else if (category?.slug === "buy") words = BUY_WORDS;
+  else if (
+    category?.slug === "homestay" ||
+    category?.slug === "resort" ||
+    category?.slug === "hotel" ||
+    category?.slug === "service-apartment"
+  ) {
+    words = STAYS_WORDS;
+  } else if (
+    category?.slug.startsWith("commercial") ||
+    category?.slug === "coworking" ||
+    category?.slug === "warehouse" ||
+    category?.slug === "land" ||
+    category?.slug === "lease"
+  ) {
+    words = COMMERCIAL_WORDS;
+  }
+
+  const typewriterPlaceholder = useTypewriterPlaceholder(words);
+
   return (
-    <div className="flex items-center gap-2 bg-white/95 border border-white/50 rounded-full shadow-airbnb px-4 py-2 w-full max-w-[580px] h-14 mx-auto text-left animate-fade-up">
+    <div className="flex items-center gap-2 bg-white/85 backdrop-blur-md border border-white/30 rounded-full shadow-2xl px-4 py-2 w-full max-w-[580px] h-14 mx-auto text-left animate-fade-up focus-within:bg-white/95 focus-within:border-white/50 focus-within:scale-[1.01] transition-all duration-300">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-soft shrink-0" aria-hidden="true">
         <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
       <label htmlFor="hero-search-a" className="sr-only">
-        {placeholder}
+        {typewriterPlaceholder || placeholder}
       </label>
       <input
         id="hero-search-a"
         type="text"
-        placeholder={placeholder}
+        placeholder={typewriterPlaceholder || placeholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && onSubmit({ query })}
@@ -232,63 +306,74 @@ function VariantA({ placeholder, onSubmit }: VariantAProps) {
 
 /* ─── Variant B: city dropdown + input + gender select inline ───────────── */
 interface VariantBProps {
+  category: CategoryDef | null;
   onSubmit: (payload: Record<string, string>) => void;
 }
 
 const GENDER_CHIPS = ["Any", "Male", "Female", "Co-ed"] as const;
 type GenderChip = (typeof GENDER_CHIPS)[number];
 
-function VariantB({ onSubmit }: VariantBProps) {
+function VariantB({ category, onSubmit }: VariantBProps) {
   const [area, setArea] = useState("");
   const [query, setQuery] = useState("");
   const [gender, setGender] = useState<GenderChip>("Any");
 
+  const words = category?.slug === "coliving" ? PG_WORDS.map(w => w.replace(/PG|hostel/gi, "co-living")) : PG_WORDS;
+  const typewriterPlaceholder = useTypewriterPlaceholder(words);
+
   return (
-    <div className="flex items-center gap-2 bg-white/95 border border-white/50 rounded-full shadow-airbnb px-4 py-2 w-full max-w-[580px] h-14 mx-auto text-left animate-fade-up">
-      <CityDropdown value={area} onSelect={setArea} />
-      <div className="hidden sm:block w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
-      <label htmlFor="hero-search-b" className="sr-only">
-        Search locality or area in Bengaluru
-      </label>
-      <input
-        id="hero-search-b"
-        type="text"
-        placeholder="Search locality or area"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onSubmit({ area, query, gender })}
-        className="flex-1 text-sm text-body placeholder-muted-soft outline-none bg-transparent px-2 py-1 min-w-0"
-      />
-      <div className="hidden sm:block w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
-      <div className="relative shrink-0 flex items-center pr-2">
-        <label htmlFor="hero-gender" className="sr-only">
-          Gender preference
-        </label>
-        <select
-          id="hero-gender"
-          value={gender}
-          onChange={(e) => setGender(e.target.value as GenderChip)}
-          className="appearance-none bg-transparent text-xs font-semibold text-muted pr-4 py-1 outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-ink"
-        >
-          <option value="Any">For: Any</option>
-          <option value="Male">For: Boys</option>
-          <option value="Female">For: Girls</option>
-          <option value="Co-ed">For: Co-ed</option>
-        </select>
-        <svg
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-muted-soft"
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          aria-hidden="true"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/85 backdrop-blur-md border border-white/30 rounded-2xl sm:rounded-full shadow-2xl p-2 sm:px-4 sm:py-2 w-full max-w-[580px] mx-auto text-left animate-fade-up focus-within:bg-white/95 focus-within:border-white/50 focus-within:scale-[1.01] transition-all duration-300">
+      <div className="flex items-center gap-2 sm:contents">
+        <CityDropdown value={area} onSelect={setArea} />
+        <div className="hidden sm:block w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
+        <div className="sm:hidden w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
+        <div className="relative shrink-0 flex items-center pr-2">
+          <label htmlFor="hero-gender" className="sr-only">
+            Gender preference
+          </label>
+          <select
+            id="hero-gender"
+            value={gender}
+            onChange={(e) => setGender(e.target.value as GenderChip)}
+            className="appearance-none bg-surface-soft sm:bg-transparent border border-hairline sm:border-none rounded-[8px] sm:rounded-none px-3 py-1.5 sm:px-0 sm:py-1 text-xs font-semibold text-ink sm:text-muted pr-6 sm:pr-4 outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-ink"
+          >
+            <option value="Any">For: Any</option>
+            <option value="Male">For: Boys</option>
+            <option value="Female">For: Girls</option>
+            <option value="Co-ed">For: Co-ed</option>
+          </select>
+          <svg
+            className="pointer-events-none absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 text-muted-soft"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
       </div>
-      <SearchButton onClick={() => onSubmit({ area, query, gender })} />
+
+      <div className="hidden sm:block w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
+
+      <div className="flex items-center gap-2 flex-1">
+        <label htmlFor="hero-search-b" className="sr-only">
+          Search locality or area in Bengaluru
+        </label>
+        <input
+          id="hero-search-b"
+          type="text"
+          placeholder={typewriterPlaceholder}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && onSubmit({ area, query, gender })}
+          className="flex-1 text-sm text-body placeholder-muted-soft outline-none bg-transparent px-2 py-2 min-w-0"
+        />
+        <SearchButton onClick={() => onSubmit({ area, query, gender })} />
+      </div>
     </div>
   );
 }
@@ -300,19 +385,20 @@ interface VariantCProps {
 
 function VariantC({ onSubmit }: VariantCProps) {
   const [query, setQuery] = useState("");
+  const typewriterPlaceholder = useTypewriterPlaceholder(JOBS_WORDS);
 
   return (
-    <div className="flex items-center gap-2 bg-white/95 border border-white/50 rounded-full shadow-airbnb px-4 py-2 w-full max-w-[580px] h-14 mx-auto text-left animate-fade-up">
+    <div className="flex items-center gap-2 bg-white/85 backdrop-blur-md border border-white/30 rounded-full shadow-2xl px-4 py-2 w-full max-w-[580px] h-14 mx-auto text-left animate-fade-up focus-within:bg-white/95 focus-within:border-white/50 focus-within:scale-[1.01] transition-all duration-300">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-soft shrink-0" aria-hidden="true">
         <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
       <label htmlFor="hero-search-c" className="sr-only">
-        Job title, skill, or company
+        {typewriterPlaceholder}
       </label>
       <input
         id="hero-search-c"
         type="text"
-        placeholder="Job title, skill, or company"
+        placeholder={typewriterPlaceholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && onSubmit({ query, location: CITY })}
@@ -340,9 +426,10 @@ interface SearchBarDispatchProps {
 function SearchBarDispatch({ isJobs, category, onSubmit }: SearchBarDispatchProps) {
   const variantMap: Record<string, ReactElement> = {
     C: <VariantC onSubmit={onSubmit} />,
-    B: <VariantB onSubmit={onSubmit} />,
+    B: <VariantB category={category} onSubmit={onSubmit} />,
     A: (
       <VariantA
+        category={category}
         placeholder={category?.searchPlaceholder ?? "Search locality, area, or landmark"}
         onSubmit={onSubmit}
       />
@@ -529,11 +616,11 @@ export default function HeroSearch() {
 
         {/* ── Row 2: Category tab bar (world mode only) ── */}
         {!isJobs && (
-          <div className="w-full flex justify-center overflow-x-auto scrollbar-hide mb-5 px-4">
+          <div className="w-full flex justify-start sm:justify-center overflow-x-auto scrollbar-hide mb-5 px-4">
             <div
               role="tablist"
               aria-label={`${world} categories`}
-              className="flex items-end gap-1 min-w-max mx-auto justify-center"
+              className="flex items-end gap-1 min-w-max mx-auto sm:justify-center px-4"
             >
               {worldCategories.map((cat) => {
                 const isActive = cat.slug === activeSlug;

@@ -25,6 +25,7 @@ import { PROPERTY_STATS, CAREER_STATS, type SavedNest } from "@/components/profi
 import { apiClient } from "@/lib/apiClient";
 import SavedNestsGrid from "@/components/profile/SavedNestsGrid";
 import RequirementsBlock from "@/components/profile/RequirementsBlock";
+import RecommendationsBlock from "@/components/profile/RecommendationsBlock";
 
 const NEST_MENU: MenuItem[] = [
   { label: "Saved listings", href: "/explore", icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>) },
@@ -154,12 +155,14 @@ export default function UserProfile() {
                 {activeSegment === "property" ? (
                   <>
                     <SavedNestsGrid nests={savedNests} />
+                    <RecommendationsBlock segment="property" userCity={session.city || "Bengaluru"} />
                     <RequirementsBlock userName={session.name} />
                     <ActivityTimeline items={activity} />
                     <MenuBlock title="My Nest" items={NEST_MENU} />
                   </>
                 ) : (
                   <>
+                    <RecommendationsBlock segment="career" userCity={session.city || "Bengaluru"} />
                     <ResumeBlock initialUploaded={false} />
                     <CandidateBlock />
                     <ApplicationsBlock />

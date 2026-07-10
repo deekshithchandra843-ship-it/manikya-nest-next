@@ -291,15 +291,6 @@ function ReviewsSection({
   // Popular keyword tags for quick filtering
   const popularTags = ["Clean", "Location", "Owner", "Metro", "Value"];
 
-  const ratingCounts = useMemo(() => {
-    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    reviewsList.forEach((r) => {
-      const rating = Math.min(5, Math.max(1, Math.round(r.rating))) as 5 | 4 | 3 | 2 | 1;
-      counts[rating]++;
-    });
-    return counts;
-  }, [reviewsList]);
-
   const totalReviewsCount = reviewsList.length;
 
   const averageRating = useMemo(() => {
@@ -376,356 +367,326 @@ function ReviewsSection({
     }, 1500);
   };
 
-  // Helper to generate dynamic colored avatar backgrounds
   const getAvatarBg = (name: string) => {
     const charCode = name.charCodeAt(0) || 0;
     const colors = [
-      "bg-orange-100 text-orange-600",
-      "bg-emerald-100 text-emerald-600",
-      "bg-blue-100 text-blue-600",
-      "bg-indigo-100 text-indigo-600",
-      "bg-rose-100 text-rose-600",
-      "bg-purple-100 text-purple-600",
+      "bg-orange-50 text-orange-600 border-orange-100",
+      "bg-emerald-50 text-emerald-600 border-emerald-100",
+      "bg-blue-50 text-blue-600 border-blue-100",
+      "bg-indigo-50 text-indigo-600 border-indigo-100",
+      "bg-rose-50 text-rose-600 border-rose-100",
+      "bg-purple-50 text-purple-600 border-purple-100",
     ];
     return colors[charCode % colors.length];
   };
 
   return (
-    <section className="bg-canvas border border-hairline rounded-[16px] p-6 shadow-airbnb w-full transition-all duration-300 mb-6">
-      {/* Header and Summary stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-hairline-soft pb-4">
+    <section className="bg-canvas border border-hairline rounded-[24px] p-5 sm:p-6 shadow-sm w-full transition-all duration-300 mb-8">
+      {/* Custom keyframes for tap interactions */}
+      <style>{`
+        @keyframes heart-pop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.3); }
+          100% { transform: scale(1); }
+        }
+        .animate-pop { animation: heart-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+      `}</style>
+
+      {/* Header and stats */}
+      <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-hairline-soft">
         <div>
-          <h2 className="text-xl font-bold text-ink mb-1 flex items-center gap-2">
-            Reviews
-            <span className="text-sm font-medium text-muted bg-surface-soft px-2.5 py-0.5 rounded-full">
+          <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+            Resident Reviews
+            <span className="text-xs font-bold text-muted bg-surface-soft px-2 py-0.5 rounded-full">
               {totalReviewsCount}
             </span>
           </h2>
-          <p className="text-xs text-muted leading-relaxed">
-            Ratings & comments from verified residents.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-2xl font-bold text-ink leading-none">{averageRating}</p>
-            <p className="text-[10px] text-muted font-medium uppercase tracking-wider mt-1">Average rating</p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-rausch"><StarIcon size={12} /></span>
+            <span className="text-sm font-bold text-ink">{averageRating}</span>
+            <span className="text-xs text-muted">average score</span>
           </div>
-          <div className="flex flex-col gap-0.5 text-rausch">
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <StarIcon key={i} size={14} />
-              ))}
+        </div>
+
+        {!showWriteForm && (
+          <button
+            type="button"
+            onClick={() => setShowWriteForm(true)}
+            className="px-4 py-2 text-xs font-bold text-white bg-rausch rounded-xl hover:bg-rausch-active hover:shadow-md active:scale-95 transition-all"
+          >
+            Write Review
+          </button>
+        )}
+      </div>
+
+      {/* Write Review Form */}
+      {showWriteForm && (
+        <form onSubmit={handleFormSubmit} className="mb-6 p-4 bg-surface-soft border border-hairline-soft rounded-2xl animate-fade-up">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-hairline-soft">
+            <h3 className="text-xs font-bold text-ink uppercase tracking-wider">Share your experience</h3>
+            <button
+              type="button"
+              onClick={() => setShowWriteForm(false)}
+              className="text-muted hover:text-ink text-xs font-medium"
+            >
+              Cancel
+            </button>
+          </div>
+
+          {isSubmitted ? (
+            <div className="text-center py-6">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mb-2 animate-bounce">
+                ✓
+              </span>
+              <p className="text-sm font-bold text-ink mb-0.5">Review Submitted!</p>
+              <p className="text-xs text-muted">Thank you for sharing your experience.</p>
             </div>
-            <p className="text-[10px] text-muted text-right">Out of 5 stars</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-[10px] text-muted font-bold uppercase tracking-wider block mb-1">Your Rating</label>
+                <div className="flex gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setNewRating(star)}
+                      className={`transition-transform hover:scale-110 active:scale-95 ${
+                        star <= newRating ? "text-rausch" : "text-muted-soft opacity-40"
+                      }`}
+                    >
+                      <StarIcon size={20} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="reviewer-name" className="text-[10px] text-muted font-bold uppercase tracking-wider block mb-1">Name</label>
+                  <input
+                    id="reviewer-name"
+                    type="text"
+                    placeholder="e.g. Rahul S."
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full text-xs bg-canvas border border-hairline rounded-[8px] px-3 py-2 focus:outline-none focus:border-rausch text-ink placeholder-muted-soft"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="reviewer-text" className="text-[10px] text-muted font-bold uppercase tracking-wider block mb-1">Review Comments</label>
+                <textarea
+                  id="reviewer-text"
+                  rows={3}
+                  placeholder="Tell us about the cleanliness, location, host, or commute convenience..."
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  className="w-full text-xs bg-canvas border border-hairline rounded-[8px] px-3 py-2 focus:outline-none focus:border-rausch text-ink resize-none placeholder-muted-soft"
+                />
+              </div>
+
+              {formError && (
+                <p className="text-xs text-error font-medium">{formError}</p>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-2 bg-rausch hover:bg-rausch-active active:scale-[0.98] text-white text-xs font-bold rounded-xl transition-all"
+              >
+                Submit Review
+              </button>
+            </div>
+          )}
+        </form>
+      )}
+
+      {/* Filter Options: Combined into modern horizontal pills */}
+      <div className="flex flex-col gap-3.5 mb-5 bg-surface-soft/60 border border-hairline-soft rounded-2xl p-4">
+        {/* Rating selection pills */}
+        <div className="flex items-center gap-2 flex-wrap text-xs">
+          <span className="text-muted font-semibold mr-1">Filter rating:</span>
+          <button
+            onClick={() => setSelectedRatingFilter(null)}
+            className={`px-3 py-1 rounded-full border transition-all ${
+              selectedRatingFilter === null
+                ? "bg-ink text-white border-ink font-semibold"
+                : "bg-canvas text-body border-hairline hover:border-ink"
+            }`}
+          >
+            All
+          </button>
+          {[5, 4, 3, 2, 1].map((stars) => {
+            const isSelected = selectedRatingFilter === stars;
+            return (
+              <button
+                key={stars}
+                onClick={() => setSelectedRatingFilter(isSelected ? null : stars)}
+                className={`px-3 py-1 rounded-full border transition-all flex items-center gap-1 ${
+                  isSelected
+                    ? "bg-rausch text-white border-rausch font-semibold shadow-sm"
+                    : "bg-canvas text-body border-hairline hover:border-ink"
+                }`}
+              >
+                {stars} <StarIcon size={9} />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Topics selection pills */}
+        <div className="flex items-center gap-2 flex-wrap text-xs">
+          <span className="text-muted font-semibold mr-1">Topic tags:</span>
+          {popularTags.map((tag) => {
+            const isSelected = selectedTag === tag;
+            return (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(isSelected ? null : tag)}
+                className={`px-3 py-1 rounded-full border transition-all ${
+                  isSelected
+                    ? "bg-rausch text-white border-rausch font-semibold shadow-sm"
+                    : "bg-canvas text-body border-hairline hover:border-ink"
+                }`}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search & Sort controllers */}
+        <div className="flex items-center justify-between gap-3 flex-wrap pt-3 border-t border-hairline-soft">
+          <div className="relative flex-1 max-w-xs">
+            <input
+              type="text"
+              placeholder="Search comments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-7 py-1.5 text-xs bg-canvas border border-hairline rounded-[8px] focus:outline-none focus:border-rausch placeholder-muted-soft text-ink"
+            />
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-soft">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted font-medium">Sort</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="text-xs bg-canvas border border-hairline rounded-[8px] px-2 py-1.5 focus:outline-none focus:border-rausch text-ink font-semibold"
+            >
+              <option value="recent">Newest</option>
+              <option value="highest">Highest Rating</option>
+              <option value="lowest">Lowest Rating</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 min-w-0">
-        {/* Left pane: Filtering & breakdown */}
-        <div className="flex flex-col gap-5 lg:border-r lg:border-hairline-soft lg:pr-6">
-          {/* Star breakdown */}
-          <div>
-            <h3 className="text-xs font-semibold text-ink uppercase tracking-wider mb-3">Rating Breakdown</h3>
-            <div className="flex flex-col gap-2">
-              {[5, 4, 3, 2, 1].map((stars) => {
-                const count = ratingCounts[stars as 5 | 4 | 3 | 2 | 1];
-                const pct = totalReviewsCount > 0 ? (count / totalReviewsCount) * 100 : 0;
-                const isSelected = selectedRatingFilter === stars;
-                return (
-                  <button
-                    key={stars}
-                    type="button"
-                    onClick={() => setSelectedRatingFilter(isSelected ? null : stars)}
-                    className={`flex items-center gap-2 text-xs w-full text-left p-1.5 rounded-md hover:bg-surface-soft active:scale-[0.98] transition-all group ${
-                      isSelected ? "bg-surface-soft font-semibold text-rausch" : "text-body"
-                    }`}
-                  >
-                    <span className="w-3 text-muted">{stars}</span>
-                    <span className={isSelected ? "text-rausch" : "text-muted-soft opacity-75 group-hover:text-rausch"}><StarIcon size={10} /></span>
-                    <div className="flex-1 h-2 bg-surface-strong rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isSelected ? "bg-rausch" : "bg-muted-soft group-hover:bg-rausch/75"
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="w-6 text-right text-muted-soft text-[10px] font-medium shrink-0">{count}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Popular tags */}
-          <div>
-            <h3 className="text-xs font-semibold text-ink uppercase tracking-wider mb-2.5">Popular topics</h3>
-            <div className="flex flex-wrap gap-1.5">
-              {popularTags.map((tag) => {
-                const isSelected = selectedTag === tag;
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setSelectedTag(isSelected ? null : tag)}
-                    className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all active:scale-95 ${
-                      isSelected
-                        ? "bg-rausch text-white border-rausch shadow-sm"
-                        : "bg-canvas text-body border-hairline hover:border-ink"
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+      {/* Filter status banner */}
+      {(selectedRatingFilter !== null || selectedTag || searchQuery) && (
+        <div className="flex items-center justify-between text-xs bg-rausch/5 border border-rausch/10 rounded-xl px-3.5 py-2 mb-4 text-ink animate-fade-up">
+          <p>Found <span className="font-bold text-rausch">{filteredReviews.length}</span> matching reviews</p>
+          <button
+            onClick={() => {
+              setSelectedRatingFilter(null);
+              setSelectedTag(null);
+              setSearchQuery("");
+            }}
+            className="text-xs text-rausch font-bold hover:underline"
+          >
+            Clear all
+          </button>
         </div>
+      )}
 
-        {/* Right pane: list, search, sort, write review */}
-        <div className="flex flex-col gap-4 min-w-0">
-          {/* Controls Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-surface-soft/60 border border-hairline-soft rounded-[12px] p-3">
-            {/* Search Input */}
-            <div className="relative min-w-[200px] flex-1 max-w-xs">
-              <input
-                type="text"
-                placeholder="Search reviews..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-7 py-1.5 text-xs bg-canvas border border-hairline rounded-[8px] focus:outline-none focus:border-rausch placeholder-muted-soft text-ink"
-              />
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-soft">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-              </span>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink text-[10px] font-semibold"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted font-medium">Sort by</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "recent" | "highest" | "lowest")}
-                className="text-xs bg-canvas border border-hairline rounded-[8px] px-2 py-1.5 focus:outline-none focus:border-rausch text-ink font-medium select-none"
-              >
-                <option value="recent">Newest</option>
-                <option value="highest">Highest Rating</option>
-                <option value="lowest">Lowest Rating</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Filter Status Badge */}
-          {(selectedRatingFilter !== null || selectedTag || searchQuery) && (
-            <div className="flex items-center justify-between text-xs bg-rausch/5 border border-rausch/10 rounded-[10px] px-3 py-2 text-ink animate-fade-up">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-semibold text-rausch">Active Filter:</span>
-                <span className="text-body">
-                  Found {filteredReviews.length} match{filteredReviews.length === 1 ? "" : "es"}
-                  {selectedRatingFilter !== null && ` · ${selectedRatingFilter} Star`}
-                  {selectedTag && ` · "${selectedTag}"`}
-                  {searchQuery && ` · "${searchQuery}"`}
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedRatingFilter(null);
-                  setSelectedTag(null);
-                  setSearchQuery("");
-                }}
-                className="text-xs text-rausch font-bold hover:underline shrink-0"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
-
-          {/* Write Review Trigger & Form */}
-          {!showWriteForm ? (
+      {/* Reviews list slider */}
+      <div className="flex flex-row gap-4 overflow-x-auto pb-4 pt-1 pr-1.5 scrollbar-thin snap-x snap-mandatory">
+        {filteredReviews.length === 0 ? (
+          <div className="w-full text-center py-12 border border-hairline border-dashed rounded-2xl bg-surface-soft/30">
+            <p className="text-sm text-muted">No reviews match your filter parameters.</p>
             <button
-              type="button"
               onClick={() => {
-                setShowWriteForm(true);
-                setIsSubmitted(false);
-                setFormError("");
+                setSelectedRatingFilter(null);
+                setSelectedTag(null);
+                setSearchQuery("");
               }}
-              className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-ink border border-hairline border-dashed rounded-[10px] hover:border-rausch hover:text-rausch hover:bg-rausch/5 active:scale-[0.99] transition-all focus:outline-none"
+              className="text-xs text-rausch font-bold mt-2 hover:underline"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-              </svg>
-              Share your experience — Write a review
+              Reset all filters
             </button>
-          ) : (
-            <form onSubmit={handleFormSubmit} className="bg-surface-soft border border-hairline-soft rounded-[12px] p-4 animate-fade-up">
-              <div className="flex items-center justify-between mb-3 border-b border-hairline-soft pb-2">
-                <h3 className="text-xs font-bold text-ink uppercase tracking-wider">Write a review</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowWriteForm(false)}
-                  className="text-muted hover:text-ink text-xs font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-
-              {isSubmitted ? (
-                <div className="text-center py-6">
-                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mb-2 animate-bounce">
-                    ✓
-                  </span>
-                  <p className="text-sm font-semibold text-ink mb-1">Review Submitted!</p>
-                  <p className="text-xs text-muted">Thank you for sharing your valuable review.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3.5">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-muted font-bold uppercase tracking-wider block">Your Rating</label>
-                    <div className="flex gap-1.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setNewRating(star)}
-                          className={`transition-transform hover:scale-110 active:scale-95 ${
-                            star <= newRating ? "text-rausch" : "text-muted-soft opacity-40"
-                          }`}
-                        >
-                          <StarIcon size={20} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="reviewer-name" className="text-[10px] text-muted font-bold uppercase tracking-wider block">Name</label>
-                      <input
-                        id="reviewer-name"
-                        type="text"
-                        placeholder="e.g. Rahul S."
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        className="w-full text-xs bg-canvas border border-hairline rounded-[8px] px-3 py-2 focus:outline-none focus:border-rausch text-ink placeholder-muted-soft"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label htmlFor="reviewer-text" className="text-[10px] text-muted font-bold uppercase tracking-wider block">Review Comments</label>
-                    <textarea
-                      id="reviewer-text"
-                      rows={3}
-                      placeholder="Tell us about the cleanliness, location, host, amenities, or commute convenience..."
-                      value={newText}
-                      onChange={(e) => setNewText(e.target.value)}
-                      className="w-full text-xs bg-canvas border border-hairline rounded-[8px] px-3 py-2 focus:outline-none focus:border-rausch text-ink resize-none placeholder-muted-soft"
-                    />
-                  </div>
-
-                  {formError && (
-                    <p className="text-xs text-error font-medium">{formError}</p>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full py-2 bg-rausch hover:bg-rausch-active active:scale-[0.98] text-white text-xs font-semibold rounded-[8px] transition-all focus:outline-none"
-                  >
-                    Submit Review
-                  </button>
-                </div>
-              )}
-            </form>
-          )}
-
-          {/* Reviews List — Horizontal Scroll Slider */}
-          <div className="flex flex-row gap-4 overflow-x-auto pb-4 pt-1 pr-1.5 scrollbar-thin snap-x snap-mandatory">
-            {filteredReviews.length === 0 ? (
-              <div className="w-full text-center py-10 border border-hairline border-dashed rounded-[12px] bg-surface-soft/30 shrink-0">
-                <p className="text-sm text-muted">No reviews match your filters.</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRatingFilter(null);
-                    setSelectedTag(null);
-                    setSearchQuery("");
-                  }}
-                  className="text-xs text-rausch font-semibold mt-1.5 hover:underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : (
-              filteredReviews.map((r) => (
-                <div
-                  key={r.id}
-                  className="bg-canvas border border-hairline rounded-[12px] p-4 transition-all duration-200 hover:border-hairline hover:shadow-sm w-[280px] sm:w-[320px] shrink-0 snap-start flex flex-col justify-between"
-                >
-                  <div className="flex items-center gap-2.5 mb-2">
-                    {/* Dynamic colored avatar */}
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${getAvatarBg(r.name)}`}>
-                      {r.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
+          </div>
+        ) : (
+          filteredReviews.map((r) => {
+            const hasVoted = votedReviews[r.id];
+            return (
+              <div
+                key={r.id}
+                className="bg-canvas border border-hairline rounded-2xl p-4 transition-all hover:shadow-sm w-[285px] sm:w-[330px] shrink-0 snap-start flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    {/* User profile avatar */}
+                    <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-extrabold shrink-0 shadow-sm ${getAvatarBg(r.name)}`}>
+                      {r.name.split(" ").map((n) => n[0]).join("").toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-ink leading-tight truncate">{r.name}</p>
+                      <p className="text-xs font-bold text-ink leading-tight truncate flex items-center gap-1">
+                        {r.name}
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Verified stay" />
+                      </p>
                       <p className="text-[10px] text-muted mt-0.5">{r.date}</p>
                     </div>
+                    {/* Rating stars */}
                     <div className="ml-auto flex gap-0.5 text-rausch shrink-0">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i} className={i < r.rating ? "text-rausch" : "text-muted-soft opacity-30"}>
-                          <StarIcon size={10} />
+                        <span key={i} className={i < r.rating ? "text-rausch" : "text-muted-soft opacity-20"}>
+                          <StarIcon size={9} />
                         </span>
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-body leading-relaxed mb-3.5 whitespace-pre-line">{r.text}</p>
-                  
-                  {/* Footer actions */}
-                  <div className="flex items-center justify-between border-t border-hairline-soft pt-2.5 text-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => handleHelpfulClick(r.id)}
-                      className={`flex items-center gap-1.5 font-medium transition-all active:scale-90 focus:outline-none ${
-                        votedReviews[r.id] ? "text-rausch font-bold" : "text-muted hover:text-ink"
-                      }`}
-                    >
-                      <svg
-                        width="11"
-                        height="11"
-                        viewBox="0 0 24 24"
-                        fill={votedReviews[r.id] ? "currentColor" : "none"}
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        className="transition-transform duration-200"
-                      >
-                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                      </svg>
-                      Helpful {r.helpfulCount > 0 ? `(${r.helpfulCount})` : ""}
-                    </button>
-                    <button type="button" className="text-muted hover:text-error transition-colors focus:outline-none">
-                      Report
-                    </button>
-                  </div>
+                  <p className="text-xs text-body leading-relaxed mb-4 line-clamp-4">{r.text}</p>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
+
+                {/* Retentive interaction footer */}
+                <div className="flex items-center justify-between border-t border-hairline-soft pt-3 text-[10px]">
+                  <button
+                    type="button"
+                    onClick={() => handleHelpfulClick(r.id)}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full border transition-all active:scale-90 ${
+                      hasVoted
+                        ? "bg-rausch/10 border-rausch/20 text-rausch font-bold animate-pop"
+                        : "bg-surface-soft border-hairline-soft text-muted hover:text-ink"
+                    }`}
+                  >
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill={hasVoted ? "currentColor" : "none"}
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                    </svg>
+                    Helpful {r.helpfulCount > 0 ? `(${r.helpfulCount})` : ""}
+                  </button>
+                  
+                  <span className="text-[10px] text-muted-soft bg-surface-soft px-2 py-0.5 rounded font-medium">
+                    Verified Resident
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </section>
   );
@@ -895,6 +856,24 @@ export default function ListingDetail() {
     return Number((total / reviewsList.length).toFixed(1));
   }, [reviewsList]);
 
+  const renderNearbyPlaces = () => (
+    <div className="bg-canvas border border-hairline rounded-[14px] p-4 shadow-sm">
+      <h3 className="text-sm font-bold text-ink mb-3">What&apos;s nearby</h3>
+      <div className="divide-y divide-hairline-soft">
+        {nearbyPlaces.map((p) => (
+          <div key={p.name} className="flex items-center gap-3 py-2.5">
+            <span className="text-base shrink-0">{p.icon}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-ink truncate">{p.name}</p>
+              <p className="text-[10px] text-muted">{p.type}</p>
+            </div>
+            <span className="text-xs text-muted shrink-0">{p.dist}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   const galleryImages = useMemo(() => {
     if (!category) return [];
     const world = category.world;
@@ -985,10 +964,10 @@ export default function ListingDetail() {
 
           {/* Key facts — intent-aware row reflecting the category */}
           <section className="mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline-soft rounded-[14px] overflow-hidden border border-hairline-soft">
+            <div className="flex flex-wrap gap-3">
               {facts.map((f) => (
-                <div key={f.label} className="bg-canvas px-4 py-3">
-                  <p className="text-[11px] text-muted">{f.label}</p>
+                <div key={f.label} className="bg-canvas border border-hairline rounded-[12px] px-4 py-3 flex-1 min-w-[130px] hover:shadow-airbnb hover:border-rausch/20 hover:-translate-y-0.5 transition-all duration-300">
+                  <p className="text-[11px] text-muted font-medium uppercase tracking-wider">{f.label}</p>
                   <p className="text-sm font-semibold text-ink mt-0.5">{f.value}</p>
                 </div>
               ))}
@@ -1027,19 +1006,20 @@ export default function ListingDetail() {
 
           {/* AI Nest Insight Card — the housing × jobs differentiator */}
           <section className="mb-6">
-            <div className="bg-rausch/5 border border-rausch/40 rounded-[14px] p-4">
-              <div className="flex items-center gap-1.5 mb-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-rausch" aria-hidden="true">
-                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM5 19l1 3 1-3 3-1-3-1-1-3-1 3-3 1 3 1z" />
+            <div className="bg-gradient-to-r from-rausch/[0.04] to-tab-rent/[0.04] border border-rausch/20 rounded-[14px] p-5 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-rausch/10 to-tab-rent/10 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+              <div className="flex items-center gap-1.5 mb-2 relative z-10">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-rausch animate-pulse" aria-hidden="true">
+                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
                 </svg>
-                <span className="text-sm font-semibold text-rausch">AI nest insight</span>
+                <span className="text-sm font-bold text-rausch tracking-wide uppercase">AI nest insight</span>
               </div>
-              <p className="text-sm text-body leading-relaxed mb-2">
-                This {category?.label.toLowerCase() ?? "place"} is 12 min from 3 companies hiring for your profile.
+              <p className="text-sm text-body leading-relaxed mb-3 relative z-10 font-medium">
+                This {category?.label.toLowerCase() ?? "place"} is <span className="text-ink font-bold">12 min</span> from 3 companies hiring for your profile.
                 {listing.metroDistance ? ` ${listing.metroDistance}.` : ""} Plan your commute and explore roles nearby.
               </p>
-              <Link href="/jobs" className="text-sm text-rausch font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch rounded-sm">
-                View matches →
+              <Link href="/jobs" className="inline-flex items-center gap-1 text-sm text-rausch font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch rounded-sm relative z-10">
+                View matches <span className="inline-block group-hover:translate-x-1 transition-transform duration-300">→</span>
               </Link>
             </div>
           </section>
@@ -1061,28 +1041,11 @@ export default function ListingDetail() {
             </div>
           </section>
 
-          {/* Nearby Places */}
-          <section className="mb-6">
-            <h2 className="text-lg font-bold text-ink mb-3">What&apos;s nearby</h2>
-            <div className="bg-canvas border border-hairline rounded-[14px] divide-y divide-hairline-soft">
-              {nearbyPlaces.map((p) => (
-                <div key={p.name} className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-base">{p.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-ink truncate">{p.name}</p>
-                    <p className="text-[11px] text-muted">{p.type}</p>
-                  </div>
-                  <span className="text-xs text-muted shrink-0">{p.dist}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* Reviews & Ratings */}
           <ReviewsSection reviewsList={reviewsList} setReviewsList={setReviewsList} />
 
           {/* Contact card — inline below lg breakpoint */}
-          <section className="mb-24 lg:hidden">
+          <section className="mb-24 lg:hidden space-y-4">
             <ContactCard
               listing={listing}
               saved={saved}
@@ -1092,34 +1055,34 @@ export default function ListingDetail() {
               currentRating={currentRating}
               currentReviewsCount={currentReviewsCount}
             />
+            {renderNearbyPlaces()}
           </section>
         </div>
 
         {/* Sticky contact card — desktop */}
-        <aside className="hidden lg:block">
-          <div className="lg:sticky lg:top-24">
-            <ContactCard
-              listing={listing}
-              saved={saved}
-              onToggleSave={toggleSaved}
-              onScheduleVisit={() => setVisitOpen(true)}
-              onWhatsAppClick={trackWhatsApp}
-              currentRating={currentRating}
-              currentReviewsCount={currentReviewsCount}
-            />
-          </div>
+        <aside className="hidden lg:block space-y-4 lg:sticky lg:top-24">
+          <ContactCard
+            listing={listing}
+            saved={saved}
+            onToggleSave={toggleSaved}
+            onScheduleVisit={() => setVisitOpen(true)}
+            onWhatsAppClick={trackWhatsApp}
+            currentRating={currentRating}
+            currentReviewsCount={currentReviewsCount}
+          />
+          {renderNearbyPlaces()}
         </aside>
       </div>
 
       {/* Sticky CTA bar (mobile) */}
-      <div className="fixed bottom-14 left-0 right-0 bg-canvas border-t border-hairline px-4 py-3 flex items-center justify-between gap-3 z-40 md:hidden">
-        <div>
+      <div className="fixed bottom-[72px] left-4 right-4 bg-canvas/90 backdrop-blur-md border border-hairline/80 px-5 py-3 rounded-full flex items-center justify-between gap-3 z-40 md:hidden shadow-airbnb">
+        <div className="min-w-0">
           <p className="text-lg font-bold text-ink leading-tight">{listing.price}</p>
-          <p className="text-[11px] text-muted">{listing.noBrokerage ? "Zero brokerage" : category?.label ?? "Listing"}</p>
+          <p className="text-[10px] text-muted truncate">{listing.noBrokerage ? "Zero brokerage" : category?.label ?? "Listing"}</p>
         </div>
         <button
           type="button"
-          className="px-6 py-2.5 text-sm font-semibold text-white bg-rausch rounded-[8px] hover:bg-rausch-active active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2"
+          className="px-5 py-2.5 text-xs font-bold text-white bg-rausch rounded-full hover:bg-rausch-active active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2 shrink-0 shadow-sm"
         >
           {getCategory(listing.category)?.world === "commercial" ? "Contact agent" : "Contact owner"}
         </button>

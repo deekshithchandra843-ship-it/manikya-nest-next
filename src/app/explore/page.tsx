@@ -209,7 +209,7 @@ export default function ExplorePage() {
         {/* Search bar inside the video frame, hugging its bottom edge */}
         <div className="absolute inset-x-0 bottom-3 md:bottom-4 z-10 px-4 md:px-6 lg:px-10">
           <div className="max-w-[680px] mx-auto">
-            <SearchBar hideTabs />
+            <SearchBar hideTabs glass dropdownUp />
           </div>
         </div>
       </section>
@@ -230,8 +230,8 @@ export default function ExplorePage() {
                 type="button"
                 onClick={() => setWorld(w.value)}
                 aria-pressed={active}
-                className={`px-4 sm:px-5 md:px-6 py-2 text-sm font-semibold rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                  active ? "bg-ink text-white" : "text-muted hover:text-ink"
+                className={`px-4 sm:px-5 md:px-6 py-2 text-sm font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
+                  active ? "bg-ink text-white scale-105 shadow-md" : "text-muted hover:text-ink hover:scale-102 hover:bg-surface-soft"
                 }`}
               >
                 {w.label}
@@ -259,10 +259,10 @@ export default function ExplorePage() {
       <section aria-label="Why renters trust FindWay" className="mb-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline-soft rounded-[14px] overflow-hidden border border-hairline-soft">
           {trustPoints.map((point) => (
-            <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4">
-              <span className="text-rausch shrink-0 mt-0.5">{point.icon}</span>
+            <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4 hover:bg-surface-soft hover:scale-[1.01] transition-all duration-300 group cursor-default">
+              <span className="text-rausch shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">{point.icon}</span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink leading-tight">{point.title}</p>
+                <p className="text-sm font-semibold text-ink leading-tight group-hover:text-rausch transition-colors duration-300">{point.title}</p>
                 <p className="text-xs text-muted mt-0.5">{point.sub}</p>
               </div>
             </div>
