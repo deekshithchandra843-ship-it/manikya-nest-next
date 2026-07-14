@@ -126,7 +126,13 @@ export default function ListingCard({
             </svg>
           </button>
           {/* Category badge */}
-          <span className="absolute top-3 left-3 bg-canvas text-[11px] font-semibold text-ink px-2.5 py-1 rounded-full shadow-airbnb">
+          <span className={`absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-airbnb select-none ${
+            badge.toLowerCase().includes("pg") ? "bg-rausch text-white" :
+            badge.toLowerCase().includes("co-living") ? "bg-indigo text-white" :
+            badge.toLowerCase().includes("flat") || badge.toLowerCase().includes("rent") || badge.toLowerCase().includes("hostel") || badge.toLowerCase().includes("flatmate") ? "bg-emerald-600 text-white" :
+            badge.toLowerCase().includes("stay") || badge.toLowerCase().includes("resort") || badge.toLowerCase().includes("hotel") || badge.toLowerCase().includes("serviced") ? "bg-amber-600 text-white" :
+            "bg-ink text-white"
+          }`}>
             {badge}
           </span>
         </div>

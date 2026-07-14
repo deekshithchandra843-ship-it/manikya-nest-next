@@ -139,13 +139,13 @@ export default function HomePage() {
       <PageLayout>
 
       {/* Trust strip — proof points mirroring our core promise */}
-      <section aria-label="Why renters trust FindWay" className="mb-10">
+      <section aria-label="Why renters trust FindWay" className="mt-10 md:mt-16 mb-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline-soft rounded-[14px] overflow-hidden border border-hairline-soft">
           {trustPoints.map((point) => (
-            <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4">
-              <span className="text-rausch shrink-0 mt-0.5">{point.icon}</span>
+            <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4 hover:bg-surface-soft hover:scale-[1.01] transition-all duration-300 group cursor-default">
+              <span className="text-rausch shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">{point.icon}</span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink leading-tight">{point.title}</p>
+                <p className="text-sm font-semibold text-ink leading-tight group-hover:text-rausch transition-colors duration-300">{point.title}</p>
                 <p className="text-xs text-muted mt-0.5">{point.sub}</p>
               </div>
             </div>
@@ -183,13 +183,13 @@ export default function HomePage() {
             <Link
               key={card.title}
               href={card.href}
-              className="bg-canvas border border-hairline rounded-[14px] p-5 hover:shadow-airbnb transition-shadow group"
+              className="bg-canvas border border-hairline rounded-[14px] p-5 hover:-translate-y-1 hover:shadow-airbnb hover:border-rausch/30 transition-all duration-300 group"
             >
-              <div className="mb-3">{card.icon}</div>
-              <h3 className="text-base font-semibold text-ink mb-1">{card.title}</h3>
+              <div className="mb-3 group-hover:scale-110 group-hover:text-rausch transition-all duration-300">{card.icon}</div>
+              <h3 className="text-base font-semibold text-ink mb-1 group-hover:text-rausch transition-colors duration-300">{card.title}</h3>
               <p className="text-sm text-muted mb-2">{card.subtitle}</p>
-              <span className="text-sm text-rausch font-medium group-hover:underline">
-                Explore →
+              <span className="text-sm text-rausch font-medium flex items-center gap-1">
+                Explore <span className="inline-block group-hover:translate-x-1 transition-transform duration-300">→</span>
               </span>
             </Link>
           ))}
@@ -203,10 +203,10 @@ export default function HomePage() {
           {whyCards.map((card) => (
             <div
               key={card.title}
-              className="bg-canvas border border-hairline rounded-[14px] p-5"
+              className="bg-canvas border border-hairline rounded-[14px] p-5 hover:-translate-y-1 hover:shadow-airbnb hover:border-rausch/20 transition-all duration-300 group"
             >
-              <div className="mb-2">{card.icon}</div>
-              <h3 className="text-base font-semibold text-ink mb-1">{card.title}</h3>
+              <div className="mb-2 group-hover:scale-110 transition-transform duration-300">{card.icon}</div>
+              <h3 className="text-base font-semibold text-ink mb-1 group-hover:text-rausch transition-colors duration-300">{card.title}</h3>
               <p className="text-sm text-muted">{card.description}</p>
             </div>
           ))}

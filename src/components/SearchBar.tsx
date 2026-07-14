@@ -1,8 +1,43 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useTypewriterPlaceholder } from "@/hooks/useTypewriter";
 
 const propertyTabs = ["PG/Hostel", "Rental flat", "Co-living", "Jobs"];
 const budgetOptions = ["Any budget", "Under ₹5k", "₹5k – ₹10k", "₹10k – ₹20k", "₹20k+"];
+const salaryOptions = ["Any salary", "Under ₹25k", "₹25k – ₹50k", "₹50k – ₹1L", "₹1L+"];
+
+const RENT_WORDS = [
+  "Search 2 BHK in HSR Layout...",
+  "Search flats near Indiranagar...",
+  "Search bachelors apartments...",
+  "Search pet-friendly homes...",
+  "Search apartments near Metro..."
+];
+
+const PG_WORDS = [
+  "Search single room PG in Koramangala...",
+  "Search girls hostel near BTM Layout...",
+  "Search boys PG near Electronic City...",
+  "Search sharing rooms with food..."
+];
+
+const COLIVING_WORDS = [
+  "Search co-living spaces in HSR...",
+  "Search twin sharing in Koramangala...",
+  "Search managed co-living for women..."
+];
+
+const JOBS_WORDS = [
+  "Search Software Engineer roles...",
+  "Search Product Manager jobs...",
+  "Search sales jobs in Bengaluru...",
+  "Search remote developer work..."
+];
+
+const DEFAULT_WORDS = [
+  "Search locality, college, or company...",
+  "Search properties near you..."
+];
 
 interface SearchBarProps {
   onSearch?: (location: string, budget: string, propertyType: string) => void;
@@ -10,14 +45,57 @@ interface SearchBarProps {
   lightText?: boolean;
   /** Hide the property-type tabs (PG/Hostel, Rental flat, etc.) */
   hideTabs?: boolean;
+  /** Apply premium glassmorphic transparent background. */
+  glass?: boolean;
+  /** Force the dropdown menu to open upwards (useful when placed near container bottoms) */
+  dropdownUp?: boolean;
 }
 
-export default function SearchBar({ onSearch, lightText = false, hideTabs = false }: SearchBarProps) {
+export default function SearchBar({ onSearch, lightText = false, hideTabs = false, glass = false, dropdownUp = false }: SearchBarProps) {
   const [location, setLocation] = useState("");
   const [budget, setBudget] = useState("Any budget");
   const [propertyType, setPropertyType] = useState("PG/Hostel");
+  const [open, setOpen] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const isJobs = propertyType === "Jobs";
+  const options = isJobs ? salaryOptions : budgetOptions;
+
+  let words = DEFAULT_WORDS;
+  if (isJobs) words = JOBS_WORDS;
+  else if (propertyType === "Rental flat") words = RENT_WORDS;
+  else if (propertyType === "PG/Hostel") words = PG_WORDS;
+  else if (propertyType === "Co-living") words = COLIVING_WORDS;
+
+  const typewriterPlaceholder = useTypewriterPlaceholder(words);
+
+  // Sync selected default when mode switches between Jobs and Housing
+  useEffect(() => {
+    setBudget(isJobs ? "Any salary" : "Any budget");
+  }, [isJobs]);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    if (!open) return;
+    function handleOutsideClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [open]);
+
+  // Escape key to close
+  useEffect(() => {
+    if (!open) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   const handleSearch = () => {
     if (onSearch) onSearch(location, budget, propertyType);
@@ -58,9 +136,13 @@ export default function SearchBar({ onSearch, lightText = false, hideTabs = fals
       )}
 
       {/* The search bar */}
-      <div className="w-full bg-canvas border border-hairline rounded-[32px] md:rounded-full shadow-airbnb flex flex-col md:flex-row items-stretch md:items-center md:pr-2 overflow-hidden md:overflow-visible">
+      <div className={`w-full border rounded-[32px] md:rounded-full flex flex-col md:flex-row items-stretch md:items-center md:pr-2 transition-all duration-300 ${
+        glass
+          ? "bg-white/85 backdrop-blur-md border-white/30 shadow-2xl focus-within:bg-white/95 focus-within:border-white/50 focus-within:scale-[1.01]"
+          : "bg-canvas border-hairline shadow-airbnb"
+      }`}>
         {/* Location input */}
-        <div className="flex flex-col px-6 py-3 flex-1 text-left transition-colors focus-within:bg-surface-soft md:rounded-l-full">
+        <div className="flex flex-col px-6 py-3 flex-1 text-left transition-colors focus-within:bg-surface-soft rounded-t-[30px] md:rounded-t-none md:rounded-l-full">
           <label htmlFor="search-where" className="text-[14px] font-medium text-ink leading-tight">
             Where
           </label>
@@ -68,7 +150,7 @@ export default function SearchBar({ onSearch, lightText = false, hideTabs = fals
             id="search-where"
             type="text"
             placeholder={
-              isJobs ? "Role, company or area…" : "City, locality, college or company…"
+              typewriterPlaceholder || (isJobs ? "Role, company or area…" : "City, locality, college or company…")
             }
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -77,26 +159,70 @@ export default function SearchBar({ onSearch, lightText = false, hideTabs = fals
         </div>
 
         {/* Divider */}
-        <div className="hidden md:block w-px bg-hairline h-8" />
-        <div className="md:hidden h-px bg-hairline mx-6" />
+        <div className="hidden md:block w-px bg-hairline h-8 shrink-0" aria-hidden="true" />
+        <div className="md:hidden h-px bg-hairline mx-6" aria-hidden="true" />
 
         {/* Budget dropdown */}
-        <div className="flex flex-col px-6 py-3 md:min-w-[180px] text-left transition-colors focus-within:bg-surface-soft">
-          <label htmlFor="search-budget" className="text-[14px] font-medium text-ink leading-tight">
+        <div ref={containerRef} className="relative flex flex-col px-6 py-3 md:min-w-[200px] text-left transition-colors focus-within:bg-surface-soft rounded-b-[30px] md:rounded-b-none">
+          <label id="search-budget-label" className="text-[14px] font-medium text-ink leading-tight">
             {isJobs ? "Expected salary" : "Monthly budget"}
           </label>
-          <select
+          <button
             id="search-budget"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-            className="text-sm text-body outline-none bg-transparent cursor-pointer mt-0.5 -ml-0.5 rounded-sm focus-visible:ring-2 focus-visible:ring-ink/40"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            aria-labelledby="search-budget-label search-budget"
+            onClick={() => setOpen((o) => !o)}
+            className="flex items-center justify-between text-sm text-body font-normal outline-none bg-transparent cursor-pointer mt-0.5 -ml-0.5 rounded-sm focus-visible:ring-2 focus-visible:ring-ink/40 text-left min-w-0"
           >
-            {budgetOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+            <span className="truncate">{budget}</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              aria-hidden="true"
+              className={`ml-2 shrink-0 transition-transform text-muted ${open ? "rotate-180" : ""}`}
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {open && (
+            <div className={`absolute left-0 right-0 md:left-auto md:right-0 w-full md:w-60 bg-canvas rounded-[16px] shadow-airbnb border border-hairline-soft z-50 py-1.5 overflow-hidden animate-fade-up ${
+              dropdownUp ? "bottom-full mb-2" : "top-full mt-2"
+            }`}>
+              <ul role="listbox" aria-labelledby="search-budget-label" className="flex flex-col">
+                {options.map((opt) => {
+                  const active = budget === opt;
+                  return (
+                    <li key={opt} role="option" aria-selected={active}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBudget(opt);
+                          setOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between hover:bg-surface-soft focus-visible:bg-surface-soft focus-visible:outline-none ${
+                          active ? "text-rausch font-semibold bg-surface-soft/60" : "text-ink"
+                        }`}
+                      >
+                        <span>{opt}</span>
+                        {active && (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-rausch shrink-0">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Search orb */}
