@@ -495,10 +495,11 @@ export default function PostListing() {
           <span className="inline-flex w-16 h-16 rounded-full bg-rausch/10 text-rausch items-center justify-center mb-5" aria-hidden="true">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M20 6L9 17l-5-5" /></svg>
           </span>
-          <h1 className="text-[26px] font-bold text-ink tracking-tight mb-2">Your listing is live</h1>
+          <h1 className="text-[26px] font-bold text-ink tracking-tight mb-2">Submitted for review</h1>
           <p className="text-base text-body mb-8">
             Posted as <span className="font-medium text-ink">{listingRole ? listingRole[0].toUpperCase() + listingRole.slice(1) : "you"}</span>.
-            We&apos;ll notify you on WhatsApp when seekers respond.
+            Our team will review it shortly — once approved, it goes live and seekers can find it.
+            We&apos;ll notify you on WhatsApp when it&apos;s published and when seekers respond.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/explore" className="h-12 px-6 inline-flex items-center justify-center bg-rausch text-white text-sm font-semibold rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2">
