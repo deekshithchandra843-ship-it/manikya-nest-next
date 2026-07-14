@@ -115,13 +115,16 @@ const callouts = [
 const styles = `
   .fw-seg, .fw-callout, .fw-core { opacity: 0; animation-duration: ${CYCLE}; animation-iteration-count: infinite; animation-play-state: paused; }
   .fw-play .fw-seg, .fw-play .fw-callout, .fw-play .fw-core { animation-play-state: running; }
-  .fw-seg { transform-box: view-box; transform-origin: 50% 50%; }
+  /* Origin must be the wheel center (360,220) in user units: percentage
+   * origins break on the mobile crop because Chrome ignores the viewBox
+   * min-x/min-y offset when resolving them. */
+  .fw-seg { transform-box: view-box; transform-origin: 360px 220px; }
   .fw-seg-1 { animation-name: fw-seg-1; } .fw-callout-1 { animation-name: fw-fade-1; }
   .fw-seg-2 { animation-name: fw-seg-2; } .fw-callout-2 { animation-name: fw-fade-2; }
   .fw-seg-3 { animation-name: fw-seg-3; } .fw-callout-3 { animation-name: fw-fade-3; }
   .fw-seg-4 { animation-name: fw-seg-4; } .fw-callout-4 { animation-name: fw-fade-4; }
   .fw-core { animation-name: fw-core; }
-  .fw-ring { opacity: 0; transform-box: view-box; transform-origin: 50% 50%; animation: fw-core ${CYCLE} infinite paused, fw-spin 9s linear infinite paused; }
+  .fw-ring { opacity: 0; transform-box: view-box; transform-origin: 360px 220px; animation: fw-core ${CYCLE} infinite paused, fw-spin 9s linear infinite paused; }
   .fw-play .fw-ring { animation-play-state: running, running; }
   @keyframes fw-spin { to { transform: rotate(360deg); } }
   @keyframes fw-seg-1 { 0%,2% { opacity:0; transform:scale(.55) rotate(-16deg); } 9% { opacity:1; transform:scale(1) rotate(0deg); } 95% { opacity:1; } 100% { opacity:0; } }
