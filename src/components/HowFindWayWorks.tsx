@@ -169,6 +169,63 @@ const styles = `
   }
 `;
 
+function WheelSvg({ idSuffix, withCallouts, viewBox }: { idSuffix: string; withCallouts: boolean; viewBox: string }) {
+  const markerId = `fw-arrowhead-${idSuffix}`;
+  return (
+    <svg viewBox={viewBox} role="img" aria-label="FindWay cycle: Home, Job, Skill and Community connected in one loop" className="w-full h-auto max-w-[820px] mx-auto">
+      <defs>
+        <marker id={markerId} viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" />
+        </marker>
+      </defs>
+
+      {wedges.map((w, i) => (
+        <g key={w.label} className={`fw-seg fw-seg-${i + 1}`}>
+          <path d={w.d} fill={w.fill} />
+          <text
+            x={w.lx}
+            y={w.ly}
+            transform={`rotate(${w.rot} ${w.lx} ${w.ly})`}
+            textAnchor="middle"
+            fill="#ffffff"
+            fontSize="15"
+            fontWeight="700"
+            letterSpacing="2.5"
+            style={{ textTransform: "uppercase" }}
+          >
+            {w.label.toUpperCase()}
+          </text>
+        </g>
+      ))}
+
+      {/* cycle arrows spin automatically around the core */}
+      <g className="fw-ring">
+        {arrows.map((d) => (
+          <path key={d} d={d} fill="none" stroke="#ffffff" strokeWidth="5" strokeLinecap="round" markerEnd={`url(#${markerId})`} />
+        ))}
+      </g>
+      <g className="fw-core">
+        <circle cx="360" cy="220" r="62" fill="#ffffff" />
+        <text x="360" y="228" textAnchor="middle" fill="#ff385c" fontSize="24" fontWeight="800" letterSpacing="-0.5">
+          findway.
+        </text>
+      </g>
+
+      {/* icon callouts */}
+      {withCallouts &&
+        callouts.map((c, i) => (
+          <g key={pillars[i].key} className={`fw-callout fw-callout-${i + 1}`}>
+            <path d={c.line} fill="none" stroke="#e8244d" strokeWidth="1.5" opacity="0.55" />
+            <circle cx={c.cx} cy={c.cy} r="24" fill="#d90f43" />
+            <g transform={`translate(${c.cx - 12}, ${c.cy - 12})`} stroke="#ffffff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              {pillars[i].icon}
+            </g>
+          </g>
+        ))}
+    </svg>
+  );
+}
+
 export default function HowFindWayWorks() {
   const wheel = usePlayOnView<HTMLDivElement>();
   const mission = usePlayOnView<HTMLDivElement>();
@@ -187,56 +244,14 @@ export default function HowFindWayWorks() {
             One City. One App. Your Whole Journey, Sorted.
           </h2>
           <div className="rounded-[20px] bg-[#fdeef1] shadow-airbnb px-2 py-4 md:px-6 md:py-6">
-            <svg viewBox="0 0 720 440" role="img" aria-label="FindWay cycle: Home, Job, Skill and Community connected in one loop" className="w-full h-auto max-w-[820px] mx-auto">
-              <defs>
-                <marker id="fw-arrowhead" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" />
-                </marker>
-              </defs>
-
-              {wedges.map((w, i) => (
-                <g key={w.label} className={`fw-seg fw-seg-${i + 1}`}>
-                  <path d={w.d} fill={w.fill} />
-                  <text
-                    x={w.lx}
-                    y={w.ly}
-                    transform={`rotate(${w.rot} ${w.lx} ${w.ly})`}
-                    textAnchor="middle"
-                    fill="#ffffff"
-                    fontSize="15"
-                    fontWeight="700"
-                    letterSpacing="2.5"
-                    style={{ textTransform: "uppercase" }}
-                  >
-                    {w.label.toUpperCase()}
-                  </text>
-                </g>
-              ))}
-
-              {/* cycle arrows spin automatically around the core */}
-              <g className="fw-ring">
-                {arrows.map((d) => (
-                  <path key={d} d={d} fill="none" stroke="#ffffff" strokeWidth="5" strokeLinecap="round" markerEnd="url(#fw-arrowhead)" />
-                ))}
-              </g>
-              <g className="fw-core">
-                <circle cx="360" cy="220" r="62" fill="#ffffff" />
-                <text x="360" y="228" textAnchor="middle" fill="#ff385c" fontSize="24" fontWeight="800" letterSpacing="-0.5">
-                  findway.
-                </text>
-              </g>
-
-              {/* icon callouts */}
-              {callouts.map((c, i) => (
-                <g key={pillars[i].key} className={`fw-callout fw-callout-${i + 1} max-sm:hidden`}>
-                  <path d={c.line} fill="none" stroke="#e8244d" strokeWidth="1.5" opacity="0.55" />
-                  <circle cx={c.cx} cy={c.cy} r="24" fill="#d90f43" />
-                  <g transform={`translate(${c.cx - 12}, ${c.cy - 12})`} stroke="#ffffff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    {pillars[i].icon}
-                  </g>
-                </g>
-              ))}
-            </svg>
+            {/* Desktop: wide canvas with icon callouts. Mobile: tight crop so
+              * the wheel fills the phone width instead of shrinking. */}
+            <div className="hidden sm:block">
+              <WheelSvg idSuffix="d" withCallouts viewBox="0 0 720 440" />
+            </div>
+            <div className="sm:hidden">
+              <WheelSvg idSuffix="m" withCallouts={false} viewBox="200 60 320 320" />
+            </div>
           </div>
         </div>
       </section>
@@ -248,7 +263,7 @@ export default function HowFindWayWorks() {
           className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 items-center ${mission.inView ? "fw-reveal" : ""}`}
         >
           {/* staggered pillar cards, chained with connector lines like the reference */}
-          <div className="relative grid grid-cols-2 gap-5 max-w-[420px] mx-auto md:mx-0 w-full">
+          <div className="relative grid grid-cols-2 gap-4 sm:gap-5 max-w-[420px] mx-auto md:mx-0 w-full">
             <svg
               className="fw-links absolute inset-0 w-full h-full pointer-events-none"
               viewBox="0 0 100 100"
@@ -263,7 +278,7 @@ export default function HowFindWayWorks() {
                 </g>
               ))}
             </svg>
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4 sm:gap-5">
               {[storySteps[0], storySteps[2]].map((s, col) => (
                 <div
                   key={s.key}
@@ -280,7 +295,7 @@ export default function HowFindWayWorks() {
                 </div>
               ))}
             </div>
-            <div className="flex flex-col gap-5 pt-12">
+            <div className="flex flex-col gap-4 sm:gap-5 pt-10 sm:pt-12">
               {[storySteps[1], storySteps[3]].map((s, col) => (
                 <div
                   key={s.key}
