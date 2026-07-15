@@ -1,13 +1,6 @@
 "use client";
-import { useState } from "react";
 import type { Role } from "@/lib/auth";
 import { profileTheme } from "./theme";
-
-const BUSINESS_ROLES: { role: Role; title: string; desc: string }[] = [
-  { role: "owner", title: "Property Owner / Landlord", desc: "List PGs, rooms, flats or commercial spaces." },
-  { role: "agent", title: "Real Estate Agent", desc: "Manage client leads, matches and site visits." },
-  { role: "builder", title: "Property Builder", desc: "List multi-tower projects and track inventory." },
-];
 
 export default function ProfileSwitch({
   activeView,
@@ -20,7 +13,6 @@ export default function ProfileSwitch({
   onSwitch: (mode: "personal" | "business") => void;
   onActivate: (role: Role) => void;
 }) {
-  const [showRoles, setShowRoles] = useState(false);
   const isBusiness = activeView === "business";
   const theme = profileTheme(activeView);
 
@@ -64,36 +56,13 @@ export default function ProfileSwitch({
   }
 
   // No business role yet — activation entry.
-  if (!showRoles) {
-    return (
-      <button
-        onClick={() => setShowRoles(true)}
-        className={`inline-flex items-center gap-1.5 text-[13px] font-semibold text-white bg-gradient-to-r ${theme.pillGradient} rounded-full px-4 py-2.5 shadow-airbnb hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2`}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-        Activate Business Profile
-      </button>
-    );
-  }
-
   return (
-    <div className="w-full bg-canvas border border-hairline rounded-[16px] p-4 shadow-3d-soft animate-fade-up">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-bold text-ink">How do you want to act?</h4>
-        <button onClick={() => setShowRoles(false)} className="text-[11px] font-semibold text-muted hover:text-ink">Cancel</button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        {BUSINESS_ROLES.map((opt) => (
-          <button
-            key={opt.role}
-            onClick={() => { onActivate(opt.role); setShowRoles(false); }}
-            className="text-left p-3 rounded-xl border border-hairline hover:border-violet hover:bg-violet/5 transition-all space-y-1 focus:outline-none bg-canvas"
-          >
-            <span className="font-bold text-xs text-ink block">{opt.title}</span>
-            <span className="text-[11px] text-muted block leading-snug">{opt.desc}</span>
-          </button>
-        ))}
-      </div>
-    </div>
+    <button
+      onClick={() => onActivate("owner")}
+      className={`inline-flex items-center gap-1.5 text-[13px] font-semibold text-white bg-gradient-to-r ${theme.pillGradient} rounded-full px-4 py-2.5 shadow-airbnb hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2`}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+      Activate Business Profile
+    </button>
   );
 }

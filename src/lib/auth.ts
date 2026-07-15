@@ -40,7 +40,18 @@ function notify(): void {
 
 function persist(session: Session): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  cachedSession = session;
+
+  // Strip sensitive PII fields before writing to localStorage
+  const metadataOnly = {
+    id: session.id,
+    roles: session.roles,
+    activeView: session.activeView,
+  };
+
+  const rawMetadata = JSON.stringify(metadataOnly);
+  cachedRaw = rawMetadata;
+  window.localStorage.setItem(SESSION_KEY, rawMetadata);
   notify();
 }
 
@@ -104,22 +115,40 @@ export function disableRole(role: Role): Session | null {
 }
 
 // Parsed-session cache keyed by the raw string, so getSession returns a
-// stable reference while the stored value is unchanged (required by
-// useSyncExternalStore, and cheaper for everyone else).
+// stable reference while the stored value is unchanged.
 let cachedRaw: string | null = null;
 let cachedSession: Session | null = null;
 
 /** Read the current session, or null if signed out. */
 export function getSession(): Session | null {
   if (typeof window === "undefined") return null;
+
+  // If we already have the full session populated in-memory, return it.
+  if (cachedSession && cachedSession.name) {
+    return cachedSession;
+  }
+
   const raw = window.localStorage.getItem(SESSION_KEY);
   if (raw !== cachedRaw) {
     cachedRaw = raw;
     try {
-      const parsed = raw ? (JSON.parse(raw) as Session) : null;
-      if (parsed && !Array.isArray(parsed.roles)) parsed.roles = [];
-      if (parsed && !parsed.activeView) parsed.activeView = "personal";
-      cachedSession = parsed;
+      const parsed = raw ? (JSON.parse(raw) as Partial<Session>) : null;
+      if (parsed) {
+        if (!Array.isArray(parsed.roles)) parsed.roles = [];
+        if (!parsed.activeView) parsed.activeView = "personal";
+        cachedSession = {
+          id: parsed.id || "",
+          name: "",
+          email: "",
+          phone: "",
+          roles: parsed.roles || [],
+          activeView: parsed.activeView || "personal",
+          city: "",
+          avatarUrl: "",
+        };
+      } else {
+        cachedSession = null;
+      }
     } catch {
       cachedSession = null;
     }
@@ -144,6 +173,8 @@ export function updateSession(patch: Partial<Pick<Session, "name" | "city" | "av
 /** Clear the current session (local mirror + Supabase Auth). */
 export function signOut(): void {
   if (typeof window === "undefined") return;
+  cachedSession = null;
+  cachedRaw = null;
   supabase.auth.signOut().finally(() => {
     window.localStorage.removeItem(SESSION_KEY);
     notify();
@@ -173,9 +204,13 @@ export async function syncSession(): Promise<Session | null> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      if (typeof window !== "undefined" && window.localStorage.getItem(SESSION_KEY)) {
-        window.localStorage.removeItem(SESSION_KEY);
-        notify();
+      if (typeof window !== "undefined") {
+        cachedSession = null;
+        cachedRaw = null;
+        if (window.localStorage.getItem(SESSION_KEY)) {
+          window.localStorage.removeItem(SESSION_KEY);
+          notify();
+        }
       }
       return null;
     }

@@ -106,7 +106,7 @@ export default function EditProfileModal({
                 alt="Profile Preview"
                 width={80}
                 height={80}
-                className="rounded-full object-cover border border-hairline shadow-sm"
+                className="w-20 h-20 rounded-full object-cover border border-hairline shadow-sm"
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-rausch/10 text-rausch flex items-center justify-center font-bold text-xl uppercase border border-hairline shadow-sm">

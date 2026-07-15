@@ -241,9 +241,9 @@ export default function HowFindWayWorks() {
       <section aria-label="How FindWay works" className="mb-10">
         <div
           ref={wheel.ref}
-          className={`rounded-[24px] bg-gradient-to-b from-rausch to-rausch-active px-4 pt-10 pb-4 md:px-8 md:pt-14 md:pb-8 ${wheel.inView ? "fw-play" : ""}`}
+          className={`py-6 md:py-8 ${wheel.inView ? "fw-play" : ""}`}
         >
-          <h2 className="text-center text-white text-[26px] md:text-[38px] font-extrabold tracking-tight leading-tight max-w-[640px] mx-auto mb-8 md:mb-10">
+          <h2 className="text-center text-neutral-900 text-[26px] md:text-[38px] font-extrabold tracking-tight leading-tight max-w-[640px] mx-auto mb-8 md:mb-10">
             One City. One App. Your Whole Journey, Sorted.
           </h2>
           <div className="rounded-[20px] bg-[#fdeef1] shadow-airbnb px-2 py-4 md:px-6 md:py-6">
@@ -318,17 +318,29 @@ export default function HowFindWayWorks() {
           </div>
 
           {/* mission copy */}
-          <div>
-            <h2 className="text-[34px] md:text-[44px] font-extrabold tracking-tight text-rausch mb-4">Our Mission</h2>
-            <h3 className="text-xl md:text-2xl font-bold text-ink leading-snug mb-4">
-              Connect Every New Beginning in the City — Home, Work, and Beyond
+          <div className="flex flex-col items-start space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rausch/10 text-rausch text-xs font-semibold uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-rausch animate-pulse"></span>
+              Our Mission
+            </div>
+            
+            <h3 className="text-3xl md:text-4xl font-extrabold tracking-tight text-ink leading-tight">
+              Connect Every New Beginning in the City —{" "}
+              <span className="bg-gradient-to-r from-rausch to-[#c40837] bg-clip-text text-transparent">
+                Home, Work, and Beyond
+              </span>
             </h3>
-            <p className="text-[15px] md:text-base text-body leading-relaxed">
-              Moving to a new city is fragmented and overwhelming — finding a trusted home, a nearby
-              job, the right skills, and people you belong with all happen in different places.
-              FindWay brings them together on one platform, so every newcomer to Bengaluru can settle
-              in with verified listings, zero brokerage, and a community that has their back.
-            </p>
+            
+            <div className="relative pl-6 border-l-2 border-rausch/20 py-1">
+              <p className="text-base md:text-lg text-body leading-relaxed font-medium mb-3">
+                Moving to a new city is fragmented and overwhelming — finding a trusted home, a nearby
+                job, the right skills, and people you belong with all happen in different places.
+              </p>
+              <p className="text-sm md:text-base text-body/80 leading-relaxed">
+                FindWay brings them together on one platform, so every newcomer to Bengaluru can settle
+                in with verified listings, zero brokerage, and a community that has their back.
+              </p>
+            </div>
           </div>
         </div>
       </section>

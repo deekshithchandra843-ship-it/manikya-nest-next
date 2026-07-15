@@ -2,6 +2,9 @@
 
 FindWay is a comprehensive real estate platform split into a **Next.js Frontend** and an **Express.js API Backend** powered by a **PostgreSQL** database via **Prisma ORM** and **Supabase Auth**.
 
+> [!WARNING]
+> **Security Notice**: Secrets and API keys (such as the Supabase URL, Anon Key, and PostgreSQL connection passwords) were previously hardcoded in the source code. While they have been moved to environment variables, the old values remain in the git history. **You must rotate any previously hardcoded secrets immediately** before deploying to production.
+
 ---
 
 ## 📂 Project Structure & Architecture
