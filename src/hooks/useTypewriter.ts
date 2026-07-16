@@ -10,10 +10,13 @@ export function useTypewriterPlaceholder(words: string[], speed = 60, delay = 20
 
   // Reset indices if the words list actually changes
   useEffect(() => {
-    setWordIndex(0);
-    setCharIndex(0);
-    setIsDeleting(false);
-    setPlaceholder("");
+    const timer = setTimeout(() => {
+      setWordIndex(0);
+      setCharIndex(0);
+      setIsDeleting(false);
+      setPlaceholder("");
+    }, 0);
+    return () => clearTimeout(timer);
   }, [wordsString]);
 
   useEffect(() => {
@@ -26,25 +29,27 @@ export function useTypewriterPlaceholder(words: string[], speed = 60, delay = 20
 
     if (isDeleting) {
       timer = setTimeout(() => {
-        setPlaceholder(currentWord.substring(0, charIndex - 1));
-        setCharIndex((prev) => prev - 1);
+        if (charIndex === 0) {
+          setIsDeleting(false);
+          setWordIndex((prev) => (prev + 1) % words.length);
+        } else {
+          setPlaceholder(currentWord.substring(0, charIndex - 1));
+          setCharIndex((prev) => prev - 1);
+        }
       }, speed / 2);
     } else {
       timer = setTimeout(() => {
-        setPlaceholder(currentWord.substring(0, charIndex + 1));
-        setCharIndex((prev) => prev + 1);
+        if (charIndex === currentWord.length) {
+          setIsDeleting(true);
+        } else {
+          setPlaceholder(currentWord.substring(0, charIndex + 1));
+          setCharIndex((prev) => prev + 1);
+        }
       }, speed);
     }
 
-    if (!isDeleting && charIndex === currentWord.length) {
-      timer = setTimeout(() => setIsDeleting(true), delay);
-    } else if (isDeleting && charIndex === 0) {
-      setIsDeleting(false);
-      setWordIndex((prev) => (prev + 1) % words.length);
-    }
-
     return () => clearTimeout(timer);
-  }, [charIndex, isDeleting, wordIndex, wordsString, speed, delay]);
+  }, [charIndex, isDeleting, wordIndex, wordsString, speed, delay, words]);
 
   return placeholder;
 }
