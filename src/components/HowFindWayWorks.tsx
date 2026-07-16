@@ -230,8 +230,8 @@ function WheelSvg({ idSuffix, withCallouts, viewBox }: { idSuffix: string; withC
 }
 
 export default function HowFindWayWorks() {
-  const wheel = usePlayOnView<HTMLDivElement>();
-  const mission = usePlayOnView<HTMLDivElement>();
+  const { ref: wheelRef, inView: wheelInView } = usePlayOnView<HTMLDivElement>();
+  const { ref: missionRef, inView: missionInView } = usePlayOnView<HTMLDivElement>();
 
   return (
     <>
@@ -240,8 +240,8 @@ export default function HowFindWayWorks() {
       {/* Story wheel */}
       <section aria-label="How FindWay works" className="mb-10">
         <div
-          ref={wheel.ref}
-          className={`py-6 md:py-8 ${wheel.inView ? "fw-play" : ""}`}
+          ref={wheelRef}
+          className={`py-6 md:py-8 ${wheelInView ? "fw-play" : ""}`}
         >
           <h2 className="text-center text-neutral-900 text-[26px] md:text-[38px] font-extrabold tracking-tight leading-tight max-w-[640px] mx-auto mb-8 md:mb-10">
             One City. One App. Your Whole Journey, Sorted.
@@ -262,8 +262,8 @@ export default function HowFindWayWorks() {
       {/* Our Mission */}
       <section aria-label="Our mission" className="mb-12">
         <div
-          ref={mission.ref}
-          className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 items-center ${mission.inView ? "fw-reveal" : ""}`}
+          ref={missionRef}
+          className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 items-center ${missionInView ? "fw-reveal" : ""}`}
         >
           {/* staggered pillar cards, chained with connector lines like the reference */}
           <div className="relative grid grid-cols-2 gap-4 sm:gap-5 max-w-[420px] mx-auto md:mx-0 w-full">
