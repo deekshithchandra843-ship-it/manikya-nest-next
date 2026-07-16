@@ -513,7 +513,6 @@ export default function PostListing() {
   const [days, setDays] = useState<string[]>(["Sat", "Sun"]);
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Listing role selection state
@@ -616,29 +615,27 @@ export default function PostListing() {
     });
   };
 
-  const uploadFiles = async (files: File[]) => {
-    const imageFiles = files.filter((f) => f.type.startsWith("image/"));
-    if (imageFiles.length === 0) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     setUploading(true);
 
     try {
-      for (const file of imageFiles) {
-        // Compress the image client-side first
-        const compressedBlob = await compressImage(file);
-        const formData = new FormData();
-        // Keep original file name but swap extension to .jpg
-        const cleanName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-        formData.append("image", compressedBlob, cleanName);
+      // Compress the image client-side first
+      const compressedBlob = await compressImage(file);
+      const formData = new FormData();
+      // Keep original file name but swap extension to .jpg
+      const cleanName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+      formData.append("image", compressedBlob, cleanName);
 
-        const res = await apiClient.post("/listings/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        if (res.data && res.data.success && res.data.url) {
-          setImages((p) => [...p, res.data.url]);
-        } else {
-          alert("Upload failed: " + (res.data.error || "Unknown error"));
-        }
+      const res = await apiClient.post("/listings/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (res.data && res.data.success && res.data.url) {
+        setImages((p) => [...p, res.data.url]);
+      } else {
+        alert("Upload failed: " + (res.data.error || "Unknown error"));
       }
     } catch (err: any) {
       console.error("Upload error:", err);
@@ -646,36 +643,6 @@ export default function PostListing() {
     } finally {
       setUploading(false);
     }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    await uploadFiles(Array.from(files));
-    // Reset so picking the same file again re-triggers onChange
-    e.target.value = "";
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!dragActive) setDragActive(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Ignore leave events fired when moving over child elements
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    setDragActive(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (uploading) return;
-    uploadFiles(Array.from(e.dataTransfer.files));
   };
 
   const [submitting, setSubmitting] = useState(false);
@@ -1356,7 +1323,7 @@ export default function PostListing() {
 
             {/* Step 7: Photos (Airbnb Grid Layout) */}
             {active === 7 && (
-              <div className="space-y-4" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+              <div className="space-y-4">
                 <p className="text-xs text-body text-center mb-1">Upload at least 3 photos of your property</p>
 
                 {images.length === 0 ? (
@@ -1365,9 +1332,7 @@ export default function PostListing() {
                     type="button"
                     onClick={handleUploadClick}
                     disabled={uploading}
-                    className={`w-full h-64 border-2 border-dashed rounded-[16px] flex flex-col items-center justify-center transition-all group ${
-                      dragActive ? "border-ink bg-surface" : "border-hairline bg-surface-soft hover:bg-surface hover:border-ink"
-                    }`}
+                    className="w-full h-64 border-2 border-dashed border-hairline rounded-[16px] flex flex-col items-center justify-center bg-surface-soft hover:bg-surface hover:border-ink transition-all group"
                   >
                     {uploading ? (
                       <span className="text-sm font-semibold text-body">Uploading...</span>

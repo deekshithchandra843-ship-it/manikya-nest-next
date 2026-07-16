@@ -92,8 +92,9 @@ export default function SignupForm({ onSuccess }: { onSuccess: (session: Session
           text: "Account created! You can now log in with your mobile number and password.",
         });
       }
-    } catch (err: any) {
-      setBanner({ type: "error", text: err?.message || "An unexpected error occurred." });
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setBanner({ type: "error", text: errMsg });
     } finally {
       setLoading(false);
     }

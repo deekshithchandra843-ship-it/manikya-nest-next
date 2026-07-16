@@ -272,11 +272,10 @@ export default function AdminControlCenter() {
       </div>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <StatTile label="Pending review" value={stats.total} />
         <StatTile label="Flagged by checks" value={stats.flagged} accent="text-amber-600" />
         <StatTile label="High-risk (duplicate)" value={stats.danger} accent="text-rausch" />
-        <StatTile label="Zero brokerage" value={stats.zeroBrokerage} accent="text-emerald" />
       </div>
 
       {/* Toolbar */}
@@ -422,9 +421,7 @@ export default function AdminControlCenter() {
                       <span className="text-[9px] font-bold bg-surface border border-hairline px-1.5 py-0.5 rounded text-muted uppercase tracking-wide">
                         {item.world}
                       </span>
-                      {item.noBrokerage && (
-                        <span className="bg-rausch/10 text-rausch text-[9px] font-bold px-1.5 py-0.5 rounded">Zero Brokerage</span>
-                      )}
+
                       {flags.map((f) => (
                         <FlagPill key={f.id} flag={f} />
                       ))}

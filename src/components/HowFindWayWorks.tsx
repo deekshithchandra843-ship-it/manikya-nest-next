@@ -46,7 +46,7 @@ const storySteps = [
     key: "nest",
     step: "Step 1",
     title: "Find your nest",
-    caption: "A verified home, zero brokerage",
+    caption: "A verified home, direct connection",
     icon: pillars[0].icon,
   },
   {
@@ -338,7 +338,7 @@ export default function HowFindWayWorks() {
               </p>
               <p className="text-sm md:text-base text-body/80 leading-relaxed">
                 FindWay brings them together on one platform, so every newcomer to Bengaluru can settle
-                in with verified listings, zero brokerage, and a community that has their back.
+                in with verified listings, direct connection, and a community that has their back.
               </p>
             </div>
           </div>

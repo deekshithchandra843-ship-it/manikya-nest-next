@@ -1026,9 +1026,7 @@ export default function ListingDetail() {
                   Verified
                 </span>
               )}
-              {listing.noBrokerage && (
-                <span className="text-[11px] font-medium text-ink bg-surface-soft px-2 py-0.5 rounded-full">No brokerage</span>
-              )}
+
               <span className="text-[11px] font-medium text-muted bg-surface-soft px-2 py-0.5 rounded-full">
                 {category?.label ?? listing.badge}
                 {listing.spec && ` · ${listing.spec}`}
@@ -1157,7 +1155,7 @@ export default function ListingDetail() {
       <div className="fixed bottom-[72px] left-4 right-4 bg-canvas/90 backdrop-blur-md border border-hairline/80 px-5 py-3 rounded-full flex items-center justify-between gap-3 z-40 md:hidden shadow-airbnb">
         <div className="min-w-0">
           <p className="text-lg font-bold text-ink leading-tight">{listing.price}</p>
-          <p className="text-[10px] text-muted truncate">{listing.noBrokerage ? "Zero brokerage" : category?.label ?? "Listing"}</p>
+          <p className="text-[10px] text-muted truncate">{category?.label ?? "Listing"}</p>
         </div>
         <button
           type="button"

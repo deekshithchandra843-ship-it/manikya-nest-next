@@ -47,8 +47,9 @@ export default function LoginForm({ onSuccess }: { onSuccess: (session: Session)
         }
         onSuccess(session);
       }
-    } catch (err: any) {
-      setError(err?.message || "An unexpected error occurred.");
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(errMsg);
     } finally {
       setLoading(false);
     }

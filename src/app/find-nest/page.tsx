@@ -354,9 +354,7 @@ export default function FindNest() {
                             Verified
                           </span>
                         )}
-                        {listing.noBrokerage && (
-                          <span className="text-[10px] font-medium text-ink bg-surface-soft px-2 py-0.5 rounded-full">No brokerage</span>
-                        )}
+
                         {listing.furnishing && (
                           <span className="text-[10px] text-muted bg-surface-soft px-2 py-0.5 rounded-full">{listing.furnishing}</span>
                         )}

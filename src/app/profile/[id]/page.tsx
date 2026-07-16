@@ -204,7 +204,6 @@ export default function PublicProfile() {
                     reviewCount={l.reviewCount}
                     amenities={l.amenities}
                     verified={l.verified}
-                    noBrokerage={l.noBrokerage}
                     furnishing={l.furnishing}
                     availableFrom={l.availableFrom}
                     area={l.area}

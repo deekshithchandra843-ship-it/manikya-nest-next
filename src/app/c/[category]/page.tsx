@@ -12,7 +12,6 @@ const ListingsMap = dynamic(() => import("@/components/ListingsMap"), {
 });
 import ListingCard from "@/components/ListingCard";
 import FiltersDrawer from "@/components/FiltersDrawer";
-import CategoryHero from "@/components/category-heroes/CategoryHero";
 import { apiClient } from "@/lib/apiClient";
 import {
   getCategory,
@@ -103,6 +102,18 @@ export default function CategoryPage() {
   const category = getCategory(slug);
 
   const [baseListings, setBaseListings] = useState<Listing[]>([]);
+  const isPg = slug === "pg";
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (isPg) {
+      const v = videoRef.current;
+      if (v) {
+        v.muted = true;
+        v.play().catch(() => {});
+      }
+    }
+  }, [category, isPg]);
   const [loading, setLoading] = useState(true);
   // Slider bounds come from the initial unfiltered load and stay fixed while
   // filtering, so narrowing the budget doesn't shrink the slider's own range.
@@ -228,15 +239,91 @@ export default function CategoryPage() {
   const showBottomCrossSell = filtered.length > 0 && filtered.length <= 6;
 
   return (
-    <PageLayout
-      breadcrumbs={[
-        { label: "Home", href: "/" },
-        { label: "Explore", href: "/explore" },
-        { label: category.label },
-      ]}
-    >
-      {/* Per-category hero with video background */}
-      <CategoryHero slug={slug} city={CITY} />
+    <>
+      {/* Split Hero Section: 30% Info with watermark image, 70% Map */}
+      <section 
+        aria-label="Category Hero Header" 
+        className="w-full border-b border-neutral-200 flex flex-col md:flex-row h-auto md:h-[400px] bg-canvas relative z-0"
+      >
+        {/* 35% Info panel */}
+        <div className="w-full md:w-[35%] bg-canvas relative z-0 h-[320px] md:h-full">
+          <div className="w-full h-full border-b md:border-b-0 md:border-r border-neutral-200 bg-canvas relative overflow-hidden flex flex-col justify-end">
+            {/* If PG, play the drone view video in background */}
+            {isPg ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src="/hero-video/pg-drone.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-80 z-0"
+                />
+                {/* Dark gradient mask to make white text pop beautifully at the bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10 z-0 pointer-events-none" />
+
+                {/* Text placed cleanly inside the video */}
+                <div className="relative z-10 p-6 md:p-8 text-white">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-rausch mb-1.5 block">
+                    Category Hub
+                  </span>
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                    {category.label}
+                  </h1>
+                  <p className="text-xs md:text-sm text-neutral-200 mt-2 leading-relaxed font-semibold">
+                    {category.subtitle || `Find premium verified ${category.label.toLowerCase()} listings nearby.`}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    <span className="inline-flex items-center bg-white/20 border border-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
+                      {filtered.length} Nest{filtered.length !== 1 ? "s" : ""} Available
+                    </span>
+                    <span className="inline-flex items-center bg-rausch text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md">
+                      Verified
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="p-6 md:p-8 relative z-10 my-auto">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-rausch mb-1.5 block">
+                  Category Hub
+                </span>
+                <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-950 tracking-tight leading-tight">
+                  {category.label}
+                </h1>
+                <p className="text-xs md:text-sm text-neutral-800 mt-2.5 leading-relaxed font-bold">
+                  {category.subtitle || `Find premium verified ${category.label.toLowerCase()} listings nearby.`}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center bg-white border border-neutral-250 text-neutral-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+                    {filtered.length} Nest{filtered.length !== 1 ? "s" : ""} Available
+                  </span>
+                  <span className="inline-flex items-center bg-rausch text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md">
+                    Verified Properties
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 65% Map */}
+        <div className="w-full md:w-[65%] h-[320px] md:h-full bg-canvas relative z-0">
+          <ListingsMap listings={filtered} />
+        </div>
+      </section>
+
+      <PageLayout
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
+          { label: category.label },
+        ]}
+        className="max-w-[1200px] ml-0 mr-auto px-4 md:px-6 lg:px-10 pb-20 md:pb-8"
+      >
 
       {/* Context header — result count + save search (h1 is now in the hero) */}
       <header className="pt-1 pb-4">
@@ -407,46 +494,36 @@ export default function CategoryPage() {
         </div>
       )}
 
-      {/* Results + sticky map split */}
-      <div id="results" className="md:grid md:grid-cols-[1fr_minmax(0,40%)] lg:grid-cols-[1fr_minmax(0,440px)] md:gap-6 md:items-start">
-        {/* List column */}
-        <div className={viewMode === "map" ? "hidden md:block" : "block"}>
-          {loading ? (
-            <ListSkeleton />
-          ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center py-16 px-6 border border-hairline-soft rounded-[14px] bg-surface-soft">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="text-muted-soft mb-3" aria-hidden="true">
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <p className="text-base font-semibold text-ink mb-1">No {noun} match these filters</p>
-              <p className="text-sm text-muted mb-4">Try widening your budget or removing a filter.</p>
-              <button
-                type="button"
-                onClick={clearAll}
-                className="px-4 py-2 text-sm font-medium text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2"
-              >
-                Clear all filters
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {filtered.map((listing, i) => (
-                <div key={listing.id} className="contents">
-                  <ListingCard {...listing} showCta image={listing.image || category.image} />
-                  {i === 5 && <CrossSellCard />}
-                </div>
-              ))}
-              {showBottomCrossSell && <CrossSellCard />}
-            </div>
-          )}
-        </div>
-
-        {/* Map column */}
-        <div className={viewMode === "list" ? "hidden md:block" : "block"}>
-          <div className="md:sticky md:top-40 h-[320px] md:h-[calc(100vh-12rem)] bg-surface-soft border border-hairline-soft rounded-[14px] overflow-hidden">
-            <ListingsMap />
+      {/* Results Deck */}
+      <div id="results" className="mt-4">
+        {loading ? (
+          <ListSkeleton />
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center py-16 px-6 border border-hairline-soft rounded-[14px] bg-surface-soft">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="text-muted-soft mb-3" aria-hidden="true">
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <p className="text-base font-semibold text-ink mb-1">No {noun} match these filters</p>
+            <p className="text-sm text-muted mb-4">Try widening your budget or removing a filter.</p>
+            <button
+              type="button"
+              onClick={clearAll}
+              className="px-4 py-2 text-sm font-medium text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2"
+            >
+              Clear all filters
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {filtered.map((listing, i) => (
+              <div key={listing.id} className="contents">
+                <ListingCard {...listing} showCta image={listing.image || category.image} />
+                {i === 5 && <CrossSellCard />}
+              </div>
+            ))}
+            {showBottomCrossSell && <CrossSellCard />}
+          </div>
+        )}
       </div>
 
       {/* More filters drawer */}
@@ -466,5 +543,6 @@ export default function CategoryPage() {
         onClearAll={clearAll}
       />
     </PageLayout>
+    </>
   );
 }

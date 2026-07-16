@@ -72,7 +72,10 @@ export default function SearchBar({ onSearch, lightText = false, hideTabs = fals
 
   // Sync selected default when mode switches between Jobs and Housing
   useEffect(() => {
-    setBudget(isJobs ? "Any salary" : "Any budget");
+    const timer = setTimeout(() => {
+      setBudget(isJobs ? "Any salary" : "Any budget");
+    }, 0);
+    return () => clearTimeout(timer);
   }, [isJobs]);
 
   // Click outside to close dropdown

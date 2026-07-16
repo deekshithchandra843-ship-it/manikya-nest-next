@@ -29,10 +29,15 @@ export default function NotificationBell() {
 
   useEffect(() => {
     if (session) {
-      fetchNotifications();
+      const timer = setTimeout(() => {
+        fetchNotifications();
+      }, 0);
       // Poll notifications list every 15 seconds
       const interval = setInterval(fetchNotifications, 15000);
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
   }, [session]);
 

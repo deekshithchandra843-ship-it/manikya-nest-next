@@ -9,11 +9,12 @@ interface BreadcrumbItem {
 interface PageLayoutProps {
   children: React.ReactNode;
   breadcrumbs?: BreadcrumbItem[];
+  className?: string;
 }
 
-export default function PageLayout({ children, breadcrumbs }: PageLayoutProps) {
+export default function PageLayout({ children, breadcrumbs, className }: PageLayoutProps) {
   return (
-    <main className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 pb-20 md:pb-8">
+    <main className={className || "max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 pb-20 md:pb-8"}>
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 py-3 text-xs text-muted">
           {breadcrumbs.map((crumb, i) => (
