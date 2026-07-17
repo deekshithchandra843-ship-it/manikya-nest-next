@@ -685,8 +685,6 @@ export default function PostListing() {
         priceStr = `₹${numericPrice.toLocaleString("en-IN")}${isStay ? "/night" : "/mo"}`;
       }
 
-      const defaultImage = `/categories/${slug}.jpg`;
-
       const fullAddress = [
         form.houseNo,
         form.project,
@@ -700,8 +698,8 @@ export default function PostListing() {
         location: fullAddress,
         price: priceStr,
         priceValue: numericPrice,
-        image: images.length > 0 ? images[0] : defaultImage,
-        images: images.length > 0 ? images : [defaultImage],
+        image: images[0],
+        images,
         badge: slug === "pg" || slug === "coliving" ? "PG" : isStay ? getCategory(slug)?.label ?? "Stay" : "Flat",
         rating: 5.0,
         category: slug,
