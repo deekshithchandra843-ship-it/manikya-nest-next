@@ -920,10 +920,10 @@ export default function PostListing() {
   // Success screen
   if (published) {
     return (
-      <div className="h-screen w-screen flex flex-col justify-between overflow-hidden bg-canvas">
+      <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-canvas">
         <style dangerouslySetInnerHTML={{ __html: `
           body > nav, body > footer, .bottom-nav { display: none !important; }
-          body > .flex-1 { height: 100vh !important; max-height: 100vh !important; overflow: hidden !important; }
+          body > .flex-1 { height: 100vh !important; height: 100dvh !important; max-height: 100vh !important; max-height: 100dvh !important; overflow: hidden !important; }
         `}} />
         {/* Header */}
         <header className="h-16 px-6 md:px-10 flex items-center justify-between border-b border-hairline bg-canvas shrink-0">
@@ -978,11 +978,11 @@ export default function PostListing() {
     : [];
 
   return (
-    <div className="h-screen w-screen flex flex-col justify-between overflow-hidden bg-canvas">
+    <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-canvas">
       {/* CSS overrides to hide layout wrapper's Navbar, Footer, and BottomNav */}
       <style dangerouslySetInnerHTML={{ __html: `
         body > nav, body > footer, .bottom-nav { display: none !important; }
-        body > .flex-1 { height: 100vh !important; max-height: 100vh !important; overflow: hidden !important; }
+        body > .flex-1 { height: 100vh !important; height: 100dvh !important; max-height: 100vh !important; max-height: 100dvh !important; overflow: hidden !important; }
         @keyframes bounceSlow {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
