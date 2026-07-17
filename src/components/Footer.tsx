@@ -55,13 +55,13 @@ export default function Footer() {
   };
 
   return (
-    <footer className="w-full mt-24 font-sans bg-neutral-50 text-neutral-600 relative overflow-hidden">
+    <footer className="w-full mt-24 font-sans bg-[#0f0f11] text-neutral-400 relative overflow-hidden">
       {/* Creative SVG Wave Top Divider */}
-      <div className="w-full overflow-hidden leading-[0] bg-canvas border-b border-neutral-200/30">
+      <div className="w-full overflow-hidden leading-[0] bg-canvas">
         <svg className="relative block w-full h-[40px] md:h-[60px]" viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path 
             d="M0,60 C300,110 600,10 1200,60 L1200,120 L0,120 Z" 
-            className="fill-neutral-50"
+            className="fill-[#0f0f11]"
           />
         </svg>
       </div>
@@ -76,15 +76,15 @@ export default function Footer() {
           {achievements.map((stat) => (
             <div 
               key={stat.label} 
-              className="bg-white border border-neutral-200/80 rounded-[20px] p-6 shadow-sm hover:border-rausch/30 hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+              className="bg-[#18181c] border border-neutral-800 rounded-[20px] p-6 shadow-sm hover:border-rausch/30 hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
             >
               <div>
-                <p className="text-3xl md:text-4xl font-extrabold text-neutral-900 tracking-tight group-hover:text-rausch transition-colors duration-300">
+                <p className="text-3xl md:text-4xl font-extrabold text-white tracking-tight group-hover:text-rausch transition-colors duration-300">
                   {stat.value}
                 </p>
-                <h4 className="text-sm font-bold text-neutral-800 mt-2 mb-1">{stat.label}</h4>
+                <h4 className="text-sm font-bold text-neutral-200 mt-2 mb-1">{stat.label}</h4>
               </div>
-              <p className="text-xs text-neutral-500 leading-relaxed mt-1 border-t border-neutral-100 pt-2">
+              <p className="text-xs text-neutral-400 leading-relaxed mt-1 border-t border-neutral-800/60 pt-2">
                 {stat.description}
               </p>
             </div>
@@ -93,7 +93,7 @@ export default function Footer() {
       </div>
 
       {/* Main Footer Links & Newsletter */}
-      <div className="max-w-[1200px] mx-auto px-6 md:px-10 pb-16 pt-8 md:pb-20 relative z-10 border-t border-neutral-200/50">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 pb-16 pt-8 md:pb-20 relative z-10 border-t border-neutral-800/40">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-start">
           
           {/* Brand Column (Span 4) */}
@@ -101,13 +101,13 @@ export default function Footer() {
             <Link href="/" className="inline-block self-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch rounded-md" aria-label="FindWay Logo">
               <Logo size={38} />
             </Link>
-            <p className="text-sm leading-relaxed text-neutral-500 max-w-[300px]">
+            <p className="text-sm leading-relaxed text-neutral-400 max-w-[300px]">
               FindWay is a housing-first portal mapping verified homes near your daily job and commute. Built for seamless professional migrations.
             </p>
             <div className="flex items-center gap-3.5 mt-2">
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 hover:text-white hover:bg-rausch hover:border-rausch hover:scale-105 transition-all duration-200"
+                className="w-9 h-9 rounded-full bg-[#18181c] border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-rausch hover:border-rausch hover:scale-105 transition-all duration-200"
                 aria-label="Twitter X"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -116,7 +116,7 @@ export default function Footer() {
               </a>
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 hover:text-white hover:bg-rausch hover:border-rausch hover:scale-105 transition-all duration-200"
+                className="w-9 h-9 rounded-full bg-[#18181c] border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-rausch hover:border-rausch hover:scale-105 transition-all duration-200"
                 aria-label="LinkedIn"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -125,7 +125,7 @@ export default function Footer() {
               </a>
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 hover:text-white hover:bg-rausch hover:border-rausch hover:scale-105 transition-all duration-200"
+                className="w-9 h-9 rounded-full bg-[#18181c] border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-rausch hover:border-rausch hover:scale-105 transition-all duration-200"
                 aria-label="Instagram"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -139,13 +139,13 @@ export default function Footer() {
 
           {/* Quick Links Column (Span 2) */}
           <div className="md:col-span-2">
-            <h3 className="text-neutral-900 text-xs font-bold tracking-wider uppercase mb-5">Quick Links</h3>
+            <h3 className="text-white text-xs font-bold tracking-wider uppercase mb-5">Quick Links</h3>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-neutral-500 hover:text-rausch hover:translate-x-1 transition-all duration-200 inline-block"
+                    className="text-sm text-neutral-400 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block"
                   >
                     {link.label}
                   </Link>
@@ -156,13 +156,13 @@ export default function Footer() {
 
           {/* Company Links Column (Span 2) */}
           <div className="md:col-span-2">
-            <h3 className="text-neutral-900 text-xs font-bold tracking-wider uppercase mb-5">Company</h3>
+            <h3 className="text-white text-xs font-bold tracking-wider uppercase mb-5">Company</h3>
             <ul className="space-y-3">
               {companyLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-neutral-500 hover:text-rausch hover:translate-x-1 transition-all duration-200 inline-block"
+                    className="text-sm text-neutral-400 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block"
                   >
                     {link.label}
                   </Link>
@@ -172,9 +172,9 @@ export default function Footer() {
           </div>
 
           {/* Newsletter Column (Span 4 - Framed Card) */}
-          <div className="md:col-span-4 bg-white border border-neutral-200 rounded-[22px] p-6 shadow-sm">
-            <h3 className="text-neutral-900 text-sm font-bold tracking-tight mb-2">Stay Updated</h3>
-            <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
+          <div className="md:col-span-4 bg-[#18181c] border border-neutral-800 rounded-[22px] p-6 shadow-sm">
+            <h3 className="text-white text-sm font-bold tracking-tight mb-2">Stay Updated</h3>
+            <p className="text-xs text-neutral-400 mb-4 leading-relaxed">
               Subscribe to get notified about new verified properties and career roles.
             </p>
             <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-2.5">
@@ -183,7 +183,7 @@ export default function Footer() {
                 type="email"
                 placeholder="your@email.com"
                 required
-                className="w-full px-4 py-2.5 text-sm bg-neutral-50 border border-neutral-200 rounded-[12px] focus:outline-none focus:border-rausch placeholder-neutral-400 text-neutral-950 transition-colors"
+                className="w-full px-4 py-2.5 text-sm bg-[#0f0f11] border border-neutral-800 rounded-[12px] focus:outline-none focus:border-rausch placeholder-neutral-500 text-white transition-colors"
               />
               <button
                 type="submit"
@@ -198,16 +198,16 @@ export default function Footer() {
       </div>
 
       {/* Bottom Legal Band */}
-      <div className="border-t border-neutral-200 bg-white relative z-10">
+      <div className="border-t border-neutral-900 bg-[#0a0a0c] relative z-10">
         <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 justify-center sm:justify-start">
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-400">
               © {new Date().getFullYear()} FindWay, Inc. All rights reserved.
             </p>
-            <Link href="#" className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors">
+            <Link href="#" className="text-xs text-neutral-400 hover:text-white transition-colors">
               Privacy Policy
             </Link>
-            <Link href="#" className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors">
+            <Link href="#" className="text-xs text-neutral-400 hover:text-white transition-colors">
               Terms of Service
             </Link>
           </div>
@@ -216,7 +216,7 @@ export default function Footer() {
           <button
             type="button"
             onClick={handleScrollToTop}
-            className="flex items-center gap-2 text-xs text-neutral-500 hover:text-rausch font-bold transition-all duration-200 px-3.5 py-1.5 border border-neutral-200 hover:border-neutral-300 bg-white rounded-full shadow-sm active:scale-95"
+            className="flex items-center gap-2 text-xs text-neutral-400 hover:text-white font-bold transition-all duration-200 px-3.5 py-1.5 border border-neutral-800 hover:border-neutral-700 bg-[#18181c] rounded-full shadow-sm active:scale-95"
           >
             Back to top
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

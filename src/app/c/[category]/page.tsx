@@ -241,80 +241,46 @@ export default function CategoryPage() {
   return (
     <>
       {/* Split Hero Section: 30% Info with watermark image, 70% Map */}
+      {/* Full-width Map Hero Section with Floating Category Hub Card (Airbnb Style) */}
       <section 
-        aria-label="Category Hero Header" 
-        className="w-full border-b border-neutral-200 flex flex-col md:flex-row h-auto md:h-[400px] bg-canvas relative z-0"
+        aria-label="Category Hero Map Header" 
+        className="w-full h-[320px] md:h-[450px] relative border-b border-hairline-soft bg-canvas overflow-hidden z-10"
       >
-        {/* 35% Info panel */}
-        <div className="w-full md:w-[35%] bg-canvas relative z-0 h-[320px] md:h-full">
-          <div className="w-full h-full border-b md:border-b-0 md:border-r border-neutral-200 bg-canvas relative overflow-hidden flex flex-col justify-end">
-            {/* If PG, play the drone view video in background */}
-            {isPg ? (
-              <>
-                <video
-                  ref={videoRef}
-                  src="/hero-video/pg-drone.mp4"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="auto"
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-80 z-0"
-                />
-                {/* Dark gradient mask to make white text pop beautifully at the bottom */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10 z-0 pointer-events-none" />
-
-                {/* Text placed cleanly inside the video */}
-                <div className="relative z-10 p-6 md:p-8 text-white">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-rausch mb-1.5 block">
-                    Category Hub
-                  </span>
-                  <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
-                    {category.label}
-                  </h1>
-                  <p className="text-xs md:text-sm text-neutral-200 mt-2 leading-relaxed font-semibold">
-                    {category.subtitle || `Find premium verified ${category.label.toLowerCase()} listings nearby.`}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center bg-white/20 border border-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
-                      {filtered.length} Nest{filtered.length !== 1 ? "s" : ""} Available
-                    </span>
-                    <span className="inline-flex items-center bg-rausch text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md">
-                      Verified
-                    </span>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="p-6 md:p-8 relative z-10 my-auto">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-rausch mb-1.5 block">
-                  Category Hub
-                </span>
-                <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-950 tracking-tight leading-tight">
-                  {category.label}
-                </h1>
-                <p className="text-xs md:text-sm text-neutral-800 mt-2.5 leading-relaxed font-bold">
-                  {category.subtitle || `Find premium verified ${category.label.toLowerCase()} listings nearby.`}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center bg-white border border-neutral-250 text-neutral-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
-                    {filtered.length} Nest{filtered.length !== 1 ? "s" : ""} Available
-                  </span>
-                  <span className="inline-flex items-center bg-rausch text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md">
-                    Verified Properties
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 65% Map */}
-        <div className="w-full md:w-[65%] h-[320px] md:h-full bg-canvas relative z-0">
+        {/* Full 100% Map */}
+        <div className="absolute inset-0 w-full h-full z-0">
           <ListingsMap listings={filtered} />
         </div>
+
+        {/* Floating Category Hub Pill (Desktop Only - Compact Form) */}
+        <div className="hidden md:flex absolute top-4 left-6 z-10 bg-white/95 backdrop-blur-md border border-hairline-soft/80 shadow-airbnb rounded-full px-5 py-2.5 items-center gap-3 animate-fade-in">
+          <span className="text-xs font-black text-neutral-950 tracking-tight">{category.label}</span>
+          <div className="w-[1px] h-3 bg-neutral-200" />
+          <span className="text-[10px] font-extrabold text-rausch bg-rausch/10 px-2.5 py-0.5 rounded-full">
+            {filtered.length} Nest{filtered.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </section>
+
+      {/* Mobile Info Header (Static, Mobile Only) */}
+      <div className="block md:hidden bg-canvas p-5 border-b border-hairline-soft">
+        <span className="text-[9px] font-extrabold uppercase tracking-widest text-rausch mb-1 block">
+          Category Hub
+        </span>
+        <h1 className="text-xl font-extrabold text-neutral-950 tracking-tight leading-tight">
+          {category.label}
+        </h1>
+        <p className="text-xs text-neutral-600 mt-1.5 leading-relaxed">
+          {category.subtitle || `Find premium verified ${category.label.toLowerCase()} listings nearby.`}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <span className="inline-flex items-center bg-surface-soft border border-hairline text-neutral-900 text-[9px] font-extrabold px-2 py-0.5 rounded-full">
+            {filtered.length} Nest{filtered.length !== 1 ? "s" : ""} Available
+          </span>
+          <span className="inline-flex items-center bg-rausch text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full">
+            Verified
+          </span>
+        </div>
+      </div>
 
       <PageLayout
         breadcrumbs={[
