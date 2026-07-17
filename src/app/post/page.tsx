@@ -557,7 +557,7 @@ export default function PostListing() {
       return fields.filter((f) => f.required).every((f) => form[f.key] && form[f.key].trim() !== "");
     }
     if (stepIndex === 6) return true;
-    if (stepIndex === 7) return images.length >= 3;
+    if (stepIndex === 7) return images.length >= 1;
     if (stepIndex === 8) return true;
     return true;
   };
@@ -687,9 +687,17 @@ export default function PostListing() {
 
       const defaultImage = `/categories/${slug}.jpg`;
 
+      const fullAddress = [
+        form.houseNo,
+        form.project,
+        form.street,
+        form.locality,
+        form.city || "Bengaluru"
+      ].filter(Boolean).join(", ");
+
       const payload = {
         title,
-        location: `${form.locality || ""}, ${form.city || "Bengaluru"}`,
+        location: fullAddress,
         price: priceStr,
         priceValue: numericPrice,
         image: images.length > 0 ? images[0] : defaultImage,
@@ -707,7 +715,9 @@ export default function PostListing() {
         area: form.area ? `${form.area} sq ft` : undefined,
         spec: form.bhk || undefined,
         roomTypes: [],
-        listedBy: role
+        listedBy: role,
+        latitude: form.latitude ? parseFloat(form.latitude) : undefined,
+        longitude: form.longitude ? parseFloat(form.longitude) : undefined,
       };
 
       const res = await apiClient.post("/listings", payload);
@@ -746,17 +756,25 @@ export default function PostListing() {
               city = "Bengaluru";
             }
             
-            const locality = addr.suburb || addr.neighbourhood || addr.neighborhood || addr.quarter || addr.road || "";
-            const project = addr.road || addr.residential || "";
+            const locality = addr.suburb || addr.neighbourhood || addr.neighborhood || addr.quarter || "";
+            const project = addr.building || addr.construction || addr.amenity || addr.shop || addr.tourism || "";
+            const street = addr.road || addr.residential || "";
+            const houseNo = addr.house_number || "";
+            const landmark = addr.point_of_interest || addr.monument || "";
 
             setForm((prev) => ({
               ...prev,
               city: city,
               locality: locality,
-              project: project
+              project: project,
+              street: street,
+              houseNo: houseNo,
+              landmark: landmark,
+              latitude: latitude.toString(),
+              longitude: longitude.toString(),
             }));
             
-            alert(`Location detected successfully: ${locality}, ${city}`);
+            alert(`Location detected successfully: ${locality || project || street || city}`);
           } else {
             alert("No address results found for this location.");
           }
@@ -849,7 +867,7 @@ export default function PostListing() {
   const renderField = (f: FieldDef) => {
     if (f.type === "select" || f.type === "pills") {
       return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {f.options.map((o) => {
             const on = form[f.key] === o;
             return (
@@ -858,7 +876,7 @@ export default function PostListing() {
                 type="button"
                 onClick={() => set(f.key, o)}
                 aria-pressed={on}
-                className={`px-3 py-2 text-xs font-semibold rounded-[8px] border text-center transition-all ${
+                className={`px-3.5 py-2 text-xs font-semibold rounded-[8px] border text-center transition-all ${
                   on ? theme.chip + " border-transparent scale-[1.01] shadow-sm" : "bg-canvas text-ink border-hairline hover:border-ink hover:scale-[1.01]"
                 }`}
               >
@@ -1259,23 +1277,56 @@ export default function PostListing() {
                   {!form.locality && <p className="text-[10px] text-error mt-1">Please specify a valid locality</p>}
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>House / Flat / Block No.</label>
+                    <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 002 2h10a2 2 0 002-2V9l-9-7-9 7z" />
+                      </svg>
+                      <input
+                        className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
+                        placeholder="e.g. Flat 402, Block B"
+                        value={form.houseNo ?? ""}
+                        onChange={(e) => set("houseNo", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelCls}>Apartment / Society / Building Name</label>
+                    <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+                      </svg>
+                      <input
+                        className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
+                        placeholder="e.g. Prestige Shantiniketan"
+                        value={form.project ?? ""}
+                        onChange={(e) => set("project", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
-                  <label className={labelCls}>Project / Society name</label>
+                  <label className={labelCls}>Street / Road / Lane</label>
                   <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                      <path d="M4 19h16M4 5h16M12 5v14" />
                     </svg>
                     <input
                       className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
-                      placeholder="e.g. Prestige Shantiniketan"
-                      value={form.project ?? ""}
-                      onChange={(e) => set("project", e.target.value)}
+                      placeholder="e.g. 100 Feet Road"
+                      value={form.street ?? ""}
+                      onChange={(e) => set("street", e.target.value)}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className={labelCls}>Street / Landmark</label>
+                  <label className={labelCls}>Nearby Landmark</label>
                   <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
                       <circle cx="12" cy="12" r="10" />
@@ -1283,7 +1334,7 @@ export default function PostListing() {
                     </svg>
                     <input
                       className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
-                      placeholder="Near Forum Mall"
+                      placeholder="e.g. Near Forum Mall"
                       value={form.landmark ?? ""}
                       onChange={(e) => set("landmark", e.target.value)}
                     />
@@ -1416,9 +1467,9 @@ export default function PostListing() {
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
 
                 <p className="text-[11px] text-muted">Properties with high-quality photos get up to 5× more leads.</p>
-                {images.length < 3 && (
+                {images.length < 1 && (
                   <p className="text-[11px] text-error mt-2 font-semibold">
-                    ⚠️ Please add at least 3 photos to continue (added: {images.length}/3)
+                    ⚠️ Please add at least 1 photo to continue (added: {images.length}/1)
                   </p>
                 )}
               </div>
