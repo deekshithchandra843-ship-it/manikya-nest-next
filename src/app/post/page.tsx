@@ -373,14 +373,14 @@ type FieldDef = {
 );
 
 const bhkTypes = ["1 RK", "1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"];
-const apartmentTypes = ["Apartment", "Independent House", "Gated Villa", "Standalone"];
+const apartmentTypes = ["Apartment", "Independent House", "Gated Villa", "Standalone", "Plot"];
 const floorOptions = ["Ground", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
 const propertyAges = ["Under construction", "Less than 1 year", "1–3 years", "3–5 years", "5–10 years", "10+ years"];
 const facings = ["North", "South", "East", "West", "North-East", "North-West", "South-East", "South-West"];
 const furnishings = ["Fully furnished", "Semi furnished", "Unfurnished"];
 const commFurnishing = ["Furnished", "Semi furnished", "Bare shell"];
 
-function detailFields(slug: string): FieldDef[] {
+function detailFields(slug: string, apartmentType?: string): FieldDef[] {
   switch (slug) {
     case "pg":
       return [
@@ -463,16 +463,38 @@ function detailFields(slug: string): FieldDef[] {
         { key: "totalRooms", label: "Total rooms", type: "number", placeholder: "e.g. 60", half: true },
         { key: "roomTypes", label: "Room types offered", type: "pills", options: ["Standard", "Deluxe", "Suite"] },
       ];
-    default:
-      return [
+    default: {
+      const baseFields: FieldDef[] = [
         { key: "apartmentType", label: "Property type", type: "select", options: apartmentTypes, required: true },
+      ];
+
+      if (apartmentType === "Plot") {
+        return [
+          ...baseFields,
+          { key: "dimensions", label: "Dimensions (ft) (e.g. 30 × 40)", type: "text", placeholder: "e.g. 30 × 40", required: true, half: true },
+          { key: "landArea", label: "Plot area (sq ft)", type: "number", placeholder: "Calculated automatically", required: true, half: true },
+          { key: "facing", label: "Facing direction", type: "select", options: facings, half: true },
+        ] as FieldDef[];
+      }
+
+      const showFloor = apartmentType === "Apartment" || apartmentType === "Standalone";
+      const showLandArea = apartmentType === "Independent House" || apartmentType === "Gated Villa";
+
+      return [
+        ...baseFields,
         { key: "bhk", label: "BHK type", type: "select", options: bhkTypes, required: true },
-        { key: "floor", label: "Floor", type: "select", options: floorOptions, half: true },
-        { key: "totalFloors", label: "Total floors", type: "select", options: floorOptions, half: true },
+        ...(showFloor ? [
+          { key: "floor", label: "Floor", type: "select", options: floorOptions, half: true } as FieldDef,
+        ] : []),
+        { key: "totalFloors", label: "Total floors", type: "select", options: floorOptions, half: showFloor },
         { key: "age", label: "Property age", type: "select", options: propertyAges, half: true },
         { key: "facing", label: "Facing direction", type: "select", options: facings, half: true },
-        { key: "area", label: "Built-up area (sq ft)", type: "number", placeholder: "e.g. 1200" },
-      ];
+        { key: "area", label: "Built-up area (sq ft)", type: "number", placeholder: "e.g. 1200", half: showLandArea },
+        ...(showLandArea ? [
+          { key: "landArea", label: "Land area (sq ft)", type: "number", placeholder: "e.g. 1500", half: true } as FieldDef,
+        ] : []),
+      ] as FieldDef[];
+    }
   }
 }
 
@@ -527,6 +549,34 @@ export default function PostListing() {
   // Geolocation lookup state
   const [detecting, setDetecting] = useState(false);
 
+  const lastPushedStepRef = useRef<number>(0);
+
+  useEffect(() => {
+    window.history.replaceState({ step: 0 }, "");
+    lastPushedStepRef.current = 0;
+  }, []);
+
+  useEffect(() => {
+    if (active !== lastPushedStepRef.current) {
+      window.history.pushState({ step: active }, "");
+      lastPushedStepRef.current = active;
+    }
+  }, [active]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && typeof event.state.step === "number") {
+        lastPushedStepRef.current = event.state.step;
+        setActive(event.state.step);
+      } else {
+        lastPushedStepRef.current = 0;
+        setActive(0);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
@@ -546,7 +596,7 @@ export default function PostListing() {
     if (stepIndex === 1) return true;
     if (stepIndex === 2) return true;
     if (stepIndex === 3) {
-      const fields = detailFields(slug);
+      const fields = detailFields(slug, form.apartmentType);
       return fields.filter((f) => f.required).every((f) => form[f.key] && form[f.key].trim() !== "");
     }
     if (stepIndex === 4) {
@@ -700,7 +750,11 @@ export default function PostListing() {
         priceValue: numericPrice,
         image: images[0],
         images,
-        badge: slug === "pg" || slug === "coliving" ? "PG" : isStay ? getCategory(slug)?.label ?? "Stay" : "Flat",
+        badge: slug === "pg" || slug === "coliving"
+          ? "PG"
+          : isStay
+          ? getCategory(slug)?.label ?? "Stay"
+          : form.apartmentType || "Flat",
         rating: 5.0,
         category: slug,
         metroDistance: "300m from metro",
@@ -711,6 +765,8 @@ export default function PostListing() {
         furnishing: form.furnishing || "Semi furnished",
         availableFrom: form.available || "Available now",
         area: form.area ? `${form.area} sq ft` : undefined,
+        landArea: form.landArea ? `${form.landArea} sq ft` : undefined,
+        description: form.description,
         spec: form.bhk || undefined,
         roomTypes: [],
         listedBy: role,
@@ -793,10 +849,44 @@ export default function PostListing() {
   };
 
   const category = getCategory(slug);
-  const worldCategories = categoriesForWorld(world);
+  const worldCategories = categoriesForWorld(world).filter(
+    (c) => c.slug !== "buy"
+  );
   const theme = WORLD_THEME[world];
 
-  const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const set = (k: string, v: string) => {
+    setForm((p) => {
+      const nextForm = { ...p, [k]: v };
+      if (k === "apartmentType") {
+        if (v === "Plot") {
+          delete nextForm.bhk;
+          delete nextForm.floor;
+          delete nextForm.totalFloors;
+          delete nextForm.age;
+          delete nextForm.area;
+        } else {
+          delete nextForm.dimensions;
+          if (v === "Apartment" || v === "Standalone") {
+            delete nextForm.landArea;
+          } else if (v === "Independent House" || v === "Gated Villa") {
+            delete nextForm.floor;
+          }
+        }
+      }
+
+      if (k === "dimensions" && nextForm.apartmentType === "Plot") {
+        const match = v.match(/(\d+(?:\.\d+)?)\s*[*xX×]\s*(\d+(?:\.\d+)?)/);
+        if (match) {
+          const wVal = parseFloat(match[1]);
+          const hVal = parseFloat(match[2]);
+          if (!isNaN(wVal) && !isNaN(hVal)) {
+            nextForm.landArea = Math.round(wVal * hVal).toString();
+          }
+        }
+      }
+      return nextForm;
+    });
+  };
   const toggleAmenity = (a: string) =>
     setAmenities((p) => (p.includes(a) ? p.filter((x) => x !== a) : [...p, a]));
   const toggleDay = (d: string) =>
@@ -813,7 +903,13 @@ export default function PostListing() {
     chooseSlug(categoriesForWorld(w)[0].slug);
   };
 
-  const progress = Math.round((active / (WIZARD_STEPS.length - 1)) * 100);
+  const progressIndex = selectedRole === "builder"
+    ? (active >= 3 ? active - 1 : active)
+    : active;
+  const maxProgressIndex = selectedRole === "builder"
+    ? WIZARD_STEPS.length - 2
+    : WIZARD_STEPS.length - 1;
+  const progress = Math.round((progressIndex / maxProgressIndex) * 100);
   const last = active === WIZARD_STEPS.length - 1;
 
   const labelCls = "text-[12px] font-semibold text-ink block mb-1";
@@ -838,6 +934,7 @@ export default function PostListing() {
       case "totalRooms":
         return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClass}><circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" /></svg>;
       case "area":
+      case "landArea":
       case "plotArea":
       case "frontage":
       case "dimensions":
@@ -863,15 +960,18 @@ export default function PostListing() {
   };
 
   const renderField = (f: FieldDef) => {
+    const isFieldDisabled = f.key === "floor" && form.apartmentType === "Independent House";
+
     if (f.type === "select" || f.type === "pills") {
       return (
-        <div className="flex flex-wrap gap-2">
+        <div className={`flex flex-wrap gap-2 ${isFieldDisabled ? "opacity-50 pointer-events-none" : ""}`}>
           {f.options.map((o) => {
             const on = form[f.key] === o;
             return (
               <button
                 key={o}
                 type="button"
+                disabled={isFieldDisabled}
                 onClick={() => set(f.key, o)}
                 aria-pressed={on}
                 className={`px-3.5 py-2 text-xs font-semibold rounded-[8px] border text-center transition-all ${
@@ -887,11 +987,12 @@ export default function PostListing() {
     }
     
     return (
-      <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
+      <div className={`relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink ${isFieldDisabled ? "opacity-50 pointer-events-none" : ""}`}>
         {getFieldIcon(f.key)}
         <input
           type={f.type === "number" ? "text" : f.type}
           inputMode={f.type === "number" ? "numeric" : undefined}
+          disabled={isFieldDisabled}
           value={form[f.key] ?? ""}
           onChange={(e) => set(f.key, e.target.value)}
           placeholder={"placeholder" in f ? f.placeholder : undefined}
@@ -1020,7 +1121,11 @@ export default function PostListing() {
             {renderStepCartoonGraphic(active, selectedRole, world)}
           </div>
           <div className="text-center md:text-left w-full max-w-[340px]">
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider opacity-70 mb-1 md:mb-2 block">Step {active + 1} of {WIZARD_STEPS.length}</span>
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider opacity-70 mb-1 md:mb-2 block">
+              {selectedRole === "builder"
+                ? `Step ${active >= 3 ? active : active + 1} of ${WIZARD_STEPS.length - 1}`
+                : `Step ${active + 1} of ${WIZARD_STEPS.length}`}
+            </span>
             <h2 className="text-lg md:text-3.5xl font-extrabold leading-tight tracking-tight mb-1 md:mb-4 text-ink">
               {getStepTitle(active, category?.label ?? "Property")}
             </h2>
@@ -1049,7 +1154,12 @@ export default function PostListing() {
                       <button
                         key={r.value}
                         type="button"
-                        onClick={() => setSelectedRole(r.value)}
+                        onClick={() => {
+                          setSelectedRole(r.value);
+                          if (r.value === "owner" && slug === "buy") {
+                            setSlug("rent");
+                          }
+                        }}
                         className={`flex flex-col items-center justify-center p-4 rounded-[14px] border-2 transition-all ${
                           isSelected
                             ? "border-rausch bg-rausch/5 shadow-airbnb scale-[1.01]"
@@ -1127,7 +1237,7 @@ export default function PostListing() {
                         type="button"
                         onClick={() => {
                           chooseWorld(w.key);
-                          setActive(2);
+                          setActive(selectedRole === "builder" ? 3 : 2);
                         }}
                         className={`flex flex-col items-center justify-center p-5 rounded-[16px] border-2 text-center transition-all ${
                           isSelected
@@ -1178,7 +1288,7 @@ export default function PostListing() {
             {/* Step 3: Details */}
             {active === 3 && (
               <div className="space-y-4">
-                {renderFieldGroup(detailFields(slug))}
+                {renderFieldGroup(detailFields(slug, form.apartmentType))}
               </div>
             )}
 
@@ -1190,10 +1300,12 @@ export default function PostListing() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
                     {citiesList.map((c) => {
                       const isSelected = form.city === c.name;
+                      const isDisabled = c.name !== "Bengaluru";
                       return (
                         <button
                           key={c.name}
                           type="button"
+                          disabled={isDisabled}
                           onClick={() => {
                             set("city", c.name);
                             set("locality", "");
@@ -1201,6 +1313,8 @@ export default function PostListing() {
                           className={`flex flex-col items-center justify-center p-2.5 rounded-[10px] border-2 transition-all ${
                             isSelected
                               ? "border-rausch bg-rausch/5 shadow-airbnb scale-[1.01]"
+                              : isDisabled
+                              ? "border-hairline opacity-40 cursor-not-allowed pointer-events-none"
                               : "border-hairline hover:border-ink hover:scale-[1.01]"
                           }`}
                         >
@@ -1497,6 +1611,15 @@ export default function PostListing() {
                     {["I show personally", "Caretaker", "Tenant", "Security"].map((o) => (<option key={o} value={o} className="text-ink">{o}</option>))}
                   </select>
                 </div>
+                <div>
+                  <label className={labelCls}>If you want to say more about the property?</label>
+                  <textarea
+                    value={form.description ?? ""}
+                    onChange={(e) => set("description", e.target.value)}
+                    placeholder="e.g. Spacious balcony, friendly neighbours, close to parks..."
+                    className="w-full border border-hairline rounded-[8px] p-3 text-sm text-ink outline-none focus:border-ink focus:border-2 transition-colors bg-canvas h-24 resize-none"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -1512,7 +1635,13 @@ export default function PostListing() {
         </div>
         <div className="flex items-center justify-between">
           <button
-            onClick={() => setActive((i) => Math.max(0, i - 1))}
+            onClick={() => setActive((i) => {
+              const prev = i - 1;
+              if (prev === 2 && selectedRole === "builder") {
+                return 1;
+              }
+              return Math.max(0, prev);
+            })}
             disabled={active === 0}
             className="px-4 h-10 border border-hairline text-ink text-xs font-semibold rounded-[8px] hover:bg-surface-soft disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
@@ -1533,7 +1662,13 @@ export default function PostListing() {
                   if (last) {
                     publishListing(selectedRole || "owner");
                   } else {
-                    setActive((i) => i + 1);
+                    setActive((i) => {
+                      const next = i + 1;
+                      if (next === 2 && selectedRole === "builder") {
+                        return 3;
+                      }
+                      return next;
+                    });
                   }
                 }}
                 className={`px-5 h-10 text-white text-xs font-semibold rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${theme.solid} ${theme.ring} disabled:opacity-50`}
