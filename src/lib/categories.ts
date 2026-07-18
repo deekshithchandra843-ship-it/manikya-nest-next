@@ -257,6 +257,8 @@ export interface Listing {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   roomTypes?: any[];
   image?: string;
+  /** All uploaded photos; `image` is just the cover (first entry). */
+  images?: string[];
 }
 
 export const LISTINGS: Listing[] = [];

@@ -774,35 +774,12 @@ export default function ListingDetail() {
   );
 
   const galleryImages = useMemo(() => {
-    if (!category) return [];
-    const world = category.world;
-    const pool =
-      world === "residential"
-        ? [
-            "/categories/rent.jpg",
-            "/categories/buy.jpg",
-            "/categories/pg.jpg",
-            "/categories/coliving.jpg",
-          ]
-        : world === "commercial"
-        ? [
-            "/categories/commercial-office.jpg",
-            "/categories/commercial-shop.jpg",
-            "/categories/coworking.jpg",
-            "/categories/warehouse.jpg",
-            "/categories/lease.jpg",
-          ]
-        : [
-            "/categories/homestay.jpg",
-            "/categories/resort.jpg",
-            "/categories/service-apartment.jpg",
-            "/categories/hotel.jpg",
-            "/categories/rent.jpg",
-          ];
-    const primaryImage = listing?.image || category?.image;
-    const unique = [primaryImage, ...pool.filter((img) => img !== primaryImage)];
-    return unique.slice(0, 5);
-  }, [category, listing]);
+    // Only the photos actually uploaded for this listing — never stock/category images.
+    const uploaded: string[] = (listing?.images ?? []).filter(Boolean);
+    if (uploaded.length > 0) return uploaded.slice(0, 5);
+    if (listing?.image) return [listing.image];
+    return [];
+  }, [listing]);
 
   if (loading) {
     return (
