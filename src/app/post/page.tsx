@@ -474,7 +474,7 @@ function detailFields(slug: string, apartmentType?: string): FieldDef[] {
           { key: "dimensions", label: "Dimensions (ft) (e.g. 30 × 40)", type: "text", placeholder: "e.g. 30 × 40", required: true, half: true },
           { key: "landArea", label: "Plot area (sq ft)", type: "number", placeholder: "Calculated automatically", required: true, half: true },
           { key: "facing", label: "Facing direction", type: "select", options: facings, half: true },
-        ];
+        ] as FieldDef[];
       }
 
       const showFloor = apartmentType === "Apartment" || apartmentType === "Standalone";
@@ -484,16 +484,16 @@ function detailFields(slug: string, apartmentType?: string): FieldDef[] {
         ...baseFields,
         { key: "bhk", label: "BHK type", type: "select", options: bhkTypes, required: true },
         ...(showFloor ? [
-          { key: "floor", label: "Floor", type: "select", options: floorOptions, half: true },
+          { key: "floor", label: "Floor", type: "select", options: floorOptions, half: true } as FieldDef,
         ] : []),
         { key: "totalFloors", label: "Total floors", type: "select", options: floorOptions, half: showFloor },
         { key: "age", label: "Property age", type: "select", options: propertyAges, half: true },
         { key: "facing", label: "Facing direction", type: "select", options: facings, half: true },
         { key: "area", label: "Built-up area (sq ft)", type: "number", placeholder: "e.g. 1200", half: showLandArea },
         ...(showLandArea ? [
-          { key: "landArea", label: "Land area (sq ft)", type: "number", placeholder: "e.g. 1500", half: true },
+          { key: "landArea", label: "Land area (sq ft)", type: "number", placeholder: "e.g. 1500", half: true } as FieldDef,
         ] : []),
-      ];
+      ] as FieldDef[];
     }
   }
 }
