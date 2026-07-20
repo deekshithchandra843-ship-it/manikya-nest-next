@@ -53,6 +53,15 @@ const navLinks = [
       </svg>
     ) 
   },
+  { 
+    href: "/funding", 
+    label: "Funding", 
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="transition-transform group-hover:scale-110" aria-hidden="true">
+        <path d="M6 4h12M6 9h12M6 4a5 5 0 0 1 0 10H6l8 7" />
+      </svg>
+    ) 
+  },
 ];
 
 export default function Navbar() {

@@ -2,8 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import PageLayout from "@/components/PageLayout";
+
 
 // Leaflet touches `window`, so the map must never render on the server.
 const ListingsMap = dynamic(() => import("@/components/ListingsMap"), {
@@ -11,6 +12,7 @@ const ListingsMap = dynamic(() => import("@/components/ListingsMap"), {
   loading: () => <div className="h-full w-full skeleton rounded-[14px]" aria-hidden="true" />,
 });
 import ListingCard from "@/components/ListingCard";
+import CategorySearchBand from "@/components/CategorySearchBand";
 import FiltersDrawer from "@/components/FiltersDrawer";
 import { apiClient } from "@/lib/apiClient";
 import {
@@ -34,14 +36,22 @@ const SORT_PARAM: Record<string, string> = {
 };
 
 /** Translates chip/budget/sort UI state into API query params (matching is server-side now). */
-function buildQuery(slug: string, selected: string[], budget: number, maxBudget: number, sortBy: string): string {
-  const params = new URLSearchParams({ category: slug });
+function buildQuery(slug: string, selected: string[], budget: number, maxBudget: number, sortBy: string, baseParams: URLSearchParams): string {
+  const params = new URLSearchParams(baseParams);
+  params.set("category", slug);
   const chips: string[] = [];
+
+  const baseChips = params.get("chips")?.split(",").map(c => c.trim()).filter(Boolean) || [];
+
   for (const chip of selected) {
     if (chip.toLowerCase() === "near metro") params.set("nearMetro", "true");
     else chips.push(chip);
   }
-  if (chips.length) params.set("chips", chips.join(","));
+
+  const allChips = [...baseChips, ...chips];
+  if (allChips.length) params.set("chips", allChips.join(","));
+  else params.delete("chips");
+
   if (budget > 0 && budget < maxBudget) params.set("maxPrice", String(budget));
   if (SORT_PARAM[sortBy]) params.set("sort", SORT_PARAM[sortBy]);
   return params.toString();
@@ -98,6 +108,7 @@ function ListSkeleton() {
 
 export default function CategoryPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = String(params.category);
   const category = getCategory(slug);
 
@@ -122,7 +133,12 @@ export default function CategoryPage() {
   useEffect(() => {
     setLoading(true);
     setBounds([0, 0]);
-    apiClient.get(`/listings?category=${slug}`)
+
+    const query = new URLSearchParams(searchParams.toString());
+    query.set("category", slug);
+
+    const endpoint = query.has("q") ? "/search" : "/listings";
+    apiClient.get(`${endpoint}?${query.toString()}`)
       .then((res) => {
         if (res.data && res.data.success) {
           const data: Listing[] = res.data.data;
@@ -145,7 +161,7 @@ export default function CategoryPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [slug]);
+  }, [slug, searchParams]);
 
   const [minBudget, maxBudget] = bounds;
 
@@ -164,11 +180,20 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!filtersActive && !wasActiveRef.current) return;
     wasActiveRef.current = filtersActive;
+
+    const baseParams = new URLSearchParams(searchParams.toString());
     const query = filtersActive
-      ? buildQuery(slug, selected, budget, maxBudget, sortBy)
-      : new URLSearchParams({ category: slug }).toString();
+      ? buildQuery(slug, selected, budget, maxBudget, sortBy, baseParams)
+      : (() => {
+          const q = new URLSearchParams(searchParams.toString());
+          q.set("category", slug);
+          return q.toString();
+        })();
+
+    const endpoint = new URLSearchParams(query).has("q") ? "/search" : "/listings";
+
     const timer = setTimeout(() => {
-      apiClient.get(`/listings?${query}`)
+      apiClient.get(`${endpoint}?${query}`)
         .then((res) => {
           if (res.data && res.data.success) {
             setBaseListings(res.data.data);
@@ -180,7 +205,9 @@ export default function CategoryPage() {
     }, 250); // debounce the budget slider
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, budget, sortBy]);
+  }, [selected, budget, sortBy, searchParams]);
+
+  const router = useRouter();
 
   // Reset filters during render when the category changes (React's recommended
   // pattern over an effect — avoids cascading re-renders).
@@ -194,12 +221,15 @@ export default function CategoryPage() {
     setSavedSearch(false);
   }
 
-  // Update budget when maxBudget changes (loaded async)
+  // Update budget when maxBudget changes (loaded async) or when URL contains maxPrice
   useEffect(() => {
-    if (maxBudget > 0 && budget === 0) {
+    const urlMaxPrice = searchParams.get("maxPrice");
+    if (urlMaxPrice) {
+      setBudget(Number(urlMaxPrice));
+    } else if (maxBudget > 0 && budget === 0) {
       setBudget(maxBudget);
     }
-  }, [maxBudget, budget]);
+  }, [maxBudget, searchParams, budget]);
 
   const toggleFilter = (chip: string) =>
     setSelected((prev) =>
@@ -209,6 +239,7 @@ export default function CategoryPage() {
   const clearAll = () => {
     setSelected([]);
     setBudget(maxBudget);
+    router.push(`/c/${slug}`);
   };
 
   const budgetActive = budget > 0 && budget < maxBudget;
@@ -240,6 +271,14 @@ export default function CategoryPage() {
 
   return (
     <>
+      {/* Per-category search band placed above the Map */}
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 mt-4">
+        <CategorySearchBand
+          placeholder={category.searchPlaceholder ?? `Search ${noun} by locality, budget or BHK`}
+          showGender={slug === "pg" || slug === "coliving"}
+        />
+      </div>
+
       {/* Split Hero Section: 30% Info with watermark image, 70% Map */}
       {/* Full-width Map Hero Section with Floating Category Hub Card (Airbnb Style) */}
       <section 

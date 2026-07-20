@@ -181,6 +181,37 @@
   color: white;
 }
 
+/* Custom Premium scrollbars for modern browsers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+  transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Premium modern button animations and micro-interactions */
+button, a {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Interactive hover scaling for primary action buttons */
+.btn-primary-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.25);
+}
+.btn-primary-hover:active {
+  transform: scale(0.98);
+}
+
 /* Accessibility — honor reduced-motion preference globally. Animation and
    transitions become near-instant so motion-sensitive users aren't affected,
    while functionality (scroll, state) is preserved. */

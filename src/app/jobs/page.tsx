@@ -1,5 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import PageLayout from "@/components/PageLayout";
 
@@ -139,17 +140,46 @@ function JobCard({ job, saved, applied, onSave, onApply }: {
   );
 }
 
-export default function JobsPage() {
+/** Every word typed must appear somewhere on the job. */
+function jobMatchesQuery(job: Job, query: string): boolean {
+  const terms = query.toLowerCase().split(/[\s,]+/).filter((t) => t.length > 1);
+  if (!terms.length) return true;
+  const haystack = [
+    job.title, job.company, job.location, job.mode, job.type, job.experience, ...job.skills,
+  ].join(" ").toLowerCase();
+  return terms.every((t) => haystack.includes(t));
+}
+
+function jobMatchesLocation(job: Job, place: string): boolean {
+  const p = place.trim().toLowerCase();
+  if (!p) return true;
+  // Remote roles are location-agnostic, so they always qualify.
+  return job.mode === "Remote" || job.location.toLowerCase().includes(p);
+}
+
+function JobsPageContent() {
+  const searchParams = useSearchParams();
   const [active, setActive] = useState("All");
   const [saved, setSaved] = useState<number[]>([]);
   const [applied, setApplied] = useState<number[]>([]);
   const [alertOn, setAlertOn] = useState(false);
+  // Seeded from the URL so the home-page search box actually lands on results.
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [place, setPlace] = useState(() => searchParams.get("location") ?? "Bengaluru");
+  const [submitted, setSubmitted] = useState(() => ({
+    query: searchParams.get("q") ?? "",
+    place: searchParams.get("location") ?? "Bengaluru",
+  }));
+
+  const runSearch = () => setSubmitted({ query, place });
 
   const shown = useMemo(
-    () => active === "All"
-      ? jobsData
-      : jobsData.filter((j) => j.type === active || (active === "Remote" && j.mode === "Remote")),
-    [active]
+    () =>
+      jobsData
+        .filter((j) => active === "All" || j.type === active || (active === "Remote" && j.mode === "Remote"))
+        .filter((j) => jobMatchesQuery(j, submitted.query))
+        .filter((j) => jobMatchesLocation(j, submitted.place)),
+    [active, submitted]
   );
 
   // Spotlight = the strongest match in the current set; the rest fill the grid.
@@ -190,15 +220,24 @@ export default function JobsPage() {
                 className="w-full h-11 pl-10 pr-3 rounded-[10px] bg-transparent text-white text-sm placeholder:text-white/55 outline-none focus:bg-white/10 transition-colors"
                 placeholder="Role, company or skill"
                 aria-label="Search role, company or skill"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && runSearch()}
               />
             </div>
             <input
               className="sm:w-40 h-11 px-3 rounded-[10px] bg-transparent text-white text-sm placeholder:text-white/55 outline-none focus:bg-white/10 transition-colors"
               placeholder="Location"
-              defaultValue="Bengaluru"
               aria-label="Location"
+              value={place}
+              onChange={(e) => setPlace(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && runSearch()}
             />
-            <button className="h-11 px-6 bg-rausch text-white text-sm font-semibold rounded-[10px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+            <button
+              type="button"
+              onClick={runSearch}
+              className="h-11 px-6 bg-rausch text-white text-sm font-semibold rounded-[10px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+            >
               Search
             </button>
           </div>
@@ -308,9 +347,19 @@ export default function JobsPage() {
 
         {shown.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-16 px-6 border border-hairline-soft rounded-[14px] bg-surface-soft">
-            <p className="text-base font-semibold text-ink mb-1">No roles match this filter</p>
-            <p className="text-sm text-muted mb-4">Try a different filter to see more openings.</p>
-            <button onClick={() => setActive("All")} className="px-4 py-2 text-sm font-semibold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors">Show all roles</button>
+            <p className="text-base font-semibold text-ink mb-1">No roles match your search</p>
+            <p className="text-sm text-muted mb-4">Try a different keyword, location, or filter to see more openings.</p>
+            <button
+              onClick={() => {
+                setActive("All");
+                setQuery("");
+                setPlace("");
+                setSubmitted({ query: "", place: "" });
+              }}
+              className="px-4 py-2 text-sm font-semibold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors"
+            >
+              Show all roles
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -380,5 +429,13 @@ export default function JobsPage() {
         </div>
       </section>
     </PageLayout>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading jobs...</div>}>
+      <JobsPageContent />
+    </Suspense>
   );
 }

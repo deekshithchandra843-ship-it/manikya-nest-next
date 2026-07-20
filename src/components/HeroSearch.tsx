@@ -192,7 +192,7 @@ function CityDropdown({ onSelect, value }: CityDropdownProps) {
           <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
           <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        {value || "Bengaluru"}
+        <span className="truncate max-w-[90px]">{value || "Bengaluru"}</span>
         <svg
           width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
           aria-hidden="true"
@@ -313,6 +313,13 @@ interface VariantBProps {
 const GENDER_CHIPS = ["Any", "Male", "Female", "Co-ed"] as const;
 type GenderChip = (typeof GENDER_CHIPS)[number];
 
+/** Chip → the `gender` value stored on listings. "Any" means don't filter. */
+const GENDER_PARAM: Record<string, string> = {
+  Male: "boys",
+  Female: "girls",
+  "Co-ed": "anyone",
+};
+
 function VariantB({ category, onSubmit }: VariantBProps) {
   const [area, setArea] = useState("");
   const [query, setQuery] = useState("");
@@ -322,7 +329,7 @@ function VariantB({ category, onSubmit }: VariantBProps) {
   const typewriterPlaceholder = useTypewriterPlaceholder(words);
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/85 backdrop-blur-md border border-white/30 rounded-2xl sm:rounded-full shadow-2xl p-2 sm:px-4 sm:py-2 w-full max-w-[580px] mx-auto text-left animate-fade-up focus-within:bg-white/95 focus-within:border-white/50 focus-within:scale-[1.01] transition-all duration-300">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/85 backdrop-blur-md border border-white/30 rounded-2xl sm:rounded-full shadow-2xl p-2 sm:px-4 sm:py-2 w-full max-w-[700px] mx-auto text-left animate-fade-up focus-within:bg-white/95 focus-within:border-white/50 focus-within:scale-[1.01] transition-all duration-300">
       <div className="flex items-center gap-2 sm:contents">
         <CityDropdown value={area} onSelect={setArea} />
         <div className="hidden sm:block w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
@@ -359,7 +366,7 @@ function VariantB({ category, onSubmit }: VariantBProps) {
 
       <div className="hidden sm:block w-px bg-hairline h-6 self-center shrink-0" aria-hidden="true" />
 
-      <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         <label htmlFor="hero-search-b" className="sr-only">
           Search locality or area in Bengaluru
         </label>
@@ -516,23 +523,32 @@ export default function HeroSearch() {
     },
     [bumpAnim]
   );
-
-  const handleJobsClick = useCallback(() => {
+  const handleJobsClick = useCallback(() => {
     setMode("jobs");
     bumpAnim();
   }, [bumpAnim]);
 
   const handleSubmit = useCallback(
     (payload: Record<string, string>) => {
-      const fullPayload = {
-        mode,
-        ...(isJobs ? {} : { world, category: activeSlug }),
-        ...payload,
-      };
-      console.log("[HeroSearch] submit", fullPayload);
-      router.push(submitHref);
+      if (mode === "jobs") {
+        const params = new URLSearchParams();
+        if (payload.query?.trim()) params.set("q", payload.query.trim());
+        router.push(`/jobs?${params.toString()}`);
+        return;
+      }
+
+      // Land on the selected category's page so the tab the user picked (and
+      // the area dropdown, in the PG/co-living variant) actually applies.
+      const params = new URLSearchParams();
+      if (payload.query?.trim()) params.set("q", payload.query.trim());
+      if (payload.area?.trim()) params.set("locality", payload.area.trim());
+      const gender = GENDER_PARAM[payload.gender ?? ""];
+      if (gender) params.set("gender", gender);
+
+      const qs = params.toString();
+      router.push(qs ? `/c/${activeSlug}?${qs}` : `/c/${activeSlug}`);
     },
-    [mode, isJobs, world, activeSlug, submitHref, router]
+    [mode, router, activeSlug]
   );
 
   return (

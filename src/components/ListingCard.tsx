@@ -126,9 +126,9 @@ export default function ListingCard({
 
             {/* Creative Tag Overlay */}
             <span className={`absolute top-2.5 left-2.5 text-[8px] font-extrabold px-2.5 py-1 rounded-[6px] uppercase tracking-wider shadow-sm select-none z-10 ${
-              badge.toLowerCase().includes("pg") ? "bg-rausch text-white" :
-              badge.toLowerCase().includes("co-living") ? "bg-indigo-600 text-white" :
-              badge.toLowerCase().includes("flat") || badge.toLowerCase().includes("rent") || badge.toLowerCase().includes("hostel") ? "bg-emerald-600 text-white" :
+              badge.toLowerCase().includes("pg") || badge.toLowerCase().includes("hostel") ? "bg-rausch text-white" :
+              badge.toLowerCase().includes("co-living") || badge.toLowerCase().includes("coliving") || badge.toLowerCase().includes("co-live") ? "bg-indigo-600 text-white" :
+              badge.toLowerCase().includes("flat") || badge.toLowerCase().includes("apartment") || badge.toLowerCase().includes("house") || badge.toLowerCase().includes("villa") || badge.toLowerCase().includes("standalone") || badge.toLowerCase().includes("rent") || badge.toLowerCase().includes("buy") ? "bg-emerald-600 text-white" :
               "bg-neutral-900 text-white"
             }`}>
               {badge}

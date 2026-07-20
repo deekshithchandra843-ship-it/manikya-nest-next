@@ -19,15 +19,9 @@ const citiesList = [
   { name: "Kolkata", emoji: "🌉", label: "City of Joy" }
 ];
 
-const BENGALURU_LOCALITIES = [
-  "Koramangala", "Indiranagar", "HSR Layout", "Whitefield", "Jayanagar",
-  "JP Nagar", "BTM Layout", "Malleshwaram", "Hebbal", "Marathahalli",
-  "Bellandur", "Electronic City", "Rajajinagar", "Banashankari",
-  "Kalyan Nagar", "Yelahanka", "Sadashivanagar", "Domlur", "Kaggadasapura",
-  "Sarjapur Road", "Richmond Town", "MG Road", "Basavanagudi", "Vasanth Nagar",
-  "Vidyaranyapura", "RT Nagar", "Sanjay Nagar", "Bannerghatta Road", "Brookefield",
-  "Kanakapura Road", "Hennur Road", "OMBR Layout", "HRBR Layout", "Banaswadi"
-];
+import BENGALURU_LOCALITIES_RAW from "@/data/bengaluru-localities.json";
+const BENGALURU_LOCALITIES = BENGALURU_LOCALITIES_RAW.map((loc) => loc.name);
+
 
 // Per-world colour theme
 type Theme = {
@@ -783,13 +777,25 @@ export default function PostListing() {
         priceValue: numericPrice,
         image: images[0],
         images,
-        badge: slug === "pg" || slug === "coliving"
+        badge: slug === "pg"
           ? "PG"
+          : slug === "coliving"
+          ? "Co-living"
           : isStay
           ? getCategory(slug)?.label ?? "Stay"
           : form.apartmentType || "Flat",
         rating: 5.0,
         category: slug,
+        // Sent explicitly — deriving these from the address string put the
+        // house number in `locality` and left `bhk` unset, so neither the
+        // locality nor the BHK filter could ever match a posted listing.
+        locality: form.locality || undefined,
+        city: form.city || "Bengaluru",
+        // "1 RK" is not a 1 BHK, so only real BHK values set the column.
+        bhk: /^(\d+)\+?\s*BHK$/i.test(form.bhk ?? "")
+          ? parseInt(String(form.bhk), 10)
+          : undefined,
+        gender: form.pgFor || undefined,
         metroDistance: "300m from metro",
         reviewCount: 0,
         amenities: amenities,
@@ -1103,11 +1109,22 @@ export default function PostListing() {
   }
 
   const showSidebar = active > 2;
-  const localitySuggestions = form.city === "Bengaluru"
-    ? BENGALURU_LOCALITIES.filter((loc) =>
-        loc.toLowerCase().includes((form.locality || "").toLowerCase())
-      )
-    : [];
+  const localitySuggestions = (() => {
+    if (form.city !== "Bengaluru") return [];
+    const q = (form.locality || "").trim().toLowerCase();
+    const matches = q
+      ? BENGALURU_LOCALITIES.filter((loc) => loc.toLowerCase().includes(q))
+      : BENGALURU_LOCALITIES;
+    // Rank names that start with the query above ones that merely contain it.
+    if (q) {
+      matches.sort((a, b) => {
+        const as = a.toLowerCase().startsWith(q) ? 0 : 1;
+        const bs = b.toLowerCase().startsWith(q) ? 0 : 1;
+        return as - bs;
+      });
+    }
+    return matches.slice(0, 50); // cap DOM nodes; list is ~1700 entries
+  })();
 
   return (
     <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-canvas">

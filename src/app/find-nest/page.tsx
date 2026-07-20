@@ -6,9 +6,14 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard from "@/components/ListingCard";
 import PageLayout from "@/components/PageLayout";
 import { apiClient } from "@/lib/apiClient";
+import dynamic from "next/dynamic";
+
+const ListingsMap = dynamic(() => import("@/components/ListingsMap"), {
+  ssr: false,
+});
 
 const filterChips = [
-  "PG/Hostel", "1 BHK", "2 BHK", "Co-living", "Homestay",
+  "Rental flat", "PG/Hostel", "Co-living", "1 BHK", "2 BHK", "Homestay",
   "Furnished", "Near metro", "Wi-Fi", "Meals",
 ];
 
@@ -50,6 +55,7 @@ const SORT_PARAM: Record<string, string> = {
 
 // Chips that map to whole categories rather than listing attributes.
 const CATEGORY_CHIPS: Record<string, string> = {
+  "Rental flat": "rent",
   "PG/Hostel": "pg",
   "Co-living": "coliving",
   Homestay: "homestay",
@@ -379,16 +385,9 @@ export default function FindNest() {
         </div>
 
         {/* Map column */}
-        <div className={viewMode === "list" ? "hidden md:block" : "block"}>
-          <div className="md:sticky md:top-40 h-[320px] md:h-[calc(100vh-12rem)] bg-surface-soft border border-hairline-soft rounded-[14px] flex flex-col items-center justify-center gap-2 text-center px-6">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-muted-soft" aria-hidden="true">
-              <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <p className="text-sm font-medium text-ink">Map view</p>
-            <p className="text-xs text-muted max-w-[220px]">
-              {filtered.length} {filtered.length === 1 ? "home" : "homes"} will appear here once maps are connected.
-            </p>
+        <div className={`${viewMode === "list" ? "hidden md:block" : "block"} w-full md:w-auto`}>
+          <div className="md:sticky md:top-40 h-[320px] md:h-[calc(100vh-12rem)] border border-hairline-soft rounded-[14px] overflow-hidden bg-surface-soft shadow-sm">
+            <ListingsMap listings={dbListings} />
           </div>
         </div>
       </div>

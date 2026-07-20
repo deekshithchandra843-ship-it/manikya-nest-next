@@ -1,10 +1,27 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriter";
+
 
 const propertyTabs = ["PG/Hostel", "Rental flat", "Co-living", "Jobs"];
 const budgetOptions = ["Any budget", "Under ₹5k", "₹5k – ₹10k", "₹10k – ₹20k", "₹20k+"];
 const salaryOptions = ["Any salary", "Under ₹25k", "₹25k – ₹50k", "₹50k – ₹1L", "₹1L+"];
+
+/** Tab label → the category slug stored on listings. */
+const TAB_CATEGORY: Record<string, string> = {
+  "PG/Hostel": "pg",
+  "Rental flat": "rent",
+  "Co-living": "coliving",
+};
+
+/** Budget label → [minPrice, maxPrice] in rupees. */
+const BUDGET_RANGE: Record<string, [number | undefined, number | undefined]> = {
+  "Under ₹5k": [undefined, 5000],
+  "₹5k – ₹10k": [5000, 10000],
+  "₹10k – ₹20k": [10000, 20000],
+  "₹20k+": [20000, undefined],
+};
 
 const RENT_WORDS = [
   "Search 2 BHK in HSR Layout...",
@@ -49,10 +66,12 @@ interface SearchBarProps {
   glass?: boolean;
   /** Force the dropdown menu to open upwards (useful when placed near container bottoms) */
   dropdownUp?: boolean;
+  /** Pre-fills the text input (e.g. the current query on the results page). */
+  initialQuery?: string;
 }
 
-export default function SearchBar({ onSearch, lightText = false, hideTabs = false, glass = false, dropdownUp = false }: SearchBarProps) {
-  const [location, setLocation] = useState("");
+export default function SearchBar({ onSearch, lightText = false, hideTabs = false, glass = false, dropdownUp = false, initialQuery = "" }: SearchBarProps) {
+  const [location, setLocation] = useState(initialQuery);
   const [budget, setBudget] = useState("Any budget");
   const [propertyType, setPropertyType] = useState("PG/Hostel");
   const [open, setOpen] = useState(false);
@@ -100,8 +119,36 @@ export default function SearchBar({ onSearch, lightText = false, hideTabs = fals
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
-  const handleSearch = () => {
-    if (onSearch) onSearch(location, budget, propertyType);
+  const router = useRouter();
+
+  const handleSearch = async () => {
+    const text = location.trim();
+
+    if (propertyType === "Jobs") {
+      const params = new URLSearchParams();
+      if (text) params.set("q", text);
+      router.push(`/jobs?${params.toString()}`);
+      return;
+    }
+
+    if (onSearch) {
+      onSearch(location, budget, propertyType);
+      return;
+    }
+
+    // Carry the tab and the budget through — they used to be dropped, so the
+    // results ignored everything except the typed text.
+    const params = new URLSearchParams();
+    if (text) params.set("q", text);
+    // Only constrain by category when the user can actually see and change the
+    // tabs; with `hideTabs` the default tab is not a real choice they made.
+    const category = hideTabs ? undefined : TAB_CATEGORY[propertyType];
+    if (category) params.set("category", category);
+    const [min, max] = BUDGET_RANGE[budget] ?? [];
+    if (min !== undefined) params.set("minPrice", String(min));
+    if (max !== undefined) params.set("maxPrice", String(max));
+
+    router.push(`/search?${params.toString()}`);
   };
 
   return (
@@ -157,6 +204,7 @@ export default function SearchBar({ onSearch, lightText = false, hideTabs = fals
             }
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             className="text-sm text-body placeholder-muted outline-none bg-transparent mt-0.5 rounded-sm focus-visible:ring-2 focus-visible:ring-ink/40"
           />
         </div>
