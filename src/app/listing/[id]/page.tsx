@@ -873,6 +873,80 @@ export default function ListingDetail() {
             </div>
           </section>
 
+          {/* Room Configuration & Availability Section */}
+          {listing.roomConfigurations && listing.roomConfigurations.length > 0 && (
+            <section className="mb-6 pb-6 border-b border-hairline-soft animate-fade-up">
+              <h2 className="text-[17px] font-extrabold text-ink mb-4">Room Configuration & Availability</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {listing.roomConfigurations.map((rc: any) => {
+                  const isFull = rc.availableBeds <= 0;
+                  const isLimited = rc.availableBeds > 0 && rc.availableBeds <= 2;
+                  const typeLabel = rc.sharingType.charAt(0).toUpperCase() + rc.sharingType.slice(1) + " Sharing";
+                  return (
+                    <div
+                      key={rc.id}
+                      className="bg-canvas border border-hairline-soft rounded-[14px] p-4 shadow-sm flex flex-col justify-between hover:shadow-airbnb hover:border-rausch/15 transition-all duration-300"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-lg">🛏️</span>
+                            <span className="font-extrabold text-sm text-ink">{typeLabel}</span>
+                          </div>
+                          <span
+                            className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                              isFull
+                                ? "bg-neutral-100 text-neutral-500"
+                                : isLimited
+                                ? "bg-amber-100 text-amber-600"
+                                : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                            }`}
+                          >
+                            {isFull ? "Full" : isLimited ? "Limited" : "Available"}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1.5 text-xs text-muted mb-4">
+                          <p className="flex justify-between">
+                            <span>Total Rooms:</span>
+                            <span className="font-bold text-ink">{rc.numberOfRooms}</span>
+                          </p>
+                          <p className="flex justify-between">
+                            <span>Total Beds:</span>
+                            <span className="font-bold text-ink">{rc.totalBeds} ({rc.bedsPerRoom} beds/room)</span>
+                          </p>
+                          <p className="flex justify-between">
+                            <span>Occupied Beds:</span>
+                            <span className="font-semibold text-ink">{rc.occupiedBeds}</span>
+                          </p>
+                          <p className="flex justify-between border-t border-hairline-soft pt-1.5">
+                            <span>Available Beds:</span>
+                            <span className={`font-extrabold ${isFull ? "text-neutral-400" : "text-emerald-600"}`}>
+                              {isFull ? "None" : rc.availableBeds}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-hairline-soft pt-3 mt-auto flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1.5">
+                        <div>
+                          <p className="text-[9px] font-bold text-muted uppercase tracking-wide">Price per bed</p>
+                          <p className="text-[16px] font-black text-rausch font-sans">₹{rc.pricePerBed.toLocaleString("en-IN")}<span className="text-[10px] font-normal text-muted">/mo</span></p>
+                        </div>
+                        {rc.pricePerRoom && (
+                          <div className="text-right">
+                            <p className="text-[9px] font-bold text-muted uppercase tracking-wide">Full Room Price</p>
+                            <p className="text-xs font-bold text-ink font-sans">₹{rc.pricePerRoom.toLocaleString("en-IN")}<span className="text-[9px] font-normal text-muted">/mo</span></p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {/* About the property Description section */}
           <section className="mb-6 pb-6 border-b border-hairline-soft">
             <h2 className="text-[17px] font-bold text-ink mb-3">About this property</h2>
@@ -943,7 +1017,7 @@ export default function ListingDetail() {
           </section>
 
           {/* Room types & pricing — visible for lodging-style listings and any explicit room type data */}
-          {(["pg", "coliving", "homestay", "service-apartment", "hotel"].includes(listing.category) || (listing.roomTypes?.length ?? 0) > 0) && (
+          {(!["pg", "coliving"].includes(listing.category) && (["homestay", "service-apartment", "hotel"].includes(listing.category) || (listing.roomTypes?.length ?? 0) > 0)) && (
             <div className="mb-6">
               <RoomTypesPricing roomTypes={listing.roomTypes} />
             </div>

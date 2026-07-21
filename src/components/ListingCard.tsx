@@ -26,6 +26,7 @@ interface ListingCardProps {
   showCta?: boolean;
   /** Representative category photo. When provided, replaces the icon placeholder. */
   image?: string;
+  roomConfigurations?: any[];
 }
 
 export default function ListingCard({
@@ -45,6 +46,7 @@ export default function ListingCard({
   spec,
   showCta,
   image,
+  roomConfigurations,
 }: ListingCardProps) {
   const router = useRouter();
   const [saved, setSaved] = useState(false);
@@ -128,7 +130,7 @@ export default function ListingCard({
             <span className={`absolute top-2.5 left-2.5 text-[8px] font-extrabold px-2.5 py-1 rounded-[6px] uppercase tracking-wider shadow-sm select-none z-10 ${
               badge.toLowerCase().includes("pg") || badge.toLowerCase().includes("hostel") ? "bg-rausch text-white" :
               badge.toLowerCase().includes("co-living") || badge.toLowerCase().includes("coliving") || badge.toLowerCase().includes("co-live") ? "bg-indigo-600 text-white" :
-              badge.toLowerCase().includes("flat") || badge.toLowerCase().includes("apartment") || badge.toLowerCase().includes("house") || badge.toLowerCase().includes("villa") || badge.toLowerCase().includes("standalone") || badge.toLowerCase().includes("rent") || badge.toLowerCase().includes("buy") ? "bg-emerald-600 text-white" :
+              badge.toLowerCase().includes("flat") || badge.toLowerCase().includes("apartment") || badge.toLowerCase().includes("house") || badge.toLowerCase().includes("villa") || badge.toLowerCase().includes("standalone") || badge.toLowerCase().includes("individual floor") || badge.toLowerCase().includes("rent") || badge.toLowerCase().includes("buy") ? "bg-emerald-600 text-white" :
               "bg-neutral-900 text-white"
             }`}>
               {badge}
@@ -174,6 +176,43 @@ export default function ListingCard({
                 {spec && area && <span className="text-neutral-500 mx-1.5">|</span>}
                 {area && <span className="text-neutral-950">{area}</span>}
               </p>
+            )}
+
+            {/* PG/Co-living Availability and Pricing Breakdown */}
+            {roomConfigurations && roomConfigurations.length > 0 && (
+              <div className="mt-3 pt-2.5 border-t border-neutral-100 flex flex-col gap-1.5 w-full">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5 select-none">
+                  🛏️ Available Beds
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {roomConfigurations.map((rc) => {
+                    const isFull = rc.availableBeds <= 0;
+                    const cleanType = rc.sharingType.replace(/^\w/, (c: string) => c.toUpperCase()) + " Sharing";
+                    return (
+                      <span
+                        key={rc.id || rc.sharingType}
+                        className={`text-[9px] font-black px-2 py-0.5 rounded-[6px] border select-none ${
+                          isFull
+                            ? "bg-neutral-50 border-neutral-200 text-neutral-400"
+                            : "bg-emerald-50 border-emerald-100 text-emerald-700"
+                        }`}
+                      >
+                        {cleanType}: {isFull ? "Full" : `${rc.availableBeds} Bed${rc.availableBeds > 1 ? "s" : ""} Available`}
+                      </span>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] font-bold text-neutral-600 mt-0.5">
+                  {roomConfigurations.map((rc) => {
+                    const cleanType = rc.sharingType.replace(/^\w/, (c: string) => c.toUpperCase());
+                    return (
+                      <span key={rc.id || rc.sharingType} className="bg-neutral-50 border border-neutral-200 rounded-[4px] px-1.5 py-0.5 shrink-0">
+                        {cleanType} - <span className="text-rausch font-black">₹{rc.pricePerBed.toLocaleString("en-IN")}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
             )}
 
             {/* Row 5: Differentiator tags */}

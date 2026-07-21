@@ -5,6 +5,7 @@ import ListingCard from "@/components/ListingCard";
 import PageLayout from "@/components/PageLayout";
 import HeroSearch from "@/components/HeroSearch";
 import HowFindWayWorks from "@/components/HowFindWayWorks";
+import ReviewsSection from "@/components/ReviewsSection";
 import { apiClient } from "@/lib/apiClient";
 
 const trustPoints = [
@@ -132,14 +133,14 @@ export default function HomePage() {
     return true;
   });
 
-  const displayedListings = filteredListings.slice(0, 6);
+  const displayedListings = filteredListings.slice(0, 9);
 
   return (
     <>
       {/* Hero Section — tabbed Housing.com-style hero with search */}
       <HeroSearch />
 
-      <PageLayout>
+      <PageLayout className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 pb-0">
 
       {/* Trust strip — proof points mirroring our core promise */}
       <section aria-label="Why renters trust FindWay" className="mt-10 md:mt-16 mb-10">
@@ -157,7 +158,7 @@ export default function HomePage() {
       </section>
 
       {/* Trending Listings */}
-      <section className="mb-14">
+      <section className="mb-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-[22px] md:text-[28px] font-extrabold tracking-tight text-ink">Trending Properties</h2>
@@ -204,8 +205,12 @@ export default function HomePage() {
           </div>
         )}
       </section>
+    </PageLayout>
 
-      {/* How FindWay works — story wheel + Our Mission */}
+    {/* Rummy Deck Reviews Section */}
+    <ReviewsSection />
+
+    <PageLayout>
       <HowFindWayWorks />
 
       {/* Jobs hub teaser */}

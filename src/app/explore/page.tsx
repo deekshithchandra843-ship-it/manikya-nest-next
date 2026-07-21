@@ -144,8 +144,8 @@ export default function ExplorePage() {
   const popular = useMemo(() => {
     const popularIds = ["6", "9", "1", "13", "16", "11"];
     const matched = listings.filter((l) => popularIds.includes(String(l.id)));
-    if (matched.length > 0) return matched.slice(0, 6);
-    return listings.slice(0, 6);
+    if (matched.length > 0) return matched.slice(0, 9);
+    return listings.slice(0, 9);
   }, [listings]);
 
   return (

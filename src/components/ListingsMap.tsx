@@ -1,11 +1,36 @@
 "use client";
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, ZoomControl, Marker, Popup, Polyline, CircleMarker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, ZoomControl, Marker, Popup, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
 import Image from "next/image";
 import { PURPLE_LINE_COORDS, GREEN_LINE_COORDS, METRO_STATIONS } from "@/lib/metroData";
+
+// Helper component to handle Leaflet size invalidation when container visibility/dimensions change
+function MapResizeObserver() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+
+    // Trigger an initial size invalidation to resolve any initial render sizing issues
+    map.invalidateSize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [map]);
+
+  return null;
+}
 
 // Bengaluru city center (M.G. Road / Vidhana Soudha area)
 const BENGALURU: [number, number] = [12.9716, 77.5946];
@@ -153,6 +178,7 @@ export default function ListingsMap({ listings = [] }: ListingsMapProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <ZoomControl position="bottomright" />
+        <MapResizeObserver />
 
         {/* Bengaluru Metro Routes & Stations */}
         {showMetro && (

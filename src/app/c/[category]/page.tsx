@@ -40,12 +40,39 @@ function buildQuery(slug: string, selected: string[], budget: number, maxBudget:
   const params = new URLSearchParams(baseParams);
   params.set("category", slug);
   const chips: string[] = [];
+  const sharingTypes: string[] = [];
 
   const baseChips = params.get("chips")?.split(",").map(c => c.trim()).filter(Boolean) || [];
 
   for (const chip of selected) {
-    if (chip.toLowerCase() === "near metro") params.set("nearMetro", "true");
-    else chips.push(chip);
+    const lChip = chip.toLowerCase();
+    if (lChip === "near metro") {
+      params.set("nearMetro", "true");
+    } else if (lChip === "single" || lChip === "single room") {
+      sharingTypes.push("single");
+    } else if (lChip === "double" || lChip === "twin sharing") {
+      sharingTypes.push("double");
+    } else if (lChip === "triple") {
+      sharingTypes.push("triple");
+    } else if (lChip === "four" || lChip === "four sharing") {
+      sharingTypes.push("four");
+    } else if (lChip === "five") {
+      sharingTypes.push("five");
+    } else if (lChip === "only available beds") {
+      params.set("onlyAvailable", "true");
+    } else {
+      chips.push(chip);
+    }
+  }
+
+  if (sharingTypes.length > 0) {
+    params.set("sharingType", sharingTypes.join(","));
+  } else {
+    params.delete("sharingType");
+  }
+
+  if (!selected.some(c => c.toLowerCase() === "only available beds")) {
+    params.delete("onlyAvailable");
   }
 
   const allChips = [...baseChips, ...chips];

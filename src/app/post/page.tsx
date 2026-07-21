@@ -114,185 +114,169 @@ function getStepDescription(active: number, categoryLabel: string): string {
 }
 
 const renderStepCartoonGraphic = (active: number, selectedRole: ListingRole | null, world: World) => {
-  const common = "w-32 h-32 md:w-44 md:h-44 text-ink opacity-90 transition-all duration-700 hover:scale-105 shrink-0 mb-6";
-  const lineStroke = "2";
+  const common = "w-32 h-32 md:w-44 md:h-44 text-ink transition-all duration-500 hover:scale-105 shrink-0 mb-6 drop-shadow-sm";
+  const strokeColor = "currentColor";
+  const strokeWidth = "1.5";
   
   if (active === 0) {
-    if (selectedRole === "builder") {
-      return (
-        <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-          {/* Cartoon Crane & Builder Tower */}
-          <rect x="25" y="40" width="30" height="50" rx="6" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-          <line x1="35" y1="50" x2="45" y2="50" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-          <line x1="35" y1="65" x2="45" y2="65" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-          <line x1="35" y1="80" x2="45" y2="80" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-          {/* Crane */}
-          <path d="M65 90 V25 H85 M65 35 L80 15" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="85" cy="25" r="4" fill="currentColor" />
-          <circle cx="65" cy="90" r="6" stroke="currentColor" strokeWidth={lineStroke} />
-        </svg>
-      );
-    }
-    if (selectedRole === "agent") {
-      return (
-        <svg className={`${common} animate-pulse-slow`} viewBox="0 0 100 100" fill="none">
-          {/* Handshake & Deal Illustration */}
-          <rect x="20" y="25" width="60" height="50" rx="10" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-          <circle cx="50" cy="50" r="14" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-          <path d="M42 50l6 5 10-10" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M15 45h10M75 45h10M50 15v10" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-        </svg>
-      );
-    }
     return (
-      <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Cartoon Owner House & Key */}
-        <path d="M20 50 L50 20 L80 50 V85 H20 Z" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M42 85 V62 H58 V85" stroke="currentColor" strokeWidth={lineStroke} />
-        <circle cx="50" cy="38" r="7" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-        <g className="animate-pulse-slow">
-          <circle cx="75" cy="25" r="8" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-          <path d="M75 33v20h-8v-6h8" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" strokeLinejoin="round" />
-        </g>
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        {/* Soft background glow */}
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Minimal Signature Key/Shield */}
+        <path d="M50 20 L75 35 V65 L50 80 L25 65 V35 Z" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinejoin="round" fill="currentColor" fillOpacity="0.02" />
+        <circle cx="50" cy="45" r="8" stroke={strokeColor} strokeWidth={strokeWidth} />
+        <path d="M50 53 V68 M46 60 H54 M46 66 H54" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" />
+        
+        {/* Floating sparkles */}
+        <circle cx="22" cy="30" r="2" className="fill-rausch/40 animate-pulse" />
+        <circle cx="78" cy="70" r="3" className="fill-rausch/30 animate-pulse" />
       </svg>
     );
   }
 
   if (active === 1) {
-    if (world === "commercial") {
-      return (
-        <svg className={`${common} animate-pulse-slow`} viewBox="0 0 100 100" fill="none">
-          {/* Corporate/Commercial Cartoon Office Tower */}
-          <rect x="30" y="15" width="40" height="75" rx="8" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="40" y="25" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="52" y="25" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="40" y="40" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="52" y="40" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="40" y="55" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="52" y="55" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-          <rect x="46" y="74" width="8" height="16" stroke="currentColor" strokeWidth={lineStroke} />
-        </svg>
-      );
-    }
-    if (world === "stay") {
-      return (
-        <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-          {/* Cartoon Beach Hospitality / Homestay */}
-          <path d="M15 85h70" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-          <path d="M50 20 L20 48 h60 Z" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} strokeLinejoin="round" />
-          <rect x="30" y="48" width="40" height="37" fill="currentColor" fillOpacity="0.02" stroke="currentColor" strokeWidth={lineStroke} />
-          {/* Palm Tree */}
-          <path d="M80 85c-2-15-8-25-18-28" stroke="currentColor" strokeWidth={lineStroke} />
-          <path d="M62 57c-2-8-8-12-14-6 2 8 8 10 14 6z M62 57c8-2 12-8 6-14-8 2-10 8-6 14z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-        </svg>
-      );
-    }
     return (
-      <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Residential Cozy Homes */}
-        <path d="M15 52 L40 28 L65 52 V85 H15 Z" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M50 50 L72 30 L94 52 V85 H50 Z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="28" y="60" width="12" height="25" stroke="currentColor" strokeWidth={lineStroke} />
-        <circle cx="40" cy="42" r="5" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Overlapping Geometric Shapes representing spaces (triangle, square, circle) */}
+        <g className="opacity-80">
+          {/* Residential (Triangle) */}
+          <path d="M50 22 L24 64 H76 Z" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinejoin="round" fill="currentColor" fillOpacity="0.02" />
+          {/* Commercial (Square) */}
+          <rect x="36" y="44" width="28" height="28" rx="4" stroke={strokeColor} strokeWidth={strokeWidth} fill="currentColor" fillOpacity="0.04" />
+          {/* Stay/Hospitality (Circle) */}
+          <circle cx="50" cy="52" r="12" stroke={strokeColor} strokeWidth={strokeWidth} fill="currentColor" fillOpacity="0.06" />
+        </g>
       </svg>
     );
   }
 
   if (active === 2) {
     return (
-      <svg className={`${common} animate-pulse-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Cartoon Checklist / Option selection */}
-        <rect x="15" y="15" width="70" height="70" rx="12" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-        <circle cx="35" cy="35" r="6" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-        <path d="M50 35h25" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-        <circle cx="35" cy="55" r="6" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-        <path d="M50 55h25" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-        <circle cx="35" cy="70" r="6" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-        <path d="M50 70h15" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Cascading cards indicating category selection */}
+        <g className="animate-pulse-slow">
+          <rect x="22" y="22" width="45" height="30" rx="6" stroke={strokeColor} strokeWidth={strokeWidth} fill="currentColor" fillOpacity="0.02" />
+          <rect x="33" y="35" width="45" height="30" rx="6" stroke={strokeColor} strokeWidth={strokeWidth} fill="currentColor" fillOpacity="0.04" />
+          <rect x="44" y="48" width="45" height="30" rx="6" stroke={strokeColor} strokeWidth={strokeWidth} fill="currentColor" fillOpacity="0.08" />
+          <line x1="52" y1="58" x2="68" y2="58" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" />
+          <line x1="52" y1="66" x2="78" y2="66" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" />
+        </g>
       </svg>
     );
   }
 
   if (active === 3) {
     return (
-      <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Cartoon specs / details sheet */}
-        <rect x="20" y="15" width="60" height="75" rx="8" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-        <path d="M35 30h30M35 45h30M35 60h20M35 75h30" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
-        {/* Cute cartoon star */}
-        <path d="M72 15l3 6 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1z" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Architectural layout plan (Blueprint) */}
+        <g stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="24" y="24" width="52" height="52" rx="4" fill="currentColor" fillOpacity="0.02" />
+          {/* Internal walls */}
+          <path d="M50 24 V76 M24 50 H76 M50 50 L64 36" />
+          {/* Room markers / Dotted circles */}
+          <circle cx="37" cy="37" r="5" strokeDasharray="2 2" fill="none" />
+          <circle cx="63" cy="63" r="5" strokeDasharray="2 2" fill="none" />
+        </g>
       </svg>
     );
   }
 
   if (active === 4) {
     return (
-      <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Map pin / locating art */}
-        <circle cx="50" cy="85" r="15" fill="none" stroke="currentColor" strokeWidth={lineStroke} strokeDasharray="6 6" />
-        <path d="M50 15c-15 0-27 12-27 27c0 22 27 45 27 45s27-23 27-45c0-15-12-27-27-27z" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} strokeLinejoin="round" />
-        <circle cx="50" cy="42" r="10" fill="currentColor" />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Modern Map pin & grid */}
+        <g stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          {/* Grid lines */}
+          <path d="M25 75 L75 75 M32 60 L68 60 M28 67 L72 67" strokeDasharray="3 3" opacity="0.5" />
+          {/* Pin */}
+          <path d="M50 78 C50 78 70 54 70 38 C70 26.95 61.05 18 50 18 C38.95 18 30 26.95 30 38 C30 54 50 78 50 78 Z" fill="currentColor" fillOpacity="0.04" />
+          <circle cx="50" cy="38" r="7" fill="currentColor" fillOpacity="0.1" />
+        </g>
       </svg>
     );
   }
 
   if (active === 5) {
     return (
-      <svg className={`${common} animate-pulse-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Cute Piggy bank pricing art */}
-        <circle cx="50" cy="55" r="30" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-        <circle cx="40" cy="48" r="3.5" fill="currentColor" />
-        {/* Snout */}
-        <rect x="15" y="50" width="10" height="12" rx="4" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-        {/* Ears */}
-        <path d="M35 28l-8-12 12 4z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-        {/* Slot */}
-        <rect x="46" y="10" width="8" height="18" rx="2" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Dynamic Balance / Value scale representation */}
+        <g stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          {/* Center pillar */}
+          <line x1="50" y1="26" x2="50" y2="74" />
+          <line x1="38" y1="74" x2="62" y2="74" />
+          {/* Crossbeam (Tilted slightly for dynamic aesthetic) */}
+          <path d="M30 38 L70 34" className="animate-pulse" />
+          {/* Hanging scales */}
+          <path d="M30 38 L22 62 H38 Z" fill="currentColor" fillOpacity="0.04" />
+          <path d="M70 34 L62 58 H78 Z" fill="currentColor" fillOpacity="0.08" />
+        </g>
       </svg>
     );
   }
 
   if (active === 6) {
     return (
-      <svg className={`${common} animate-bounce-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Cartoon amenities - Gift package / Sparkles */}
-        <rect x="25" y="35" width="50" height="50" rx="8" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-        <path d="M25 50h50M50 35v50" stroke="currentColor" strokeWidth={lineStroke} />
-        {/* Ribbon */}
-        <path d="M50 35c-10-10-20 0-10 10 10-10 20 0 10-10z" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth={lineStroke} />
-        <path d="M15 25l4 4-4 4M85 25l-4 4 4 4" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Geometric Grid of Amenities (Modular blocks) */}
+        <g stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="25" y="25" width="20" height="20" rx="4" fill="currentColor" fillOpacity="0.02" />
+          <rect x="55" y="25" width="20" height="20" rx="4" fill="currentColor" fillOpacity="0.04" />
+          <rect x="25" y="55" width="20" height="20" rx="4" fill="currentColor" fillOpacity="0.06" />
+          <rect x="55" y="55" width="20" height="20" rx="4" fill="currentColor" fillOpacity="0.08" />
+          {/* Key micro elements */}
+          <circle cx="35" cy="35" r="3" fill="currentColor" />
+          <path d="M61 35 H69" />
+          <path d="M31 65 H39" />
+          <circle cx="65" cy="65" r="3" fill="currentColor" />
+        </g>
       </svg>
     );
   }
 
   if (active === 7) {
     return (
-      <svg className={`${common} rotate-3 hover:rotate-0`} viewBox="0 0 100 100" fill="none">
-        {/* Polaroid photo / Camera artwork */}
-        <rect x="20" y="20" width="60" height="65" rx="6" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-        <rect x="28" y="28" width="44" height="40" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-        {/* Cartoon sun in photo */}
-        <circle cx="60" cy="38" r="5" fill="currentColor" />
-        {/* Mountain in photo */}
-        <path d="M28 68l15-20 12 14 10-12 7 18z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} strokeLinejoin="round" />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Minimalist Polaroid Frame & Camera Lens */}
+        <g stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="26" y="22" width="48" height="56" rx="4" transform="rotate(-6 50 50)" fill="currentColor" fillOpacity="0.03" />
+          <rect x="32" y="28" width="36" height="34" transform="rotate(-6 50 50)" fill="currentColor" fillOpacity="0.08" />
+          <circle cx="50" cy="45" r="8" fill="currentColor" />
+          <line x1="32" y1="68" x2="48" y2="66" />
+        </g>
       </svg>
     );
   }
 
   if (active === 8) {
     return (
-      <svg className={`${common} animate-pulse-slow`} viewBox="0 0 100 100" fill="none">
-        {/* Cartoon calendar/clock schedule */}
-        <rect x="20" y="25" width="60" height="60" rx="8" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeWidth={lineStroke} />
-        <rect x="20" y="25" width="60" height="18" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={lineStroke} />
-        <circle cx="35" cy="55" r="4" fill="currentColor" />
-        <circle cx="50" cy="55" r="4" fill="currentColor" />
-        <circle cx="65" cy="55" r="4" fill="currentColor" />
-        <circle cx="35" cy="70" r="4" fill="currentColor" />
-        <circle cx="50" cy="70" r="4" fill="currentColor" />
-        <circle cx="65" cy="70" r="4" fill="currentColor" />
-        {/* Spiral bindings */}
-        <path d="M35 15v15M65 15v15" stroke="currentColor" strokeWidth={lineStroke} strokeLinecap="round" />
+      <svg className={common} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" className="fill-rausch/[0.03] stroke-rausch/10" strokeWidth="1" strokeDasharray="4 4" />
+        
+        {/* Clock & Calendar (Visit Scheduling) */}
+        <g stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          {/* Calendar sheet */}
+          <rect x="25" y="30" width="50" height="46" rx="6" fill="currentColor" fillOpacity="0.02" />
+          <path d="M25 44 H75" />
+          <circle cx="38" cy="58" r="4" fill="currentColor" />
+          <circle cx="62" cy="58" r="4" fill="currentColor" />
+          <path d="M38 24 V34 M62 24 V34" strokeWidth="2" />
+        </g>
       </svg>
     );
   }
@@ -367,9 +351,9 @@ type FieldDef = {
 );
 
 const bhkTypes = ["1 RK", "1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"];
-const apartmentTypes = ["Apartment", "Independent House", "Gated Villa", "Standalone", "Plot"];
+const apartmentTypes = ["Apartment", "Independent House", "Gated Villa", "Individual Floor", "Plot"];
 const floorOptions = ["Ground", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
-const propertyAges = ["Under construction", "Less than 1 year", "1–3 years", "3–5 years", "5–10 years", "10+ years"];
+const propertyAges = ["Less than 1 year", "1–3 years", "3–5 years", "5–10 years", "10+ years"];
 const facings = ["North", "South", "East", "West", "North-East", "North-West", "South-East", "South-West"];
 const furnishings = ["Fully furnished", "Semi furnished", "Unfurnished"];
 const commFurnishing = ["Furnished", "Semi furnished", "Bare shell"];
@@ -379,8 +363,6 @@ function detailFields(slug: string, apartmentType?: string): FieldDef[] {
     case "pg":
       return [
         { key: "pgName", label: "PG / Hostel name", type: "text", placeholder: "e.g. Green Meadows PG", required: true },
-        { key: "totalBeds", label: "Total beds", type: "number", placeholder: "e.g. 24", required: true, half: true },
-        { key: "sharing", label: "Sharing type", type: "select", options: ["Single", "Double", "Triple", "Four+"], half: true },
         { key: "pgFor", label: "PG is for", type: "pills", options: ["Girls", "Boys", "Anyone"], required: true },
         { key: "suitedFor", label: "Best suited for", type: "pills", options: ["Students", "Professionals", "Both"] },
         { key: "meals", label: "Meals available", type: "pills", options: ["Yes", "No"] },
@@ -388,7 +370,6 @@ function detailFields(slug: string, apartmentType?: string): FieldDef[] {
     case "coliving":
       return [
         { key: "spaceName", label: "Space name", type: "text", placeholder: "e.g. Sunrise Co-living", required: true },
-        { key: "roomType", label: "Room type", type: "select", options: ["Single room", "Twin sharing", "Studio"], required: true, half: true },
         { key: "furnishing", label: "Furnishing status", type: "select", options: furnishings, half: true },
         { key: "suitedFor", label: "Best suited for", type: "pills", options: ["Students", "Professionals", "Both"] },
         { key: "meals", label: "Meals available", type: "pills", options: ["Yes", "No"] },
@@ -471,7 +452,7 @@ function detailFields(slug: string, apartmentType?: string): FieldDef[] {
         ] as FieldDef[];
       }
 
-      const showFloor = apartmentType === "Apartment" || apartmentType === "Standalone";
+      const showFloor = apartmentType === "Apartment" || apartmentType === "Individual Floor";
       const showLandArea = apartmentType === "Independent House" || apartmentType === "Gated Villa";
 
       return [
@@ -517,6 +498,289 @@ function pricingFields(slug: string): FieldDef[] {
   ];
 }
 
+// Helper component to edit room sharing configurations
+function RoomConfigurationEditor({
+  roomConfigurations,
+  setRoomConfigurations,
+}: {
+  roomConfigurations: any[];
+  setRoomConfigurations: React.Dispatch<React.SetStateAction<any[]>>;
+}) {
+  const sharingOptions = [
+    { type: "single", label: "Single Sharing", beds: 1 },
+    { type: "double", label: "Double Sharing", beds: 2 },
+    { type: "triple", label: "Triple Sharing", beds: 3 },
+    { type: "four", label: "Four Sharing", beds: 4 },
+    { type: "five", label: "Five Sharing", beds: 5 },
+  ];
+
+  const handleAddField = (type: string) => {
+    if (roomConfigurations.some((rc) => rc.sharingType === type)) return;
+    const option = sharingOptions.find((o) => o.type === type);
+    if (!option) return;
+
+    setRoomConfigurations((prev) => [
+      ...prev,
+      {
+        sharingType: type,
+        numberOfRooms: 1,
+        bedsPerRoom: option.beds,
+        totalBeds: option.beds,
+        occupiedBeds: 0,
+        availableBeds: option.beds,
+        pricePerBed: 0,
+        pricePerRoom: undefined,
+      },
+    ]);
+  };
+
+  const handleRemoveField = (type: string) => {
+    setRoomConfigurations((prev) => prev.filter((rc) => rc.sharingType !== type));
+  };
+
+  const handleUpdateField = (type: string, key: string, value: number) => {
+    setRoomConfigurations((prev) =>
+      prev.map((rc) => {
+        if (rc.sharingType !== type) return rc;
+        const nextRc = { ...rc, [key]: value };
+
+        if (key === "numberOfRooms") {
+          nextRc.totalBeds = value * rc.bedsPerRoom;
+        }
+
+        nextRc.availableBeds = nextRc.totalBeds - nextRc.occupiedBeds;
+
+        return nextRc;
+      })
+    );
+  };
+
+  const availableToAdd = sharingOptions.filter(
+    (o) => !roomConfigurations.some((rc) => rc.sharingType === o.type)
+  );
+
+  return (
+    <div className="space-y-6 w-full">
+      <div className="flex items-center justify-between border-b border-hairline pb-2 mb-4">
+        <h3 className="text-sm font-semibold text-ink">Room Configuration & Availability</h3>
+        {availableToAdd.length > 0 && (
+          <div className="relative inline-block">
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleAddField(e.target.value);
+                  e.target.value = "";
+                }
+              }}
+              aria-label="Add Room Sharing Type"
+              className="text-xs font-bold text-rausch bg-rausch/5 border border-rausch/20 rounded-[8px] px-2.5 py-1.5 cursor-pointer hover:bg-rausch/10 outline-none"
+            >
+              <option value="" disabled>+ Add Sharing Type</option>
+              {availableToAdd.map((o) => (
+                <option key={o.type} value={o.type}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {roomConfigurations.length === 0 ? (
+        <div className="flex flex-col items-center justify-center text-center py-10 px-4 border border-dashed border-hairline rounded-[14px] bg-surface-soft">
+          <span className="text-2xl mb-2">🛏️</span>
+          <p className="text-xs font-bold text-ink mb-1">No room sharing types added yet</p>
+          <p className="text-[11px] text-muted mb-3">Add at least one room configuration card to specify PG beds and pricing.</p>
+          {availableToAdd.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center">
+              {availableToAdd.map((o) => (
+                <button
+                  key={o.type}
+                  type="button"
+                  onClick={() => handleAddField(o.type)}
+                  className="text-xs font-semibold bg-canvas border border-hairline hover:border-ink hover:scale-102 transition-all px-3 py-1.5 rounded-full text-body animate-fade-up"
+                >
+                  + {o.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 max-h-[50vh] overflow-y-auto pr-1">
+          {roomConfigurations.map((rc) => {
+            const label = sharingOptions.find((o) => o.type === rc.sharingType)?.label || rc.sharingType;
+            const hasError = rc.occupiedBeds > rc.totalBeds;
+            const isFull = rc.availableBeds <= 0;
+            const isLimited = rc.availableBeds > 0 && rc.availableBeds <= 2;
+
+            return (
+              <div
+                key={rc.sharingType}
+                className={`relative bg-canvas border ${
+                  hasError ? "border-error ring-1 ring-error/20" : "border-hairline-soft"
+                } rounded-[14px] p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3.5`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🛏️</span>
+                    <span className="font-extrabold text-sm text-ink">{label}</span>
+                    <span
+                      className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        hasError
+                          ? "bg-error/10 text-error"
+                          : isFull
+                          ? "bg-neutral-100 text-neutral-500"
+                          : isLimited
+                          ? "bg-amber-100 text-amber-600"
+                          : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                      }`}
+                    >
+                      {hasError ? "Overfilled" : isFull ? "Full" : isLimited ? "Limited" : "Available"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveField(rc.sharingType)}
+                    className="text-xs text-muted hover:text-error font-semibold flex items-center gap-1 transition-colors px-2 py-1 rounded-[6px] hover:bg-error/5"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">
+                      No. of Rooms
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="w-full border border-hairline rounded-[8px] px-2.5 h-9 text-xs text-ink bg-canvas focus:border-ink focus:ring-1 focus:ring-ink outline-none"
+                      value={rc.numberOfRooms || ""}
+                      onChange={(e) =>
+                        handleUpdateField(rc.sharingType, "numberOfRooms", Math.max(0, parseInt(e.target.value) || 0))
+                      }
+                      placeholder="e.g. 5"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">
+                      Beds per Room
+                    </label>
+                    <input
+                      type="number"
+                      disabled
+                      className="w-full border border-hairline rounded-[8px] px-2.5 h-9 text-xs text-muted bg-surface-soft outline-none"
+                      value={rc.bedsPerRoom}
+                      aria-label="Beds per Room"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">
+                      Total Beds
+                    </label>
+                    <div className="w-full border border-hairline rounded-[8px] px-2.5 h-9 text-xs text-muted bg-surface-soft flex items-center font-semibold">
+                      {rc.totalBeds}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">
+                      Occupied Beds
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className={`w-full border rounded-[8px] px-2.5 h-9 text-xs bg-canvas outline-none focus:border-ink focus:ring-1 focus:ring-ink ${
+                        hasError ? "border-error" : "border-hairline"
+                      }`}
+                      value={rc.occupiedBeds === 0 ? "0" : rc.occupiedBeds || ""}
+                      onChange={(e) =>
+                        handleUpdateField(rc.sharingType, "occupiedBeds", Math.max(0, parseInt(e.target.value) || 0))
+                      }
+                      placeholder="e.g. 3"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">
+                      Available Beds
+                    </label>
+                    <div
+                      className={`w-full border rounded-[8px] px-2.5 h-9 text-xs flex items-center font-bold ${
+                        hasError
+                          ? "bg-error/5 border-error text-error"
+                          : isFull
+                          ? "bg-neutral-50 border-hairline text-neutral-400"
+                          : "bg-emerald-50/50 border-hairline text-emerald-600"
+                      }`}
+                    >
+                      {hasError ? "Error" : rc.availableBeds}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">
+                      Price per Bed (₹)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="w-full border border-hairline rounded-[8px] px-2.5 h-9 text-xs text-ink bg-canvas focus:border-ink focus:ring-1 focus:ring-ink outline-none font-bold"
+                      value={rc.pricePerBed || ""}
+                      onChange={(e) =>
+                        handleUpdateField(rc.sharingType, "pricePerBed", Math.max(0, parseInt(e.target.value) || 0))
+                      }
+                      placeholder="e.g. 12000"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {rc.sharingType === "single" && (
+                  <div className="pt-2 border-t border-hairline-soft flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-[10px] text-muted font-bold uppercase tracking-wider">
+                      Entire Room Price (Optional)
+                    </span>
+                    <div className="relative w-full sm:w-44">
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-full border border-hairline rounded-[8px] px-2.5 h-8 text-xs text-ink bg-canvas focus:border-ink focus:ring-1 focus:ring-ink outline-none"
+                        value={rc.pricePerRoom || ""}
+                        onChange={(e) =>
+                          handleUpdateField(
+                            rc.sharingType,
+                            "pricePerRoom",
+                            Math.max(0, parseInt(e.target.value) || 0)
+                          )
+                        }
+                        placeholder="e.g. 15000"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {hasError && (
+                  <p className="text-[10px] text-error font-semibold leading-tight">
+                    ⚠️ Occupied beds cannot exceed total beds ({rc.totalBeds}).
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PostListing() {
   const [world, setWorld] = useState<World>("residential");
   const [slug, setSlug] = useState("rent");
@@ -531,6 +795,7 @@ export default function PostListing() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [roomConfigurations, setRoomConfigurations] = useState<any[]>([]);
 
   // Listing role selection state
   const [selectedRole, setSelectedRole] = useState<ListingRole | null>(null);
@@ -598,6 +863,14 @@ export default function PostListing() {
       return !!(form.city && form.city.trim() && form.locality && form.locality.trim());
     }
     if (stepIndex === 5) {
+      if (slug === "pg" || slug === "coliving") {
+        const activeConfigs = roomConfigurations.filter((rc) => rc.numberOfRooms > 0);
+        return activeConfigs.length > 0 && activeConfigs.every((rc) => 
+          rc.pricePerBed > 0 &&
+          rc.occupiedBeds >= 0 &&
+          rc.occupiedBeds <= rc.totalBeds
+        );
+      }
       const fields = pricingFields(slug);
       return fields.filter((f) => f.required).every((f) => form[f.key] && form[f.key].trim() !== "");
     }
@@ -746,10 +1019,19 @@ export default function PostListing() {
       }
 
       const isSale = slug === "buy" || slug === "land" || slug === "lease";
+      const isPG = slug === "pg" || slug === "coliving";
       const rawPrice = isSale ? form.price : isStay ? form.tariff : form.rent;
-      const numericPrice = parseInt(rawPrice || "0", 10) || 0;
+      let numericPrice = parseInt(rawPrice || "0", 10) || 0;
 
       let priceStr = "";
+      const activeConfigs = roomConfigurations.filter((rc) => rc.numberOfRooms > 0);
+      if (isPG && activeConfigs.length > 0) {
+        const prices = activeConfigs.map((rc) => Number(rc.pricePerBed)).filter(Boolean);
+        if (prices.length > 0) {
+          numericPrice = Math.min(...prices);
+        }
+      }
+
       if (isSale) {
         if (numericPrice >= 10000000) {
           priceStr = `₹${(numericPrice / 10000000).toFixed(2).replace(/\.00$/, "")} Cr`;
@@ -808,6 +1090,7 @@ export default function PostListing() {
         description: form.description,
         spec: form.bhk || undefined,
         roomTypes: [],
+        roomConfigurations: isPG ? activeConfigs : undefined,
         listedBy: role,
         latitude: form.latitude ? parseFloat(form.latitude) : undefined,
         longitude: form.longitude ? parseFloat(form.longitude) : undefined,
@@ -905,7 +1188,7 @@ export default function PostListing() {
           delete nextForm.area;
         } else {
           delete nextForm.dimensions;
-          if (v === "Apartment" || v === "Standalone") {
+          if (v === "Apartment" || v === "Individual Floor") {
             delete nextForm.landArea;
           } else if (v === "Independent House" || v === "Gated Villa") {
             delete nextForm.floor;
@@ -935,6 +1218,14 @@ export default function PostListing() {
     setSlug(s);
     const allowed = amenitiesFor(s);
     setAmenities((p) => p.filter((a) => allowed.includes(a)));
+    if (s === "pg" || s === "coliving") {
+      setRoomConfigurations([
+        { sharingType: "single", numberOfRooms: 0, bedsPerRoom: 1, totalBeds: 0, occupiedBeds: 0, availableBeds: 0, pricePerBed: 0, pricePerRoom: undefined },
+        { sharingType: "double", numberOfRooms: 0, bedsPerRoom: 2, totalBeds: 0, occupiedBeds: 0, availableBeds: 0, pricePerBed: 0, pricePerRoom: undefined },
+        { sharingType: "triple", numberOfRooms: 0, bedsPerRoom: 3, totalBeds: 0, occupiedBeds: 0, availableBeds: 0, pricePerBed: 0, pricePerRoom: undefined },
+        { sharingType: "four", numberOfRooms: 0, bedsPerRoom: 4, totalBeds: 0, occupiedBeds: 0, availableBeds: 0, pricePerBed: 0, pricePerRoom: undefined },
+      ]);
+    }
   };
 
   const chooseWorld = (w: World) => {
@@ -1506,7 +1797,16 @@ export default function PostListing() {
             )}
 
             {/* Step 5: Pricing */}
-            {active === 5 && renderFieldGroup(pricingFields(slug))}
+            {active === 5 && (
+              slug === "pg" || slug === "coliving" ? (
+                <RoomConfigurationEditor
+                  roomConfigurations={roomConfigurations}
+                  setRoomConfigurations={setRoomConfigurations}
+                />
+              ) : (
+                renderFieldGroup(pricingFields(slug))
+              )
+            )}
 
             {/* Step 6: Amenities (Airbnb-style Grid) */}
             {active === 6 && (
