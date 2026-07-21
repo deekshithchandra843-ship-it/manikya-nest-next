@@ -59,6 +59,19 @@
   --radius-lg: 20px;
   --radius-xl: 32px;
 
+  /* Jobs section palette — navy + sun, applied on a 60/30/10 split:
+       60% job-navy      the dominant field (hero, icon tiles, dark surfaces)
+       30% navy-lift     supporting depth, plus white/ink text mass
+       10% job-sun       accent only — primary CTAs, highlights, rules
+     job-sun is never text on white (yellow-on-white fails contrast); on light
+     surfaces it appears as a fill or bar with job-navy text over it. */
+  --color-job-navy: #141d38;
+  --color-job-navy-lift: #1b2749;
+  --color-job-navy-soft: #eceef4;
+  --color-job-sun: #fcdb32;
+  --color-job-sun-active: #efcb15;
+  --color-job-sun-soft: #fef6cc;
+
   /* Hero tab accent colours — referenced as bg-tab-* / text-tab-* in JSX.
      Raw hex lives ONLY here; components use Tailwind class names. */
   --color-tab-pg: #ff5a3c;
