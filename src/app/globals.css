@@ -176,6 +176,31 @@
   animation: fade-up 0.5s ease-out both;
 }
 
+/* Hero background slideshow — slow Ken Burns pan/zoom on the active slide.
+   Two variants so consecutive slides drift in different directions. */
+@keyframes ken-burns-a {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-2.5%, -2%, 0);
+  }
+}
+@keyframes ken-burns-b {
+  from {
+    transform: scale(1.16) translate3d(2.5%, 1.5%, 0);
+  }
+  to {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+}
+.animate-ken-burns-a {
+  animation: ken-burns-a 8s ease-out both;
+}
+.animate-ken-burns-b {
+  animation: ken-burns-b 8s ease-out both;
+}
+
 /* Category photo enhancement — subtle brightness/contrast/saturation lift
    applied to real images in ListingCard, the hero accent card, and the
    listing gallery. Keeps photos vivid without blowing highlights. */

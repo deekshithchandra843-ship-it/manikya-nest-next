@@ -211,12 +211,20 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  style={
+                    isDarkTheme && isActive
+                      ? { color: "var(--hero-accent, #ffffff)" }
+                      : undefined
+                  }
                   className={`${navLinkClass(isActive)} group inline-flex items-center gap-1.5`}
                 >
                   <span className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">{link.icon}</span>
                   <span>{link.label}</span>
                   {isActive && (
-                    <span className={`absolute bottom-0 left-0 right-0 h-[2px] rounded-full ${activeUnderlineClass}`} />
+                    <span
+                      className={`absolute bottom-0 left-0 right-0 h-[2px] rounded-full transition-colors duration-700 ${activeUnderlineClass}`}
+                      style={isDarkTheme ? { backgroundColor: "var(--hero-accent, #ffffff)" } : undefined}
+                    />
                   )}
                 </Link>
               );
