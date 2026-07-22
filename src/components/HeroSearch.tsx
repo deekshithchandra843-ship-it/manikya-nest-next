@@ -494,7 +494,9 @@ export default function HeroSearch() {
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty("--hero-accent", HERO_ACCENTS[slide]);
-    return () => root.style.removeProperty("--hero-accent");
+    return () => {
+      root.style.removeProperty("--hero-accent");
+    };
   }, [slide]);
 
   /* ── Derived ── */
