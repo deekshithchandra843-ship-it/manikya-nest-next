@@ -14,6 +14,14 @@ import { useTypewriterPlaceholder } from "@/hooks/useTypewriter";
 
 const CITY = "Bengaluru";
 
+/** Hero background slideshow — images cycle one by one. */
+const HERO_SLIDES = ["/hero-1.jpg", "/hero-2.jpg", "/hero-3.jpg?v=2"];
+const HERO_SLIDE_MS = 6500;
+
+/** Accent colour per slide so the search CTA suits the background.
+ *  1: cool blue skyline · 2: warm NYC sunset · 3: monochrome construction */
+const HERO_ACCENTS = ["#0284c7", "#ea580c", "#475569"];
+
 /** Jobs-mode is a special mode, not a world category. */
 const JOBS_PILLS = [
   "Software Engineer",
@@ -240,7 +248,8 @@ function SearchButton({ onClick, label = "Search" }: SearchButtonProps) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex items-center justify-center gap-2 h-11 px-3 sm:px-5 bg-white text-ink rounded-full hover:bg-surface-soft active:scale-95 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink font-semibold text-sm whitespace-nowrap shadow-airbnb"
+      style={{ backgroundColor: "var(--hero-accent, #ffffff)" }}
+      className="flex items-center justify-center gap-2 h-11 px-3 sm:px-5 text-white rounded-full hover:brightness-110 active:scale-95 transition-[filter,transform,background-color] duration-700 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white font-semibold text-sm whitespace-nowrap shadow-airbnb"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
         <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -470,17 +479,25 @@ export default function HeroSearch() {
 
   const bumpAnim = useCallback(() => setAnimKey((k) => k + 1), []);
 
-  /* ── Looping hero background video (home page only) ── */
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Force muted autoplay on mount. React doesn't reliably apply the `muted`
-  // property on first render, which makes browsers block autoplay.
+  /* ── Hero background slideshow ── */
+  const [slide, setSlide] = useState(0);
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    v.play().catch(() => { });
+    const id = setInterval(
+      () => setSlide((s) => (s + 1) % HERO_SLIDES.length),
+      HERO_SLIDE_MS
+    );
+    return () => clearInterval(id);
   }, []);
+
+  // Publish the active slide's accent to :root so chrome outside this
+  // section (e.g. the floating navbar) can theme its text to match.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--hero-accent", HERO_ACCENTS[slide]);
+    return () => {
+      root.style.removeProperty("--hero-accent");
+    };
+  }, [slide]);
 
   /* ── Derived ── */
   const isJobs = mode === "jobs";
@@ -554,20 +571,31 @@ export default function HeroSearch() {
   return (
     <section
       aria-label="Search for housing and jobs"
+      style={{ "--hero-accent": HERO_ACCENTS[slide] } as React.CSSProperties}
       className="relative overflow-hidden w-full h-[100dvh] min-h-[550px] bg-ink transition-[background] duration-300 flex flex-col justify-center"
     >
-      {/* Looping hero video (home page only) */}
-      <video
-        ref={videoRef}
-        src="/hero-home.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 w-full h-full object-cover bg-ink"
-      />
+      {/* Full-screen hero background slideshow — crossfade + slow Ken Burns */}
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-ink">
+        {HERO_SLIDES.map((src, i) => {
+          const active = i === slide;
+          return (
+            <img
+              key={src}
+              src={src}
+              alt=""
+              className={`pointer-events-none absolute inset-0 w-full h-full object-cover will-change-[opacity,transform] transition-opacity duration-[1400ms] ease-in-out ${
+                active ? "opacity-100 z-[2]" : "opacity-0 z-[1]"
+              } ${
+                active
+                  ? i % 2 === 0
+                    ? "animate-ken-burns-a"
+                    : "animate-ken-burns-b"
+                  : "scale-[1.04]"
+              }`}
+            />
+          );
+        })}
+      </div>
       {/* Background scrim */}
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-black/35 pointer-events-none" />
 
@@ -684,7 +712,11 @@ export default function HeroSearch() {
               </h1>
 
               <p className="relative flex items-center justify-center gap-2 text-sm md:text-base text-white/90 mb-6 font-medium [text-shadow:0_1px_10px_rgba(0,0,0,0.7)]">
-                <span className="inline-block w-2 h-2 rounded-full bg-white/80 shrink-0" aria-hidden="true" />
+                <span
+                  className="inline-block w-2 h-2 rounded-full shrink-0 transition-colors duration-700"
+                  style={{ backgroundColor: "var(--hero-accent, #ffffff)" }}
+                  aria-hidden="true"
+                />
                 {subline}
               </p>
 
@@ -706,7 +738,8 @@ export default function HeroSearch() {
                       key={pill}
                       type="button"
                       onClick={() => handleSubmit({ query: pill })}
-                      className="px-3 py-1 text-xs font-medium rounded-full border border-white/40 bg-white/15 hover:bg-white/30 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1"
+                      style={{ borderColor: "var(--hero-accent, rgba(255,255,255,0.4))" }}
+                      className="px-3 py-1 text-xs font-medium rounded-full border bg-white/15 hover:bg-white/30 text-white transition-colors duration-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1"
                     >
                       {pill}
                     </button>
