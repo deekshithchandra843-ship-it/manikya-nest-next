@@ -133,6 +133,72 @@ export default function ReviewsSection() {
     }
   };
 
+  if (isMobile) {
+    return (
+      <section className="relative w-full py-12 bg-gradient-to-b from-lime-50/50 via-lime-100/35 to-lime-50/50 overflow-hidden flex flex-col items-center">
+        <div className="max-w-3xl mx-auto px-6 w-full text-center mb-8">
+          <div className="w-8 h-1 bg-rausch/40 mx-auto rounded-full mb-3" />
+          <h2 className="text-[28px] font-extrabold tracking-tight text-ink leading-tight">
+            What Our Users Say
+          </h2>
+          <p className="text-xs text-neutral-500 font-medium leading-relaxed mt-3 px-2">
+            Verified co-living stories shared by students, professionals, and families who found their perfect, brokerage-free space.
+          </p>
+        </div>
+
+        {/* Swipeable List */}
+        <div className="w-full flex gap-4 overflow-x-auto snap-x snap-mandatory px-6 pb-6 scrollbar-hide">
+          {REVIEWS_DATA.map((review) => (
+            <div
+              key={review.id}
+              className="snap-center shrink-0 w-[290px] bg-white border border-neutral-200/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={review.avatar}
+                    alt={review.name}
+                    className="w-10 h-10 rounded-full object-cover border border-neutral-100"
+                  />
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-neutral-800 truncate">
+                      {review.name}
+                    </h4>
+                    <span className="text-[11px] text-muted truncate block">
+                      {review.location}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-0.5 mt-3 text-amber-500">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                </div>
+
+                <p className="text-xs leading-relaxed text-neutral-600 mt-3 font-medium">
+                  &quot;{review.text}&quot;
+                </p>
+              </div>
+
+              <div className="flex justify-between items-center pt-3 border-t border-neutral-100 mt-5">
+                <span className="text-[10px] font-bold text-rausch flex items-center gap-1 bg-rausch/5 px-2.5 py-1 rounded-full">
+                  <ShieldCheck className="w-3 h-3" /> Verified
+                </span>
+                <span className="text-[10px] text-neutral-400 font-semibold">{review.date}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Swipe indicator */}
+        <div className="text-[10px] text-neutral-450 font-bold uppercase tracking-wider animate-pulse mt-2">
+          ← Swipe to read more →
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       ref={sectionRef}

@@ -3,7 +3,13 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import PageLayout from "@/components/PageLayout";
+
+const ListingsMap = dynamic(() => import("@/components/ListingsMap"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full skeleton rounded-[14px]" aria-hidden="true" />,
+});
 import ListingGallery from "@/components/ListingGallery";
 import RoomTypesPricing from "@/components/RoomTypesPricing";
 import { LISTINGS, getCategory, Listing } from "@/lib/categories";
@@ -759,16 +765,21 @@ export default function ListingDetail() {
     <div className="bg-canvas border border-hairline rounded-[14px] p-4 shadow-sm">
       <h3 className="text-sm font-bold text-ink mb-3">What&apos;s nearby</h3>
       <div className="divide-y divide-hairline-soft">
-        {nearbyPlaces.map((p) => (
-          <div key={p.name} className="flex items-center gap-3 py-2.5">
-            <span className="text-base shrink-0">{p.icon}</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-ink truncate">{p.name}</p>
-              <p className="text-[10px] text-muted">{p.type}</p>
+        {nearbyPlaces.map((p) => {
+          const distance = p.name === "Metro Station" && listing?.metroDistance
+            ? listing.metroDistance.replace(/\s*from\s+metro/i, "")
+            : p.dist;
+          return (
+            <div key={p.name} className="flex items-center gap-3 py-2.5">
+              <span className="text-base shrink-0">{p.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-ink truncate">{p.name}</p>
+                <p className="text-[10px] text-muted">{p.type}</p>
+              </div>
+              <span className="text-xs text-muted shrink-0">{distance}</span>
             </div>
-            <span className="text-xs text-muted shrink-0">{p.dist}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -999,12 +1010,12 @@ export default function ListingDetail() {
                         return (
                           <div
                             key={a}
-                            className="flex items-center gap-2.5 p-2.5 bg-surface-soft/60 border border-hairline-soft rounded-[12px] hover:bg-rausch/5 hover:border-rausch/30 hover:scale-[1.01] hover:shadow-sm transition-all duration-300 group cursor-default"
+                            className="flex items-center gap-3 p-3 bg-white/50 backdrop-blur-md border border-neutral-200/60 rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-neutral-400 hover:bg-white/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-default"
                           >
-                            <div className="w-7 h-7 rounded-lg bg-canvas border border-hairline-soft flex items-center justify-center text-muted group-hover:text-rausch group-hover:border-rausch/30 transition-colors shrink-0">
+                            <div className="w-8 h-8 rounded-[10px] bg-neutral-100/55 border border-neutral-200/30 flex items-center justify-center text-neutral-700 group-hover:text-rausch group-hover:bg-rausch/10 group-hover:border-rausch/20 transition-all shrink-0">
                               <IconComponent className="w-4 h-4" />
                             </div>
-                            <span className="text-xs font-semibold text-body group-hover:text-ink transition-colors truncate">
+                            <span className="text-[12.5px] font-bold text-neutral-800 group-hover:text-neutral-950 transition-colors truncate">
                               {a}
                             </span>
                           </div>
@@ -1047,6 +1058,18 @@ export default function ListingDetail() {
 
           {/* Reviews & Ratings */}
           <ReviewsSection reviewsList={reviewsList} setReviewsList={setReviewsList} />
+
+          {/* Location Map Section */}
+          <section className="mb-8 pt-6 border-t border-neutral-200/60">
+            <h3 className="text-[17px] font-bold text-neutral-900 mb-1">Where you&apos;ll be</h3>
+            <p className="text-xs text-neutral-500 font-medium mb-4">{listing.location}</p>
+            <div className="w-full h-[280px] sm:h-[350px] rounded-[20px] overflow-hidden border border-neutral-200 shadow-inner">
+              <ListingsMap listings={[listing]} />
+            </div>
+            <p className="text-xs text-neutral-500 mt-3 font-normal leading-relaxed">
+              Find local highlights, public transit links, and commute times directly in the map area. exact neighborhood boundaries and navigation details are available upon confirmation.
+            </p>
+          </section>
 
           {/* Contact card — inline below lg breakpoint */}
           <section className="mb-24 lg:hidden space-y-4">

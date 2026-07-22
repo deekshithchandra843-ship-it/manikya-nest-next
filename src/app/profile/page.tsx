@@ -162,7 +162,7 @@ export default function UserProfile() {
                   <>
                     <SavedNestsGrid nests={savedNests} />
                     <RecommendationsBlock segment="property" userCity={session.city || "Bengaluru"} />
-                    <RequirementsBlock userName={session.name} />
+                    <RequirementsBlock userName={session.name} seekerId={session.id} />
                     <ActivityTimeline items={activity} />
                     <MenuBlock title="My Nest" items={NEST_MENU} />
                   </>

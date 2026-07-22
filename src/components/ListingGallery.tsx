@@ -54,9 +54,25 @@ export default function ListingGallery({
   const [isOpen, setIsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [activeTab, setActiveTab] = useState("hall");
+  const [shared, setShared] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const isFlat = category === "rent" || category === "buy";
+  const isFlat = false;
+
+  const handleShare = () => {
+    if (typeof window === "undefined") return;
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: alt,
+        url: shareUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
+  };
 
   // We want exactly 5 images. If we have fewer, we pad with the first image.
   const displayImages = [...images];
@@ -191,6 +207,37 @@ export default function ListingGallery({
             </span>
           )}
         </div>
+
+        {/* Share button overlay */}
+        <button
+          type="button"
+          onClick={handleShare}
+          className="absolute top-4 right-[60px] w-9 h-9 flex items-center justify-center rounded-full bg-canvas/90 shadow-airbnb hover:scale-105 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch z-10"
+          aria-label="Share listing"
+        >
+          {shared ? (
+            <span className="text-[10px] font-bold text-emerald-600">✓</span>
+          ) : (
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-muted"
+              aria-hidden="true"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          )}
+        </button>
 
         {/* Save button overlay (fits both layouts because it's absolute to the parent) */}
         <button

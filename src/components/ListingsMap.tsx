@@ -104,41 +104,31 @@ export default function ListingsMap({ listings = [] }: ListingsMapProps) {
   };
 
   const createPriceIcon = (price: string) => {
-    // E.g., "₹18,500/mo" -> "18.5k" or similar short labels
-    let label = price.split("/")[0].replace("₹", "").trim();
-    if (label.includes(",")) {
-      const val = parseInt(label.replace(/,/g, ""));
-      if (!isNaN(val) && val >= 1000) {
-        label = `₹${(val / 1000).toFixed(0)}k`;
-      } else {
-        label = `₹${label}`;
-      }
-    } else {
-      label = `₹${label}`;
-    }
+    // E.g., "₹18,500/mo" -> "₹18,500"
+    const label = price.split("/")[0].trim();
 
     return L.divIcon({
       className: "custom-price-marker-container",
       html: `
         <div style="
           background-color: white;
-          color: #FF5A5F;
-          border: 2px solid #FF5A5F;
-          font-size: 11px;
+          color: #222222;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          font-size: 13px;
           font-weight: 800;
-          padding: 3px 8px;
-          border-radius: 9999px;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+          padding: 5px 10px;
+          border-radius: 24px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
           white-space: nowrap;
           text-align: center;
           cursor: pointer;
-          transition: all 0.2s ease-in-out;
-        " class="hover:bg-rausch hover:text-white hover:scale-105">
+          transition: all 0.15s ease-in-out;
+        " class="hover:bg-neutral-950 hover:text-white hover:border-neutral-950 hover:scale-105">
           ${label}
         </div>
       `,
-      iconSize: [45, 24],
-      iconAnchor: [22, 12],
+      iconSize: [60, 28],
+      iconAnchor: [30, 14],
     });
   };
 

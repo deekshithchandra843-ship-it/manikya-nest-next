@@ -540,7 +540,8 @@ export default function HeroSearch() {
     },
     [bumpAnim]
   );
-  const handleJobsClick = useCallback(() => {
+
+  const handleJobsClick = useCallback(() => {
     setMode("jobs");
     bumpAnim();
   }, [bumpAnim]);
@@ -597,7 +598,7 @@ export default function HeroSearch() {
         })}
       </div>
       {/* Background scrim */}
-      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-black/35 pointer-events-none" />
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/40 pointer-events-none" />
 
       {/* Decorative blob. */}
       <div aria-hidden="true" className="hidden md:block pointer-events-none absolute inset-0 overflow-hidden">

@@ -22,8 +22,11 @@ export const ROLES: Record<Role, RoleDef> = {
   agent: { role: "agent", label: "Agent", tagline: "Publish your coverage and get leads", intentVerb: "Agent — open for leads", worlds: ["residential", "commercial", "stay"] },
 };
 
+/** Roles a seeker can post as. Only demand-side roles are offered here — the
+ *  seller/agent supply-side roles still exist in ROLES so existing feed items
+ *  resolve, but they are not selectable on the requirements page. */
 export function roleList(): RoleDef[] {
-  return (["tenant", "buyer", "seller", "agent"] as Role[]).map((r) => ROLES[r]);
+  return (["tenant", "buyer"] as Role[]).map((r) => ROLES[r]);
 }
 
 export function getRole(role: Role): RoleDef | undefined {
@@ -32,6 +35,7 @@ export function getRole(role: Role): RoleDef | undefined {
 
 export interface Requirement {
   id: number;
+  seekerId?: string;
   role: Role;
   category?: string;        // CategoryDef.slug for tenant/buyer/seller
   name: string;

@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Requirement, fetchRequirementsApi, deleteRequirementApi } from "@/lib/requirements";
 
-export default function RequirementsBlock({ userName }: { userName: string }) {
+export default function RequirementsBlock({ userName, seekerId }: { userName: string; seekerId?: string }) {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
 
   useEffect(() => {
     fetchRequirementsApi().then((all) => {
-      setRequirements(all.filter((r) => r.name === userName));
+      setRequirements(all.filter((r) => (seekerId && r.seekerId === seekerId) || r.name === userName));
     });
-  }, [userName]);
+  }, [userName, seekerId]);
 
   const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to close this requirement? You will stop receiving responses.")) {

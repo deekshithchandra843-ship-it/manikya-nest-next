@@ -66,43 +66,42 @@ function CategoryTile({ cat, count }: { cat: CategoryDef; count: number }) {
   return (
     <Link
       href={`/c/${cat.slug}`}
-      className="group relative block w-full aspect-[4/3] rounded-[14px] overflow-hidden hover-lift hover:shadow-airbnb focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+      className="group flex flex-col w-full bg-white border border-neutral-200/70 rounded-[20px] overflow-hidden shadow-[0_3px_10px_rgba(0,0,0,0.03)] hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(0,0,0,0.08)] hover:border-neutral-300/80 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
       aria-label={`${cat.label} — ${count} ${cat.resultNoun}`}
     >
-      {/* Background Image */}
-      {cat.image ? (
-        <>
-          {!imgLoaded && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
-          <Image
-            src={cat.image}
-            alt={cat.label}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
-            className="object-cover photo-enhance transition-transform duration-500 ease-out group-hover:scale-105"
-            onLoad={() => setImgLoaded(true)}
-            loading="lazy"
-          />
-        </>
-      ) : (
-        <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient}`} />
-      )}
+      {/* Category Image Header */}
+      <div className="relative aspect-[16/10] w-full bg-surface-strong overflow-hidden flex items-center justify-center shadow-inner">
+        {cat.image ? (
+          <>
+            {!imgLoaded && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
+            <Image
+              src={cat.image}
+              alt={cat.label}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              onLoad={() => setImgLoaded(true)}
+              loading="lazy"
+            />
+          </>
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient}`} />
+        )}
 
-      {/* Dark gradient scrim for legibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+        {/* Floating Count Badge */}
+        <span className="absolute top-2.5 left-2.5 bg-neutral-900/90 backdrop-blur-sm text-white text-[8px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[6px] shadow-sm">
+          {count} Nest{count !== 1 ? "s" : ""}
+        </span>
+      </div>
 
-      {/* Content overlayed on the bottom */}
-      <div className="absolute inset-x-0 bottom-0 p-3.5 flex flex-col justify-end text-left">
-        <h3 className="text-sm font-semibold text-white tracking-tight leading-tight group-hover:underline">
+      {/* Details Container */}
+      <div className="p-3 text-left bg-white border-t border-neutral-100">
+        <h3 className="text-[13px] font-bold text-neutral-900 leading-tight tracking-tight group-hover:text-rausch transition-colors duration-300">
           {cat.label}
         </h3>
-        <p className="text-[10px] text-white/75 mt-0.5 line-clamp-1 leading-normal">
+        <p className="text-[11px] text-neutral-500 mt-1 line-clamp-1 font-medium leading-normal">
           {cat.subtitle}
         </p>
-        <div className="mt-2 flex">
-          <span className="inline-block bg-white/20 backdrop-blur-[2px] text-white text-[9px] font-semibold px-2 py-0.5 rounded-full border border-white/10 shadow-airbnb">
-            {count} {cat.resultNoun}
-          </span>
-        </div>
       </div>
     </Link>
   );
@@ -140,87 +139,40 @@ export default function ExplorePage() {
 
   const tiles = categoriesForWorld(world);
 
-  // Compute popular listings dynamically
-  const popular = useMemo(() => {
-    const popularIds = ["6", "9", "1", "13", "16", "11"];
-    const matched = listings.filter((l) => popularIds.includes(String(l.id)));
-    if (matched.length > 0) return matched.slice(0, 9);
-    return listings.slice(0, 9);
+  // Compute category-specific popular listings dynamically
+  const popularFlats = useMemo(() => {
+    return listings.filter((l) => ["rent", "buy", "coliving"].includes(l.category)).slice(0, 6);
+  }, [listings]);
+
+  const popularPGs = useMemo(() => {
+    return listings.filter((l) => ["pg", "hostel"].includes(l.category)).slice(0, 6);
+  }, [listings]);
+
+  const popularOffices = useMemo(() => {
+    return listings.filter((l) => ["commercial-office", "coworking"].includes(l.category)).slice(0, 6);
+  }, [listings]);
+
+  const popularRetail = useMemo(() => {
+    return listings.filter((l) => ["commercial-shop", "warehouse", "land"].includes(l.category)).slice(0, 6);
+  }, [listings]);
+
+  const popularHomestays = useMemo(() => {
+    return listings.filter((l) => ["homestay", "resort"].includes(l.category)).slice(0, 6);
+  }, [listings]);
+
+  const popularHotels = useMemo(() => {
+    return listings.filter((l) => ["hotel", "service-apartment"].includes(l.category)).slice(0, 6);
   }, [listings]);
 
   return (
-    <>
-      {/* SVG filter definition for the line-art effect */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <filter id="line-art">
-          {/* Step 1: Grayscale conversion */}
-          <feColorMatrix
-            type="matrix"
-            values="0.2126 0.7152 0.0722 0 0
-                    0.2126 0.7152 0.0722 0 0
-                    0.2126 0.7152 0.0722 0 0
-                    0      0      0      1 0"
-          />
-          {/* Step 2: Smooth out noise */}
-          <feGaussianBlur stdDeviation="0.8" result="blurred" />
-          {/* Step 3: Edge detection (doubled strength to make lines thicker) */}
-          <feConvolveMatrix
-            order="3"
-            kernelMatrix="-2 -2 -2
-                          -2 16 -2
-                          -2 -2 -2"
-            preserveAlpha="true"
-            in="blurred"
-            result="edges"
-          />
-          {/* Step 4: Increase contrast and thickness of lines */}
-          <feComponentTransfer in="edges">
-            <feFuncR type="linear" slope="4.5" intercept="-0.1" />
-            <feFuncG type="linear" slope="4.5" intercept="-0.1" />
-            <feFuncB type="linear" slope="4.5" intercept="-0.1" />
-          </feComponentTransfer>
-        </filter>
-      </svg>
-
-      {/* Full-bleed hero video — rendered as dark line-art on a warm light yellow background */}
-      <section
-        aria-label="Explore FindWay"
-        className="relative overflow-hidden w-full h-[78vh] min-h-[480px]"
-        style={{ backgroundColor: "#FFFDD0" }}
-      >
-        <video
-          ref={videoRef}
-          src="/videos/explore-hero.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 w-full h-full object-cover bg-transparent"
-          style={{ filter: "url(#line-art) invert(1) contrast(200%)", mixBlendMode: "multiply", opacity: 0.95 }}
-        />
-        {/* Soft warm scrim so the bottom transition is seamless and clean */}
-        <div 
-          aria-hidden="true" 
-          className="absolute inset-0 pointer-events-none" 
-          style={{ backgroundImage: "linear-gradient(to top, #FFFDD0 0%, rgba(255, 253, 208, 0.2) 60%, transparent 100%)" }}
-        />
-        {/* Search bar inside the video frame, hugging its bottom edge */}
-        <div className="absolute inset-x-0 bottom-3 md:bottom-4 z-10 px-4 md:px-6 lg:px-10">
-          <div className="max-w-[680px] mx-auto">
-            <SearchBar hideTabs glass dropdownUp />
-          </div>
-        </div>
-      </section>
-
-      <PageLayout>
+    <div className="bg-[#f6fcfd] w-full min-h-screen">
+      <PageLayout className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 pt-24 md:pt-28 pb-20 md:pb-8">
       {/* Residential | Commercial | Stays segmented toggle */}
       <div className="flex justify-center pt-7 mb-6">
         <div
           role="group"
           aria-label="Choose property world"
-          className="inline-flex items-center gap-1 bg-surface-soft border border-hairline-soft rounded-full p-1"
+          className="inline-flex items-center gap-1 bg-white border border-neutral-200/80 rounded-full p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
         >
           {WORLDS.map((w) => {
             const active = world === w.value;
@@ -231,7 +183,7 @@ export default function ExplorePage() {
                 onClick={() => setWorld(w.value)}
                 aria-pressed={active}
                 className={`px-4 sm:px-5 md:px-6 py-2 text-sm font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                  active ? "bg-ink text-white scale-105 shadow-md" : "text-muted hover:text-ink hover:scale-102 hover:bg-surface-soft"
+                  active ? "bg-neutral-900 text-white scale-105 shadow-md" : "text-neutral-500 hover:text-neutral-950 hover:scale-[1.02] hover:bg-neutral-50"
                 }`}
               >
                 {w.label}
@@ -248,7 +200,7 @@ export default function ExplorePage() {
           className="flex flex-wrap justify-center gap-4 animate-fade-up"
         >
           {tiles.map((cat) => (
-            <div key={cat.slug} className="w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] xl:w-[190px] shrink-0">
+            <div key={cat.slug} className="w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-12px)] lg:w-[calc(25%-14px)] xl:w-[280px] shrink-0">
               <CategoryTile cat={cat} count={getCount(cat.slug)} />
             </div>
           ))}
@@ -270,23 +222,205 @@ export default function ExplorePage() {
         </div>
       </section>
 
-      {/* Popular near you — horizontal ListingCard rail */}
-      <section className="mb-12">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular near you</h2>
-          <Link href="/c/rent" className="text-sm text-ink font-medium underline underline-offset-2">
-            See all
-          </Link>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
-          {popular.map((listing) => (
-            <div key={listing.id} className="min-w-[260px] md:min-w-0">
-              <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Dynamic Popular listings sections based on selected world */}
+      {world === "residential" && (
+        <>
+          {/* Popular Flats & Apartments */}
+          {popularFlats.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular Flats & Apartments</h2>
+                <Link
+                  href="/c/rent"
+                  className="group inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-rausch bg-rausch/5 border border-rausch/10 hover:bg-rausch hover:text-white rounded-full transition-all duration-300 shadow-sm hover:shadow active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+                >
+                  <span>See all</span>
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
+                {popularFlats.map((listing) => (
+                  <div key={listing.id} className="min-w-[260px] md:min-w-0">
+                    <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Popular PGs & Hostels */}
+          {popularPGs.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular PGs & Hostels</h2>
+                <Link
+                  href="/c/pg"
+                  className="group inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-rausch bg-rausch/5 border border-rausch/10 hover:bg-rausch hover:text-white rounded-full transition-all duration-300 shadow-sm hover:shadow active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+                >
+                  <span>See all</span>
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
+                {popularPGs.map((listing) => (
+                  <div key={listing.id} className="min-w-[260px] md:min-w-0">
+                    <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )}
+
+      {world === "commercial" && (
+        <>
+          {/* Popular Offices & Co-working */}
+          {popularOffices.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular Offices & Co-working</h2>
+                <Link
+                  href="/c/coworking"
+                  className="group inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-rausch bg-rausch/5 border border-rausch/10 hover:bg-rausch hover:text-white rounded-full transition-all duration-300 shadow-sm hover:shadow active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+                >
+                  <span>See all</span>
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
+                {popularOffices.map((listing) => (
+                  <div key={listing.id} className="min-w-[260px] md:min-w-0">
+                    <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Popular Retail, Plots & Storage */}
+          {popularRetail.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular Shops & Warehouses</h2>
+                <Link
+                  href="/c/commercial-shop"
+                  className="group inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-rausch bg-rausch/5 border border-rausch/10 hover:bg-rausch hover:text-white rounded-full transition-all duration-300 shadow-sm hover:shadow active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+                >
+                  <span>See all</span>
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
+                {popularRetail.map((listing) => (
+                  <div key={listing.id} className="min-w-[260px] md:min-w-0">
+                    <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )}
+
+      {world === "stay" && (
+        <>
+          {/* Popular Homestays & Resorts */}
+          {popularHomestays.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular Homestays & Resorts</h2>
+                <Link
+                  href="/c/homestay"
+                  className="group inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-rausch bg-rausch/5 border border-rausch/10 hover:bg-rausch hover:text-white rounded-full transition-all duration-300 shadow-sm hover:shadow active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+                >
+                  <span>See all</span>
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
+                {popularHomestays.map((listing) => (
+                  <div key={listing.id} className="min-w-[260px] md:min-w-0">
+                    <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Popular Hotels & Service Apartments */}
+          {popularHotels.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-ink">Popular Hotels & Serviced Suites</h2>
+                <Link
+                  href="/c/hotel"
+                  className="group inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-rausch bg-rausch/5 border border-rausch/10 hover:bg-rausch hover:text-white rounded-full transition-all duration-300 shadow-sm hover:shadow active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+                >
+                  <span>See all</span>
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
+                {popularHotels.map((listing) => (
+                  <div key={listing.id} className="min-w-[260px] md:min-w-0">
+                    <ListingCard {...listing} image={listing.image || getCategory(listing.category)?.image} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )}
       </PageLayout>
-    </>
+    </div>
   );
 }

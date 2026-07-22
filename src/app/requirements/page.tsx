@@ -92,19 +92,31 @@ export default function RequirementsPage() {
   const [filterRole, setFilterRole] = useState<Role | "all">("all");
   const [respondTarget, setRespondTarget] = useState<Requirement | null>(null);
 
-  const feed = requirements.filter((r) => filterRole === "all" || r.role === filterRole);
+  // Only tenant/buyer requirements surface here — seller/agent are no longer
+  // selectable, so any such items in the data are kept out of the feed too.
+  const feed = requirements.filter((r) => (r.role === "tenant" || r.role === "buyer") && (filterRole === "all" || r.role === filterRole));
 
   const chooseRole = (r: Role) => {
     setRole(r);
     const w = getRole(r)!.worlds[0];
     setWorld(w);
-    setSlug(categoriesForWorld(w)[0].slug);
+    const filteredCats = categoriesForWorld(w).filter((c) => {
+      if (r === "buyer") return c.slug === "buy" || (w === "commercial" && c.slug !== "coworking");
+      if (r === "tenant") return c.slug !== "buy" && c.slug !== "land" && c.slug !== "lease";
+      return true;
+    });
+    setSlug(filteredCats[0]?.slug || "");
     setForm({});
     setErrorMsg("");
   };
   const chooseWorld = (w: World) => {
     setWorld(w);
-    setSlug(categoriesForWorld(w)[0].slug);
+    const filteredCats = categoriesForWorld(w).filter((c) => {
+      if (role === "buyer") return c.slug === "buy" || (w === "commercial" && c.slug !== "coworking");
+      if (role === "tenant") return c.slug !== "buy" && c.slug !== "land" && c.slug !== "lease";
+      return true;
+    });
+    setSlug(filteredCats[0]?.slug || "");
     setErrorMsg("");
   };
 
@@ -130,7 +142,7 @@ export default function RequirementsPage() {
             const on = form[f.key] === o;
             return (
               <button key={o} type="button" onClick={() => set(f.key, o)} aria-pressed={on}
-                className={`px-4 py-2 text-sm font-medium rounded-[8px] border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${on ? "bg-rausch/10 border-rausch text-rausch" : "bg-canvas text-body border-hairline hover:border-ink"}`}>
+                className={`px-4 py-2 text-sm font-medium rounded-[8px] border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-job-navy focus-visible:ring-offset-2 ${on ? "bg-job-navy/[.08] border-job-navy text-job-navy" : "bg-canvas text-body border-hairline hover:border-ink"}`}>
                 {o}
               </button>
             );
@@ -149,7 +161,7 @@ export default function RequirementsPage() {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5">
       {fields.map((f) => (
         <div key={f.key} className={f.half ? "col-span-1" : "col-span-1 sm:col-span-2"}>
-          <label className={labelCls}>{f.label}{f.required && <span className="text-rausch"> *</span>}</label>
+          <label className={labelCls}>{f.label}{f.required && <span className="text-job-navy"> *</span>}</label>
           {renderField(f)}
         </div>
       ))}
@@ -246,115 +258,77 @@ export default function RequirementsPage() {
   };
 
   const roleDef = getRole(role)!;
-  const worldCategories = categoriesForWorld(world);
+  const worldCategories = categoriesForWorld(world).filter((c) => {
+    if (role === "buyer") return c.slug === "buy" || (world === "commercial" && c.slug !== "coworking");
+    if (role === "tenant") return c.slug !== "buy" && c.slug !== "land" && c.slug !== "lease";
+    return true;
+  });
   const showCategory = role !== "agent";
 
   return (
-    <PageLayout breadcrumbs={[{ label: "Home", href: "/" }, { label: "Post a requirement" }]}>
-      {/* Themed hero band — demand-side, split layout with animated vector art */}
+    <>
+      {/* Spotlight hero — jobs-page direction: a full-bleed dark editorial
+          cover that fills the screen below the sticky navbar. It lives OUTSIDE
+          PageLayout so it spans the full viewport width edge-to-edge; the form
+          and feed stay in the constrained container below. Navy field (60%), a
+          cool navy-lift glow plus white text mass (30%), and sun as the 10%
+          accent only: eyebrow, headline highlight, scroll arrow. Sun is never
+          text on white here — the field is navy. */}
       <section
         aria-label="Post your requirement"
-        className="relative overflow-hidden bg-gradient-to-br from-[#0F0C20] to-[#15102A] -mx-4 md:-mx-6 lg:-mx-10 px-4 md:px-6 lg:px-10 py-12 md:py-16 mb-8 text-white rounded-b-[24px] shadow-airbnb"
+        className="relative overflow-hidden w-full min-h-[56dvh] pt-20 px-4 md:px-6 lg:px-10 flex items-center rounded-b-[28px] shadow-airbnb"
+        style={{ background: "linear-gradient(160deg,#141d38 0%,#1b2749 52%,#141d38 100%)" }}
       >
-        {/* Decorative background blobs */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
-          <div className="absolute -top-24 -right-16 w-96 h-96 rounded-full bg-rausch/30 blur-[100px]" />
-          <div className="absolute -bottom-28 -left-24 w-96 h-96 rounded-full bg-violet-600/30 blur-[100px]" />
+        {/* 30% — supporting depth: one navy lift, one restrained pool of accent
+            warmth so the field never reads flat. */}
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -left-20 w-[26rem] h-[26rem] rounded-full" style={{ background: "radial-gradient(circle,rgba(58,84,163,.38),transparent 70%)" }} />
+        <div aria-hidden="true" className="pointer-events-none absolute -top-20 -right-16 w-80 h-80 rounded-full" style={{ background: "radial-gradient(circle,rgba(252,219,50,.16),transparent 70%)" }} />
+
+        <div className="relative max-w-[900px] mx-auto w-full text-center flex flex-col items-center gap-5 md:gap-6 py-16 md:py-20">
+          {/* 10% — accent eyebrow */}
+          <span
+            className="inline-flex items-center gap-2 h-7 px-3.5 rounded-full text-[11px] font-bold uppercase tracking-[0.16em]"
+            style={{ color: "#fcdb32", background: "rgba(252,219,50,.10)", border: "1px solid rgba(252,219,50,.28)" }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#fcdb32" }} aria-hidden="true" />
+            Real-time matchmaking
+          </span>
+
+          <h1 className="text-white font-extrabold tracking-tight leading-[1.1] text-[clamp(28px,5vw,50px)]">
+            <span className="block">Skip the scroll.</span>
+            {/* The accent lands on the one phrase that carries the promise. */}
+            <span className="block" style={{ color: "#fcdb32" }}>Let owners find you.</span>
+          </h1>
+
+          <p className="text-[14px] md:text-[15.5px] text-white/65 max-w-[480px] leading-relaxed">
+            Post what you want to rent, buy or lease — landlords, sellers and verified agents bring matching offers straight to you.
+          </p>
         </div>
 
-        <div className="relative z-10 max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-          {/* Left Text Column */}
-          <div className="md:col-span-7 flex flex-col items-start text-left">
-            <span className="inline-block bg-rausch/20 text-rausch border border-rausch/30 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4">
-              Real-time Matchmaking
-            </span>
-            <h1 className="text-[clamp(28px,4.5vw,40px)] font-bold text-white tracking-tight leading-[1.1] mb-4">
-              Requirement Matchboard
-            </h1>
-            <p className="text-sm md:text-base text-white/80 max-w-[550px] leading-relaxed">
-              Post what you want to rent, buy, or lease. Skip scrolling through listings — let landlords, sellers, and verified agents come to you with matching offers.
-            </p>
-          </div>
-
-          {/* Right Vector Flowchart Column */}
-          <div className="md:col-span-5 flex justify-center items-center relative py-6">
-            <div className="w-full max-w-[340px] flex flex-col gap-6 relative">
-              {/* Connecting vertical path lines */}
-              <div className="absolute left-[22px] top-6 bottom-6 w-0.5 border-l-2 border-dashed border-white/20 z-0" />
-
-              {/* Step 1 Node */}
-              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm relative z-10 animate-fade-up">
-                <div className="w-11 h-11 rounded-xl bg-rausch/20 border border-rausch/40 text-rausch flex items-center justify-center shrink-0 shadow-lg">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-white">1. Post Your Custom Requirement</h4>
-                  <p className="text-[10px] text-white/60 mt-0.5 truncate">Define your budget, configuration & preferred areas</p>
-                </div>
-              </div>
-
-              {/* Connecting animated arrow 1 */}
-              <div className="absolute left-[16px] top-[54px] z-10 animate-bounce">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-rausch">
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
-              </div>
-
-              {/* Step 2 Node */}
-              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm relative z-10 animate-fade-up [animation-delay:0.2s]">
-                <div className="w-11 h-11 rounded-xl bg-violet-600/20 border border-violet-500/40 text-violet-400 flex items-center justify-center shrink-0 shadow-lg animate-pulse">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-white">2. Real-Time Application Scan</h4>
-                  <p className="text-[10px] text-white/60 mt-0.5 truncate">Instantly alerts matching landlords, sellers, & agents</p>
-                </div>
-              </div>
-
-              {/* Connecting animated arrow 2 */}
-              <div className="absolute left-[16px] top-[138px] z-10 animate-bounce">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-violet-400">
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
-              </div>
-
-              {/* Step 3 Node */}
-              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm relative z-10 animate-fade-up [animation-delay:0.4s]">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0 shadow-lg">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <path d="M22 6l-10 7L2 6" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-white">3. Get Instant Matching Offers</h4>
-                  <p className="text-[10px] text-white/60 mt-0.5 truncate">Landlords propose direct matching properties to you</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* scroll hint */}
+        <div aria-hidden="true" className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">Post your requirement</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fcdb32" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-bounce">
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
         </div>
       </section>
 
-      {/* Main split dashboard layout */}
-      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-16">
+      <PageLayout breadcrumbs={[{ label: "Home", href: "/" }, { label: "Post a requirement" }]}>
+        {/* Main split dashboard layout */}
+        <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-16">
         
         {/* Left Column: Post form (Sticky on desktop) */}
         <section className="lg:col-span-5 lg:sticky lg:top-24 bg-canvas border border-hairline rounded-[24px] p-5 sm:p-6 shadow-airbnb transition-all">
           <div className="mb-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-ink flex items-center gap-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-rausch">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-job-navy">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
                 Create Requirement
               </h2>
-              <span className="text-xs font-bold text-rausch bg-rausch/10 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-bold text-job-navy bg-job-navy-soft px-2 py-0.5 rounded-full">
                 Step {step} of 3
               </span>
             </div>
@@ -363,9 +337,9 @@ export default function RequirementsPage() {
 
           {/* Progress Indicators */}
           <div className="flex items-center gap-2 mb-6">
-            <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= 1 ? "bg-rausch shadow-[0_0_8px_rgba(255,56,92,0.4)]" : "bg-surface-soft"}`} />
-            <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= 2 ? "bg-rausch shadow-[0_0_8px_rgba(255,56,92,0.4)]" : "bg-surface-soft"}`} />
-            <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= 3 ? "bg-rausch shadow-[0_0_8px_rgba(255,56,92,0.4)]" : "bg-surface-soft"}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= 1 ? "bg-job-sun shadow-[0_0_8px_rgba(252,219,50,0.45)]" : "bg-surface-soft"}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= 2 ? "bg-job-sun shadow-[0_0_8px_rgba(252,219,50,0.45)]" : "bg-surface-soft"}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= 3 ? "bg-job-sun shadow-[0_0_8px_rgba(252,219,50,0.45)]" : "bg-surface-soft"}`} />
           </div>
 
           {submitted && (
@@ -416,7 +390,7 @@ export default function RequirementsPage() {
                       const on = world === w;
                       return (
                         <button key={w} type="button" onClick={() => chooseWorld(w)} aria-pressed={on}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] capitalize transition-colors ${on ? "bg-ink text-white shadow-sm" : "text-muted hover:text-ink"}`}>
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] capitalize transition-colors ${on ? "bg-job-navy text-white shadow-sm" : "text-muted hover:text-ink"}`}>
                           {w}
                         </button>
                       );
@@ -434,7 +408,7 @@ export default function RequirementsPage() {
                       const on = slug === c.slug;
                       return (
                         <button key={c.slug} type="button" onClick={() => { setSlug(c.slug); setErrorMsg(""); }} aria-pressed={on}
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-[8px] border transition-colors ${on ? "bg-rausch text-white border-rausch shadow-sm" : "bg-canvas text-body border-hairline hover:border-ink"}`}>
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-[8px] border transition-colors ${on ? "bg-job-navy text-white border-job-navy shadow-sm" : "bg-canvas text-body border-hairline hover:border-ink"}`}>
                           {c.label}
                         </button>
                       );
@@ -455,11 +429,11 @@ export default function RequirementsPage() {
               {role !== "agent" && (
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   <div>
-                    <label className={labelCls}>Budget Min (₹) <span className="text-rausch">*</span></label>
+                    <label className={labelCls}>Budget Min (₹) <span className="text-job-navy">*</span></label>
                     <input inputMode="numeric" value={budgetMin} onChange={(e) => { setBudgetMin(e.target.value); setErrorMsg(""); }} placeholder="Min budget" className={field} />
                   </div>
                   <div>
-                    <label className={labelCls}>Budget Max (₹) <span className="text-rausch">*</span></label>
+                    <label className={labelCls}>Budget Max (₹) <span className="text-job-navy">*</span></label>
                     <input inputMode="numeric" value={budgetMax} onChange={(e) => { setBudgetMax(e.target.value); setErrorMsg(""); }} placeholder="Max budget" className={field} />
                   </div>
                 </div>
@@ -472,7 +446,7 @@ export default function RequirementsPage() {
             <div className="animate-fade-up">
               {/* Preferred areas (multi) */}
               <div className="mb-5">
-                <label className={labelCls}>{role === "agent" ? "Coverage Areas" : "Preferred Localities"} <span className="text-rausch">*</span></label>
+                <label className={labelCls}>{role === "agent" ? "Coverage Areas" : "Preferred Localities"} <span className="text-job-navy">*</span></label>
                 <div className="flex gap-2 mb-2">
                   <input value={areaInput} onChange={(e) => { setAreaInput(e.target.value); setErrorMsg(""); }}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addArea(); } }}
@@ -494,11 +468,11 @@ export default function RequirementsPage() {
               {/* Name + city */}
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <div>
-                  <label className={labelCls}>Name <span className="text-rausch">*</span></label>
+                  <label className={labelCls}>Name <span className="text-job-navy">*</span></label>
                   <input value={name} onChange={(e) => { setName(e.target.value); setErrorMsg(""); }} placeholder="Your name" autoComplete="name" className={field} />
                 </div>
                 <div>
-                  <label className={labelCls}>City <span className="text-rausch">*</span></label>
+                  <label className={labelCls}>City <span className="text-job-navy">*</span></label>
                   <div className="relative">
                     <select value={city} onChange={(e) => { setCity(e.target.value); setErrorMsg(""); }} className={`${field} text-ink pr-8`}>
                       {cities.map((c) => (<option key={c} value={c}>{c}</option>))}
@@ -509,7 +483,7 @@ export default function RequirementsPage() {
 
               {/* Notes */}
               <div className="mb-6">
-                <label className={labelCls}>Tell {role === "agent" ? "clients" : "owners"} more <span className="text-rausch">*</span></label>
+                <label className={labelCls}>Tell {role === "agent" ? "clients" : "owners"} more <span className="text-job-navy">*</span></label>
                 <textarea value={notes} onChange={(e) => { setNotes(e.target.value); setErrorMsg(""); }} rows={3}
                   placeholder="e.g. Seeking furnished flat with good ventilation, ready to move in ASAP." className={`${field} h-auto py-2.5 resize-none`} />
               </div>
@@ -531,7 +505,7 @@ export default function RequirementsPage() {
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="flex-1 h-12 bg-ink text-white text-sm font-semibold rounded-xl hover:bg-ink-hover hover:shadow-md active:scale-[0.98] transition-all"
+                className="flex-1 h-12 bg-job-navy text-white text-sm font-semibold rounded-xl hover:bg-job-navy-lift hover:shadow-md active:scale-[0.98] transition-all"
               >
                 Next Step
               </button>
@@ -539,7 +513,7 @@ export default function RequirementsPage() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="flex-1 h-12 bg-rausch text-white text-sm font-bold rounded-xl hover:bg-rausch-active hover:shadow-lg active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2"
+                className="flex-1 h-12 bg-job-sun text-job-navy text-sm font-bold rounded-xl hover:bg-job-sun-active hover:shadow-lg active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-job-navy focus-visible:ring-offset-2"
               >
                 Post Requirement
               </button>
@@ -560,7 +534,7 @@ export default function RequirementsPage() {
                   const on = filterRole === r;
                   return (
                     <button key={r} type="button" onClick={() => setFilterRole(r)} aria-pressed={on}
-                      className={`px-3 py-1 text-xs font-semibold rounded-full capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${on ? "bg-ink text-white" : "text-muted hover:text-ink"}`}>
+                      className={`px-3 py-1 text-xs font-semibold rounded-full capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-job-navy ${on ? "bg-job-navy text-white" : "text-muted hover:text-ink"}`}>
                       {r === "all" ? "All" : roleList().find((x) => x.role === r)!.label}
                     </button>
                   );
@@ -607,5 +581,6 @@ export default function RequirementsPage() {
         />
       )}
     </PageLayout>
+    </>
   );
 }

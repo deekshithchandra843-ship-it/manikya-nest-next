@@ -51,6 +51,22 @@ export default function ListingCard({
   const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [sharedFeedback, setSharedFeedback] = useState(false);
+
+  const handleShare = () => {
+    if (typeof window === "undefined") return;
+    const shareUrl = `${window.location.origin}/listing/${id}`;
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        url: shareUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      setSharedFeedback(true);
+      setTimeout(() => setSharedFeedback(false), 2000);
+    }
+  };
 
   const toggleSaved = () => {
     const next = !saved;
@@ -77,10 +93,10 @@ export default function ListingCard({
       href={`/listing/${id}`}
       className="flex flex-col h-full group focus-visible:outline-none"
     >
-      <div className="flex flex-col justify-between h-full flex-grow bg-canvas rounded-[16px] hover:-translate-y-1.5 hover:shadow-airbnb transition-all duration-300 ease-out">
+      <div className="flex flex-col justify-between h-full flex-grow bg-white border border-neutral-200/70 rounded-[20px] p-3 shadow-[0_3px_10px_rgba(0,0,0,0.03)] hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(0,0,0,0.08)] hover:border-neutral-300/80 transition-all duration-300 ease-out">
         <div>
           {/* Image Container with Custom Aspect Ratio */}
-          <div className="relative aspect-[16/10] w-full bg-surface-strong rounded-[16px] overflow-hidden flex items-center justify-center shadow-inner">
+          <div className="relative aspect-[16/10] w-full bg-surface-strong rounded-[14px] overflow-hidden flex items-center justify-center shadow-inner">
             {image ? (
               <>
                 {!imgLoaded && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
@@ -89,7 +105,7 @@ export default function ListingCard({
                   alt={`${title} — ${badge} in ${location}`}
                   fill
                   sizes="(max-width: 640px) 280px, (max-width: 768px) 340px, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   onLoad={() => setImgLoaded(true)}
                   loading="lazy"
                 />
@@ -99,6 +115,40 @@ export default function ListingCard({
                 <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m4-10h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01" />
               </svg>
             )}
+
+            {/* Glassmorphic Share button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleShare();
+              }}
+              className="absolute top-2.5 right-10 w-7 h-7 flex items-center justify-center bg-white/80 backdrop-blur-md border border-white/20 shadow-md transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none rounded-full z-10"
+              aria-label="Share listing"
+            >
+              {sharedFeedback ? (
+                <span className="text-[9px] font-bold text-emerald-600">✓</span>
+              ) : (
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#222222"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              )}
+            </button>
 
             {/* Glassmorphic Save button */}
             <button
@@ -138,114 +188,92 @@ export default function ListingCard({
           </div>
 
           {/* Details Content */}
-          <div className="pt-3 px-1 pb-2">
-            {/* Row 1: Title */}
-            <h3 className="text-[16px] font-bold text-neutral-950 leading-tight line-clamp-1 group-hover:text-rausch transition-colors duration-300">
-              {title}
-            </h3>
-
-            {/* Row 2: Price & Rating (Top Prominence) */}
-            <div className="flex items-baseline justify-between mt-2 mb-1">
-              <p className="text-[16px] font-extrabold text-rausch">
-                {price}
-              </p>
-              <div className="flex items-center gap-0.5 text-xs font-semibold text-neutral-950 shrink-0 bg-neutral-100 px-2 py-0.5 rounded-[6px]">
+          <div className="pt-3 px-1.5 pb-2">
+            {/* Row 1: Title & Rating Inline */}
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-[14px] font-bold text-neutral-900 leading-snug line-clamp-1 group-hover:text-rausch transition-colors duration-300">
+                {title}
+              </h3>
+              <div className="flex items-center gap-0.5 text-xs font-bold text-neutral-900 shrink-0 mt-0.5">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="#EAB308" stroke="#EAB308" strokeWidth="1" aria-hidden="true">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
                 <span>{rating.toFixed(1)}</span>
-                <span className="text-neutral-600 font-normal ml-0.5">({reviewCount})</span>
+                <span className="text-neutral-400 font-normal ml-0.5">({reviewCount})</span>
               </div>
             </div>
 
-            {/* Row 3: Location & Metro */}
-            <div className="flex items-center gap-1.5 text-xs text-neutral-800 mt-2">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-neutral-600 shrink-0">
-                <path d="M12 2a8 8 0 00-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 00-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
-              </svg>
-              <p className="truncate font-medium">
-                {location}
-                {metroDistance && <span className="text-neutral-500 font-normal"> · {metroDistance}</span>}
+            {/* Row 2: Location & Metro */}
+            <div className="text-[12.5px] text-neutral-500 font-medium space-y-0.5 mt-1.5">
+              <p className="truncate flex items-center gap-1">
+                <span>{location}</span>
+                {metroDistance && <span className="text-neutral-300 font-normal">&middot;</span>}
+                {metroDistance && <span className="text-neutral-500 font-normal">{metroDistance.replace("from metro", "").trim()} from metro</span>}
               </p>
+              
+              {/* Row 3: Specs & Area inline */}
+              {(spec || area) && (
+                <p className="truncate text-neutral-400 font-normal text-[12px]">
+                  {spec}
+                  {spec && area && <span className="mx-1">&middot;</span>}
+                  {area && <span>{area}</span>}
+                </p>
+              )}
             </div>
-
-            {/* Row 4: Specs & Area */}
-            {(spec || area) && (
-              <p className="text-[12px] font-bold text-neutral-800 mt-2 bg-neutral-50 px-2.5 py-1 rounded-[8px] inline-block border border-neutral-200">
-                {spec}
-                {spec && area && <span className="text-neutral-500 mx-1.5">|</span>}
-                {area && <span className="text-neutral-950">{area}</span>}
-              </p>
-            )}
 
             {/* PG/Co-living Availability and Pricing Breakdown */}
-            {roomConfigurations && roomConfigurations.length > 0 && (
-              <div className="mt-3 pt-2.5 border-t border-neutral-100 flex flex-col gap-1.5 w-full">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5 select-none">
-                  🛏️ Available Beds
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {roomConfigurations.map((rc) => {
-                    const isFull = rc.availableBeds <= 0;
-                    const cleanType = rc.sharingType.replace(/^\w/, (c: string) => c.toUpperCase()) + " Sharing";
-                    return (
-                      <span
-                        key={rc.id || rc.sharingType}
-                        className={`text-[9px] font-black px-2 py-0.5 rounded-[6px] border select-none ${
-                          isFull
-                            ? "bg-neutral-50 border-neutral-200 text-neutral-400"
-                            : "bg-emerald-50 border-emerald-100 text-emerald-700"
-                        }`}
-                      >
-                        {cleanType}: {isFull ? "Full" : `${rc.availableBeds} Bed${rc.availableBeds > 1 ? "s" : ""} Available`}
-                      </span>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] font-bold text-neutral-600 mt-0.5">
-                  {roomConfigurations.map((rc) => {
-                    const cleanType = rc.sharingType.replace(/^\w/, (c: string) => c.toUpperCase());
-                    return (
-                      <span key={rc.id || rc.sharingType} className="bg-neutral-50 border border-neutral-200 rounded-[4px] px-1.5 py-0.5 shrink-0">
-                        {cleanType} - <span className="text-rausch font-black">₹{rc.pricePerBed.toLocaleString("en-IN")}</span>
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {roomConfigurations && roomConfigurations.length > 0 && (() => {
+              const totalBeds = roomConfigurations.reduce((acc, rc) => acc + (rc.availableBeds || 0), 0);
+              const uniqueTypes = Array.from(new Set(roomConfigurations.map(rc => rc.sharingType.toLowerCase().replace(" sharing", ""))));
+              const formattedTypes = uniqueTypes
+                .map(t => t.charAt(0).toUpperCase() + t.slice(1))
+                .reduce((acc, curr, index, arr) => {
+                  if (index === 0) return curr;
+                  if (index === arr.length - 1) return acc + " & " + curr;
+                  return acc + ", " + curr;
+                }, "");
 
-            {/* Row 5: Differentiator tags */}
-            {hasTags && (
-              <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-                {verified && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rausch bg-rausch/10 px-2.5 py-1 rounded-[8px]">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Verified
-                  </span>
-                )}
-                {furnishing && (
-                  <span className="text-[10px] font-bold text-neutral-750 bg-neutral-100 px-2.5 py-1 rounded-[8px] border border-neutral-200/50">
-                    {furnishing}
-                  </span>
-                )}
-                {availableFrom && (
-                  <span className="text-[10px] font-bold text-neutral-750 bg-neutral-100 px-2.5 py-1 rounded-[8px] border border-neutral-200/50">
-                    {availableFrom}
-                  </span>
-                )}
-              </div>
-            )}
+              if (totalBeds === 0) {
+                return (
+                  <div className="mt-2.5 pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-neutral-450">Fully Booked</span>
+                    <span className="text-neutral-400">Join Waitlist</span>
+                  </div>
+                );
+              }
 
-            {/* Row 6: Amenities Section */}
-            <div className="flex flex-wrap gap-1 mt-2.5">
-              {amenities.slice(0, 3).map((a) => (
-                <span key={a} className="text-[10px] font-bold text-neutral-700 bg-neutral-100/80 px-2 py-0.5 rounded-[6px] border border-neutral-200/40">
-                  {a}
-                </span>
-              ))}
+              return (
+                <div className="mt-2.5 pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px] font-semibold text-neutral-600">
+                  <span className="truncate pr-2">
+                    {formattedTypes} Sharing
+                  </span>
+                  <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] shrink-0 border border-emerald-100/60 text-[10px] font-bold">
+                    {totalBeds} bed{totalBeds > 1 ? "s" : ""} left
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Row 4: Price & Differentiator tags */}
+            <div className="mt-2.5 pt-2 border-t border-neutral-100/80 flex items-center justify-between">
+              <p className="text-[15px] font-black text-neutral-900">
+                {price}
+              </p>
+
+              {hasTags && (
+                <div className="flex items-center gap-1.5">
+                  {verified && (
+                    <span className="text-[9px] font-extrabold text-rausch bg-rausch/5 px-2 py-0.5 rounded-[4px] border border-rausch/10 uppercase tracking-wider">
+                      Verified
+                    </span>
+                  )}
+                  {furnishing && (
+                    <span className="text-[9px] font-extrabold text-neutral-500 bg-neutral-50 px-2 py-0.5 rounded-[4px] border border-neutral-200/60 uppercase tracking-wider">
+                      {furnishing.replace("furnished", "").trim()}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

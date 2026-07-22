@@ -13,9 +13,9 @@
     Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
   /* Brand & accent */
-  --color-rausch: #ff385c;
-  --color-rausch-active: #e00b41;
-  --color-rausch-disabled: #ffd1da;
+  --color-rausch: #5e6836;
+  --color-rausch-active: #4a522a;
+  --color-rausch-disabled: #e6ebdb;
   --color-luxe: #460479;
   --color-plus: #92174d;
 
@@ -208,6 +208,14 @@
   filter: brightness(1.06) contrast(1.04) saturate(1.06);
 }
 
+/* Smooth scrolling and font rendering globally */
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Smooth transitions globally */
 * {
   -webkit-tap-highlight-color: transparent;
@@ -221,19 +229,33 @@
 
 /* Custom Premium scrollbars for modern browsers */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.16);
+  border: 3px solid transparent;
+  background-clip: padding-box;
   border-radius: 9999px;
-  transition: background 0.3s;
+  transition: background 0.2s ease-out;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Dark mode / dark background adaptive scrollbars */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
 }
 
 /* Premium modern button animations and micro-interactions */

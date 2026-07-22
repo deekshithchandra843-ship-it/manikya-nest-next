@@ -1458,27 +1458,29 @@ export default function PostListing() {
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden bg-canvas">
         {/* Left pane: dynamic descriptive contextual help in light theme */}
         <div className="w-full md:w-5/12 bg-surface-soft border-b md:border-b-0 md:border-r border-hairline p-4 md:p-12 flex flex-col items-center justify-center text-ink shrink-0">
-          <div className="hidden md:block">
-            {renderStepCartoonGraphic(active, selectedRole, world)}
-          </div>
-          <div className="text-center md:text-left w-full max-w-[340px]">
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider opacity-70 mb-1 md:mb-2 block">
-              {selectedRole === "builder"
-                ? `Step ${active >= 3 ? active : active + 1} of ${WIZARD_STEPS.length - 1}`
-                : `Step ${active + 1} of ${WIZARD_STEPS.length}`}
-            </span>
-            <h2 className="text-lg md:text-3.5xl font-extrabold leading-tight tracking-tight mb-1 md:mb-4 text-ink">
-              {getStepTitle(active, category?.label ?? "Property")}
-            </h2>
-            <p className="text-xs md:text-base opacity-85 leading-relaxed text-body hidden md:block">
-              {getStepDescription(active, category?.label ?? "Property")}
-            </p>
+          <div key={active} className="w-full flex flex-col items-center justify-center animate-fade-up">
+            <div className="hidden md:block">
+              {renderStepCartoonGraphic(active, selectedRole, world)}
+            </div>
+            <div className="text-center md:text-left w-full max-w-[340px]">
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider opacity-70 mb-1 md:mb-2 block">
+                {selectedRole === "builder"
+                  ? `Step ${active >= 3 ? active : active + 1} of ${WIZARD_STEPS.length - 1}`
+                  : `Step ${active + 1} of ${WIZARD_STEPS.length}`}
+              </span>
+              <h2 className="text-lg md:text-3.5xl font-extrabold leading-tight tracking-tight mb-1 md:mb-4 text-ink">
+                {getStepTitle(active, category?.label ?? "Property")}
+              </h2>
+              <p className="text-xs md:text-base opacity-85 leading-relaxed text-body hidden md:block">
+                {getStepDescription(active, category?.label ?? "Property")}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Right pane: center-aligned scrollable workspace area */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 flex items-center justify-center bg-canvas">
-          <div className="w-full max-w-[620px] py-4">
+          <div key={active} className="w-full max-w-[620px] py-4 animate-fade-up">
             {/* Step 0: Choose Listing Role & Auth */}
             {active === 0 && (
               <div className="space-y-5">

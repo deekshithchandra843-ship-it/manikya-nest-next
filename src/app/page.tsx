@@ -7,6 +7,7 @@ import HeroSearch from "@/components/HeroSearch";
 import HowFindWayWorks from "@/components/HowFindWayWorks";
 import ReviewsSection from "@/components/ReviewsSection";
 import { apiClient } from "@/lib/apiClient";
+import { motion } from "framer-motion";
 
 const trustPoints = [
   {
@@ -46,7 +47,6 @@ const trustPoints = [
     ),
   },
 ];
-
 
 const whyCards = [
   {
@@ -136,14 +136,21 @@ export default function HomePage() {
   const displayedListings = filteredListings.slice(0, 9);
 
   return (
-    <>
+    <div className="bg-[#f6fcfd] w-full min-h-screen">
       {/* Hero Section — tabbed Housing.com-style hero with search */}
       <HeroSearch />
 
       <PageLayout className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 pb-0">
 
       {/* Trust strip — proof points mirroring our core promise */}
-      <section aria-label="Why renters trust FindWay" className="mt-10 md:mt-16 mb-10">
+      <motion.section 
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        aria-label="Why renters trust FindWay" 
+        className="mt-10 md:mt-16 mb-10"
+      >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline-soft rounded-[14px] overflow-hidden border border-hairline-soft">
           {trustPoints.map((point) => (
             <div key={point.title} className="flex items-start gap-2.5 bg-canvas px-4 py-4 hover:bg-surface-soft hover:scale-[1.01] transition-all duration-300 group cursor-default">
@@ -155,10 +162,16 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Trending Listings */}
-      <section className="mb-0">
+      <motion.section 
+        initial={{ opacity: 0, y: 25 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-0"
+      >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-[22px] md:text-[28px] font-extrabold tracking-tight text-ink">Trending Properties</h2>
@@ -204,7 +217,7 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </section>
+      </motion.section>
     </PageLayout>
 
     {/* Rummy Deck Reviews Section */}
@@ -214,7 +227,13 @@ export default function HomePage() {
       <HowFindWayWorks />
 
       {/* Jobs hub teaser */}
-      <section className="mb-10">
+      <motion.section 
+        initial={{ opacity: 0, y: 25 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-10"
+      >
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-[22px] md:text-[28px] font-extrabold tracking-tight text-ink">Grow your career</h2>
@@ -255,10 +274,16 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Why FindWay */}
-      <section className="mb-12">
+      <motion.section 
+        initial={{ opacity: 0, y: 25 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-12"
+      >
         <div className="mb-6">
           <h2 className="text-[22px] md:text-[28px] font-extrabold tracking-tight text-ink">Why FindWay?</h2>
           <p className="text-sm text-muted mt-1">What makes us the best platform for your journey</p>
@@ -277,8 +302,8 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
     </PageLayout>
-    </>
+    </div>
   );
 }

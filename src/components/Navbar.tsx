@@ -76,19 +76,38 @@ export default function Navbar() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [scrolled, setScrolled] = useState(false);
-  // Pages with a full-bleed hero video that the navbar floats over
-  const isHome = pathname === "/" || pathname === "/explore" || pathname === "/jobs";
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
-  // Check scroll position to dynamically adapt navbar on hero-video pages
+  // Pages with a full-bleed dark hero that the navbar floats over (transparent
+  // at rest, solid on scroll). /requirements joins these so its editorial hero
+  // reads as one immersive field instead of sitting under a hard white bar.
+  const isHome = pathname === "/" || pathname === "/explore" || pathname === "/jobs" || pathname === "/requirements";
+
+  // Check scroll position and direction to dynamically adapt and show/hide navbar
   useEffect(() => {
-    if (!isHome) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setScrolled(false);
-      return;
-    }
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      const currentScrollY = window.scrollY;
+
+      if (isHome) {
+        setScrolled(currentScrollY > 40);
+      } else {
+        setScrolled(false);
+      }
+
+      if (currentScrollY <= 40) {
+        setVisible(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        // Scrolling down -> hide navbar
+        setVisible(false);
+      } else {
+        // Scrolling up -> show navbar
+        setVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
     };
+
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -123,13 +142,21 @@ export default function Navbar() {
   // Use dark text/lines for transparent navbar over light yellow backgrounds
   const isDarkTheme = isHome && !scrolled && pathname !== "/explore";
 
+  const isJobs = pathname ? pathname.startsWith("/jobs") : false;
+  const bgClass = isJobs ? "bg-canvas/95 backdrop-blur-md" : "bg-[#f6fcfd]/95 backdrop-blur-md";
+  const bgSolidClass = isJobs ? "bg-canvas" : "bg-[#f6fcfd]";
+
   // Dynamic classes for translucent/transparent overlay styling
   const navClass = isHome
-    ? `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(scrolled || pathname === "/explore")
-      ? "bg-canvas/95 backdrop-blur-md border-b border-hairline shadow-sm py-0"
-      : "bg-transparent border-b border-transparent py-2"
+    ? `fixed top-4 left-0 right-0 mx-auto z-50 transition-all duration-300 rounded-[24px] border w-[96%] md:w-[92%] max-w-[1280px] ${
+        visible ? "translate-y-0 opacity-100" : "-translate-y-36 opacity-0 pointer-events-none"
+      } ${(scrolled || pathname === "/explore")
+      ? `${bgClass} border-[#5e6836]/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] py-0`
+      : "bg-transparent border-transparent py-2"
     }`
-    : "sticky top-0 z-50 bg-canvas  py-0";
+    : `sticky top-4 left-0 right-0 mx-auto z-50 ${bgSolidClass} rounded-[24px] border border-[#5e6836]/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] py-0 w-[96%] md:w-[92%] max-w-[1280px] transition-all duration-300 ${
+        visible ? "translate-y-0 opacity-100" : "-translate-y-36 opacity-0 pointer-events-none"
+      }`;
 
   const navLinkClass = (isActive: boolean) => {
     if (isDarkTheme) {
@@ -142,7 +169,7 @@ export default function Navbar() {
 
   const activeUnderlineClass = isDarkTheme ? "bg-white" : "bg-ink";
 
-  const listBtnClass = "group relative inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-rausch to-[#e8385d] rounded-full shadow-md hover:shadow-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2";
+  const listBtnClass = "group relative inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-rausch to-rausch-active rounded-full shadow-md hover:shadow-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2";
 
   const loginBtnClass = isDarkTheme
     ? "px-4 py-2.5 text-base font-medium text-white rounded-[8px] hover:bg-white/10 transition-colors"
@@ -170,7 +197,7 @@ export default function Navbar() {
   return (
     <>
       <nav className={navClass}>
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 md:px-6 lg:px-10 h-20">
+        <div className="w-full flex items-center justify-between px-6 md:px-12 lg:px-16 h-20">
           {/* Logo */}
           <Link href="/" aria-label="FindWay home">
             <Logo size={34} lightText={isDarkTheme} />
@@ -349,7 +376,7 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             <Link
               href="/post"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-gradient-to-r from-rausch to-[#e8385d] rounded-full shadow-md hover:shadow-lg active:scale-[0.97] transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-gradient-to-r from-rausch to-rausch-active rounded-full shadow-md hover:shadow-lg active:scale-[0.97] transition-all duration-200"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0"><path d="M12 5v14m-7-7h14" /></svg>
               List

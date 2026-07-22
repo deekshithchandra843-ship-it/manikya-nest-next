@@ -10,7 +10,7 @@ export default function RequirementCard({ req, onRespond }: { req: Requirement; 
       <div className="flex items-start justify-between gap-2">
         <span className="text-[11px] font-semibold text-ink bg-surface-soft px-2.5 py-1 rounded-full">{roleDef.label}</span>
         {req.verified && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rausch bg-rausch/10 px-2 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-job-navy bg-job-navy-soft px-2 py-0.5 rounded-full">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             Verified
           </span>
@@ -41,7 +41,7 @@ export default function RequirementCard({ req, onRespond }: { req: Requirement; 
           {req.postedAt}{!isAgent && req.responseCount > 0 ? ` · ${req.responseCount} responded` : ""}
         </span>
         <button type="button" onClick={() => onRespond(req)}
-          className="px-4 py-2 text-sm font-semibold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch focus-visible:ring-offset-2">
+          className="px-4 py-2 text-sm font-semibold text-white bg-job-navy rounded-[8px] hover:bg-job-navy-lift transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-job-navy focus-visible:ring-offset-2">
           {isAgent ? "Contact agent" : "Respond"}
         </button>
       </div>
