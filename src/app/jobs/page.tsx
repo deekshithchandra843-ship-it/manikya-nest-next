@@ -1,6 +1,9 @@
 "use client";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import JobStories from "@/components/JobStories";
+import { AREAS } from "@/lib/jobs";
 
 /* ------------------------------------------------------------------ *
  * Jobs hub — "Channels" direction.
@@ -129,50 +132,55 @@ function ChannelCard({ channel }: { channel: Channel }) {
   );
 }
 
+/**
+ * HeroSearch and SearchBar both route site-wide job searches to
+ * `/jobs?q=…`, which used to be consumed by the jobs listing page that
+ * this Channels landing replaced. Rather than break that entry point,
+ * a query lands here and is forwarded straight to /jobs/search, which
+ * is where searching now lives. A bare /jobs still shows the channels.
+ */
+function SearchForwarder() {
+  const router = useRouter();
+  const params = useSearchParams();
+
+  useEffect(() => {
+    const q = params.get("q")?.trim() ?? "";
+    const location = params.get("location")?.trim() ?? "";
+    if (!q && !location) return;
+
+    const next = new URLSearchParams();
+    // A location that names a known area becomes a real area filter;
+    // anything else is folded into the free-text query.
+    const area = AREAS.find((a) => a.label.toLowerCase() === location.toLowerCase());
+    if (area) next.set("area", area.slug);
+    const text = [q, area ? "" : location].filter(Boolean).join(" ").trim();
+    if (text) next.set("q", text);
+
+    router.replace(`/jobs/search?${next.toString()}`);
+  }, [params, router]);
+
+  return null;
+}
+
 export default function JobsPage() {
   return (
     <main>
-      {/* ── Spotlight hero (full-screen cover) ───────────────────── */}
+      {/* useSearchParams needs a boundary, and this must not block the page */}
+      <Suspense fallback={null}>
+        <SearchForwarder />
+      </Suspense>
+
+      {/* ── Spotlight hero (full-bleed image, no text) ───────────── */}
       <section
         aria-label="Find jobs"
-        className="relative overflow-hidden w-full min-h-[62dvh] px-4 md:px-6 lg:px-10 flex items-center rounded-b-[28px]"
-        style={{ background: `linear-gradient(160deg,${INK_NAVY} 0%,#1b2749 52%,${INK_NAVY} 100%)` }}
+        className="relative overflow-hidden w-full min-h-[62dvh] rounded-b-[28px] bg-ink"
       >
-        {/* 30% — supporting depth: a cool navy lift, and one restrained
-            pool of accent warmth so the field never reads flat. */}
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -left-20 w-[26rem] h-[26rem] rounded-full" style={{ background: "radial-gradient(circle,rgba(58,84,163,.38),transparent 70%)" }} />
-        <div aria-hidden="true" className="pointer-events-none absolute -top-20 -right-16 w-80 h-80 rounded-full" style={{ background: `radial-gradient(circle,rgba(252,219,50,.16),transparent 70%)` }} />
-
-        <div className="relative max-w-[900px] mx-auto w-full text-center flex flex-col items-center gap-5 md:gap-6 pt-24 md:pt-28 pb-16">
-          {/* 10% — accent eyebrow */}
-          <span
-            className="inline-flex items-center gap-2 h-7 px-3.5 rounded-full text-[11px] font-bold uppercase tracking-[0.16em]"
-            style={{ color: SUN, background: "rgba(252,219,50,.10)", border: "1px solid rgba(252,219,50,.28)" }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: SUN }} aria-hidden="true" />
-            Area-wise hiring
-          </span>
-
-          <h1 className="text-white font-extrabold tracking-tight leading-[1.1] text-[clamp(28px,5vw,50px)]">
-            <span className="block">Jobs in</span>
-            {/* The accent lands on the one phrase that carries the promise. */}
-            <span className="block" style={{ color: SUN }}>
-              Namma Bengaluru
-            </span>
-          </h1>
-
-          <p className="text-[14px] md:text-[15.5px] text-white/65 max-w-[460px] leading-relaxed">
-            Part-time gigs, IT roles and non-IT careers — area by area.
-          </p>
-        </div>
-
-        {/* scroll hint */}
-        <div aria-hidden="true" className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">Explore channels</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SUN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-bounce">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        </div>
+        <img
+          src="/jobs-hero.jpg?v=2"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       </section>
 
       {/* ── Job channels ─────────────────────────────────────────── */}

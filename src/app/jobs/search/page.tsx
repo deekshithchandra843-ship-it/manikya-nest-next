@@ -26,6 +26,16 @@ const JobsMap = dynamic(() => import("@/components/JobsMap"), {
 const PAGE_SIZE = 6;
 /** Rail shows a short area list; the rest hide behind "+ N more areas". */
 const AREAS_VISIBLE = 3;
+
+/** Per-category card theming — a distinct accent so each job box reads as a
+ *  coloured, glassy card (like the property listing cards). Kept separate from
+ *  categoryMeta, whose chip palette inverts for IT (dark tile). */
+const CARD_THEME: Record<JobCategory, { accent: string; glow: string; tile: string; tileText: string }> = {
+  "part-time": { accent: "#f59e0b", glow: "rgba(245,158,11,0.13)", tile: "#fef3c7", tileText: "#b45309" },
+  it: { accent: "#4f46e5", glow: "rgba(79,70,229,0.13)", tile: "#e0e7ff", tileText: "#4338ca" },
+  "non-it": { accent: "#0d9488", glow: "rgba(13,148,136,0.13)", tile: "#ccfbf1", tileText: "#0f766e" },
+};
+const cardTheme = (c: JobCategory) => CARD_THEME[c] ?? CARD_THEME["part-time"];
 const SALARY_FLOOR = 10000;
 const SALARY_CEIL = 60000;
 
@@ -88,6 +98,15 @@ function ToggleChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
+function CheckMark() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+}
+
+/** Custom checkbox row — hidden native input, styled box, hover highlight. */
 function Checkbox({
   label,
   count,
@@ -101,20 +120,67 @@ function Checkbox({
   onChange: () => void;
   accent?: string;
 }) {
+  const on = accent ?? "#141d38";
   return (
-    <label className="flex items-center gap-2.5 py-1 cursor-pointer group">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="w-[15px] h-[15px] rounded-[3px] cursor-pointer accent-job-navy"
-        style={accent ? { accentColor: accent } : undefined}
-      />
-      <span className="text-[13px] text-body group-hover:text-job-navy transition-colors">
-        {label}
-        {count !== undefined && <span className="text-muted"> ({count})</span>}
+    <label className="flex items-center gap-2.5 px-2 -mx-2 py-1.5 rounded-[9px] cursor-pointer hover:bg-surface-soft transition-colors group">
+      <span
+        className="relative grid place-items-center w-[18px] h-[18px] rounded-[6px] border border-hairline shrink-0 transition-all group-hover:border-job-navy/40"
+        style={checked ? { background: on, borderColor: on } : undefined}
+      >
+        <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+        {checked && <CheckMark />}
       </span>
+      <span className={`flex-1 text-[13px] transition-colors ${checked ? "font-semibold text-job-navy" : "text-body group-hover:text-job-navy"}`}>
+        {label}
+      </span>
+      {count !== undefined && (
+        <span className="text-[11px] font-semibold text-muted tabular-nums">{count}</span>
+      )}
     </label>
+  );
+}
+
+/** Category selector row — colour swatch + count badge, tinted when active. */
+function CategoryRow({
+  label,
+  count,
+  checked,
+  accent,
+  onChange,
+}: {
+  label: string;
+  count?: number;
+  checked: boolean;
+  accent: string;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      aria-pressed={checked}
+      style={checked ? { background: `${accent}14`, borderColor: `${accent}59` } : undefined}
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] border text-left transition-all ${
+        checked ? "" : "border-transparent hover:bg-surface-soft"
+      }`}
+    >
+      <span
+        className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white shadow-sm"
+        style={{ background: accent }}
+        aria-hidden="true"
+      />
+      <span className={`flex-1 text-[13px] ${checked ? "font-semibold text-job-navy" : "font-medium text-body"}`}>
+        {label}
+      </span>
+      {count !== undefined && (
+        <span
+          className="text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-full"
+          style={{ color: accent, background: `${accent}1f` }}
+        >
+          {count}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -142,8 +208,8 @@ const EMPTY_FILTERS: Filters = {
 
 function RailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="border-t border-hairline-soft pt-4 mt-4 first:border-0 first:pt-0 first:mt-0">
-      <legend className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted mb-2">{title}</legend>
+    <fieldset className="border-t border-hairline-soft pt-5 mt-5 first:border-0 first:pt-0 first:mt-0">
+      <legend className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted mb-2.5">{title}</legend>
       {children}
     </fieldset>
   );
@@ -173,22 +239,30 @@ function FilterControls({
   const shownAreas = allAreas ? AREAS : AREAS.slice(0, AREAS_VISIBLE);
 
   return (
-    <>{(
       <div>
         <RailSection title="Category">
-          {CATEGORIES.map((c) => (
-            <Checkbox
-              key={c.id}
-              label={c.short}
-              count={counts[c.id]}
-              checked={filters.categories.includes(c.id)}
-              accent={c.color}
-              onChange={() => toggle("categories", toggleIn(filters.categories, c.id) as JobCategory[])}
-            />
-          ))}
+          <div className="flex flex-col gap-0.5">
+            {CATEGORIES.map((c) => (
+              <CategoryRow
+                key={c.id}
+                label={c.short}
+                count={counts[c.id]}
+                checked={filters.categories.includes(c.id)}
+                accent={cardTheme(c.id).accent}
+                onChange={() => toggle("categories", toggleIn(filters.categories, c.id) as JobCategory[])}
+              />
+            ))}
+          </div>
         </RailSection>
 
         <RailSection title={lpaMode ? "Salary / year" : "Salary / month"}>
+          <div className="flex justify-center mb-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-job-navy text-white text-[13px] font-bold tabular-nums">
+              {lpaMode
+                ? `₹${((filters.salaryMin * 12) / 100000).toFixed(1)}L+`
+                : `₹${Math.round(filters.salaryMin / 1000)}k+`}
+            </span>
+          </div>
           <input
             type="range"
             min={SALARY_FLOOR}
@@ -199,13 +273,8 @@ function FilterControls({
             aria-label="Minimum salary"
             className="w-full accent-job-navy cursor-pointer"
           />
-          <div className="flex items-center justify-between text-[11px] text-muted mt-1">
+          <div className="flex items-center justify-between text-[11px] font-medium text-muted mt-1.5">
             <span>{lpaMode ? "₹1.2L" : "₹10k"}</span>
-            <span className="font-semibold text-job-navy">
-              {lpaMode
-                ? `₹${((filters.salaryMin * 12) / 100000).toFixed(1)}L+`
-                : `₹${Math.round(filters.salaryMin / 1000)}k+`}
-            </span>
             <span>{lpaMode ? "₹7.2L+" : "₹60k+"}</span>
           </div>
         </RailSection>
@@ -247,7 +316,6 @@ function FilterControls({
           )}
         </RailSection>
       </div>
-    )}</>
   );
 }
 
@@ -258,8 +326,14 @@ function FilterRail(props: {
   counts: Record<JobCategory, number>;
 }) {
   return (
-    <aside aria-label="Filters" className="hidden lg:block w-[190px] shrink-0">
-      <div className="sticky top-[86px]">
+    <aside aria-label="Filters" className="hidden lg:block w-[212px] shrink-0">
+      <div className="sticky top-[86px] rounded-[16px] border border-hairline bg-canvas p-4 shadow-[0_4px_22px_-14px_rgba(20,29,56,0.35)]">
+        <div className="flex items-center gap-2 pb-3.5 mb-1 border-b border-hairline-soft">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="text-job-navy" aria-hidden="true">
+            <path d="M3 6h18M6 12h12M10 18h4" />
+          </svg>
+          <h2 className="text-[13px] font-bold text-job-navy tracking-tight">Filters</h2>
+        </div>
         <FilterControls {...props} />
       </div>
     </aside>
@@ -352,12 +426,28 @@ function Meta({ icon, children }: { icon: string; children: React.ReactNode }) {
 
 function JobRow({ job }: { job: Job }) {
   const [applied, setApplied] = useState(false);
+  const theme = cardTheme(job.category);
 
   return (
     /* Phones stack: details first, then salary and Apply on their own row —
        side-by-side leaves the title about 110px on a 320px screen. */
-    <article className="group relative flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-3.5 bg-canvas border border-hairline rounded-[14px] p-4 hover:shadow-airbnb hover:border-hairline-soft transition-all">
-      <div className="hidden sm:flex w-9 h-9 rounded-[9px] bg-surface-strong items-center justify-center text-[13px] font-bold text-muted shrink-0">
+    <article
+      style={{
+        background: `linear-gradient(135deg, ${theme.glow} 0%, rgba(255,255,255,0.6) 58%)`,
+        borderColor: theme.glow,
+      }}
+      className="group relative flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-3.5 backdrop-blur-xl border rounded-[16px] p-4 pl-5 ring-1 ring-black/[0.03] shadow-[0_6px_22px_-10px_rgba(20,29,56,0.25)] hover:shadow-[0_14px_38px_-12px_rgba(20,29,56,0.38)] hover:-translate-y-1 transition-all duration-300"
+    >
+      {/* coloured accent spine */}
+      <span
+        aria-hidden="true"
+        style={{ background: theme.accent }}
+        className="absolute inset-y-0 left-0 w-[4px] rounded-l-[16px]"
+      />
+      <div
+        style={{ background: theme.tile, color: theme.tileText }}
+        className="hidden sm:flex w-10 h-10 rounded-[11px] items-center justify-center text-[13px] font-bold shrink-0 shadow-sm"
+      >
         {job.logo}
       </div>
 
@@ -365,13 +455,16 @@ function JobRow({ job }: { job: Job }) {
         <h3 className="flex items-start gap-2.5 text-[15px] font-bold text-job-navy leading-snug">
           {/* The logo rides the title on phones, where a separate column
               would cost width the title needs. */}
-          <span className="sm:hidden w-8 h-8 rounded-[8px] bg-surface-strong flex items-center justify-center text-[12px] font-bold text-muted shrink-0">
+          <span
+            style={{ background: theme.tile, color: theme.tileText }}
+            className="sm:hidden w-8 h-8 rounded-[8px] flex items-center justify-center text-[12px] font-bold shrink-0"
+          >
             {job.logo}
           </span>
           <Link href={`/jobs/${job.slug}`} className="focus-visible:outline-none focus-visible:underline">
             {/* Stretched link makes the whole row clickable without nesting
                 the Apply button inside an anchor. */}
-            <span className="absolute inset-0 rounded-[14px]" aria-hidden="true" />
+            <span className="absolute inset-0 rounded-[16px]" aria-hidden="true" />
             {job.title}
           </Link>
         </h3>
@@ -430,16 +523,32 @@ function JobMiniCard({
   onHover: (id: string | null) => void;
   onSelect: (id: string) => void;
 }) {
+  const theme = cardTheme(job.category);
+
   return (
     <article
       onMouseEnter={() => onHover(job.id)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(job.id)}
-      className={`flex items-start gap-3 bg-canvas border rounded-[14px] p-3.5 cursor-pointer transition-all ${
-        active ? "border-job-navy shadow-airbnb" : "border-hairline hover:border-hairline-soft hover:shadow-airbnb"
+      style={{
+        background: `linear-gradient(135deg, ${theme.glow} 0%, rgba(255,255,255,0.6) 58%)`,
+        borderColor: active ? theme.accent : theme.glow,
+      }}
+      className={`relative flex items-start gap-3 backdrop-blur-xl border rounded-[16px] p-3.5 pl-4 cursor-pointer transition-all ${
+        active
+          ? "shadow-[0_12px_32px_-12px_rgba(20,29,56,0.4)]"
+          : "shadow-[0_5px_18px_-10px_rgba(20,29,56,0.25)] hover:shadow-[0_12px_30px_-12px_rgba(20,29,56,0.35)]"
       }`}
     >
-      <div className="w-8 h-8 rounded-[8px] bg-surface-strong flex items-center justify-center text-[12px] font-bold text-muted shrink-0">
+      <span
+        aria-hidden="true"
+        style={{ background: theme.accent }}
+        className="absolute inset-y-0 left-0 w-[4px] rounded-l-[16px]"
+      />
+      <div
+        style={{ background: theme.tile, color: theme.tileText }}
+        className="w-8 h-8 rounded-[9px] flex items-center justify-center text-[12px] font-bold shrink-0 shadow-sm"
+      >
         {job.logo}
       </div>
       <div className="flex-1 min-w-0">
@@ -807,7 +916,7 @@ function SearchResults() {
           ) : view === "list" ? (
             <>
               {/* ④ Row cards */}
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-3.5">
                 {visible.map((j) => (
                   <JobRow key={j.id} job={j} />
                 ))}
