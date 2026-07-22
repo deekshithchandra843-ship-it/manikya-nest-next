@@ -77,7 +77,7 @@ export default function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   // Pages with a full-bleed hero video that the navbar floats over
-  const isHome = pathname === "/" || pathname === "/explore";
+  const isHome = pathname === "/" || pathname === "/explore" || pathname === "/jobs";
 
   // Check scroll position to dynamically adapt navbar on hero-video pages
   useEffect(() => {
