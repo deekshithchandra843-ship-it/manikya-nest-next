@@ -23,31 +23,22 @@ import BENGALURU_LOCALITIES_RAW from "@/data/bengaluru-localities.json";
 const BENGALURU_LOCALITIES = BENGALURU_LOCALITIES_RAW.map((loc) => loc.name);
 
 
-// Per-world colour theme
+// Wizard colour theme — unified on the homepage's teal voltage across every
+// world so the whole /post flow reads as the same teal + beige system as the
+// home page (the root carries `.theme-home`, so `rausch` resolves to #0f766e).
 type Theme = {
   accent: string; chip: string;               // text accent + solid pill
   solid: string; ring: string; bar: string; soft: string; // form accents
-  barGradient: string; headerTint: string;    // form card frame
+};
+const TEAL_THEME: Theme = {
+  accent: "text-rausch", chip: "bg-rausch text-white",
+  solid: "bg-rausch hover:bg-rausch-active", ring: "focus-visible:ring-rausch", bar: "bg-rausch",
+  soft: "bg-rausch/10 border-rausch text-rausch",
 };
 const WORLD_THEME: Record<World, Theme> = {
-  residential: {
-    accent: "text-rausch", chip: "bg-rausch text-white",
-    solid: "bg-rausch hover:bg-rausch-active", ring: "focus-visible:ring-rausch", bar: "bg-rausch",
-    soft: "bg-rausch/10 border-rausch text-rausch",
-    barGradient: "from-zinc-900 via-slate-950 to-zinc-900", headerTint: "from-rausch/8 to-violet/5",
-  },
-  commercial: {
-    accent: "text-indigo", chip: "bg-indigo text-white",
-    solid: "bg-indigo hover:opacity-90", ring: "focus-visible:ring-indigo", bar: "bg-indigo",
-    soft: "bg-indigo/10 border-indigo text-indigo",
-    barGradient: "from-slate-900 via-slate-950 to-slate-900", headerTint: "from-indigo/8 to-luxe/5",
-  },
-  stay: {
-    accent: "text-terracotta", chip: "bg-terracotta text-white",
-    solid: "bg-terracotta hover:opacity-90", ring: "focus-visible:ring-terracotta", bar: "bg-terracotta",
-    soft: "bg-terracotta/10 border-terracotta text-terracotta",
-    barGradient: "from-stone-900 via-stone-950 to-stone-900", headerTint: "from-patina/10 to-terracotta/5",
-  },
+  residential: TEAL_THEME,
+  commercial: TEAL_THEME,
+  stay: TEAL_THEME,
 };
 
 const RESIDENTIAL_AMENITIES = ["Parking", "Lift", "Power backup", "Security", "Gym", "Swimming pool", "Clubhouse", "Gas pipeline", "Wi-Fi", "AC", "Water supply 24×7", "Children's play area"];
@@ -1349,10 +1340,10 @@ export default function PostListing() {
   // Success screen
   if (published) {
     return (
-      <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-canvas">
+      <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-[#f8f3e8] theme-home">
         <style dangerouslySetInnerHTML={{ __html: `
           body > nav, body > footer, .bottom-nav { display: none !important; }
-          body > .flex-1 { height: 100vh !important; height: 100dvh !important; max-height: 100vh !important; max-height: 100dvh !important; overflow: hidden !important; }
+          body > .flex-1 { height: 100vh !important; height: 100dvh !important; max-height: 100vh !important; max-height: 100dvh !important; overflow: hidden !important; padding: 0 !important; }
         `}} />
         {/* Header */}
         <header className="h-16 px-6 md:px-10 flex items-center justify-between border-b border-hairline bg-canvas shrink-0">
@@ -1360,18 +1351,18 @@ export default function PostListing() {
             <span className="font-extrabold text-rausch text-lg tracking-tight">findway.</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-full hover:border-ink transition-colors">
+            <Link href="/" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-[8px] hover:border-ink transition-colors">
               Home
             </Link>
-            <Link href="/explore" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-full hover:border-ink transition-colors">
+            <Link href="/explore" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-[8px] hover:border-ink transition-colors">
               Exit
             </Link>
           </div>
         </header>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center p-6 bg-canvas overflow-y-auto">
-          <div className="max-w-[480px] w-full text-center py-6">
+        <div className="flex-1 flex items-center justify-center p-6 bg-[#f8f3e8] overflow-y-auto">
+          <div className="max-w-[480px] w-full text-center bg-canvas rounded-[24px] border border-hairline shadow-airbnb px-8 py-10">
             <span className="inline-flex w-14 h-14 rounded-full bg-rausch/10 text-rausch items-center justify-center mb-4" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M20 6L9 17l-5-5" /></svg>
             </span>
@@ -1418,11 +1409,11 @@ export default function PostListing() {
   })();
 
   return (
-    <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-canvas">
+    <div className="h-dvh w-screen flex flex-col justify-between overflow-hidden bg-[#f8f3e8] theme-home">
       {/* CSS overrides to hide layout wrapper's Navbar, Footer, and BottomNav */}
       <style dangerouslySetInnerHTML={{ __html: `
         body > nav, body > footer, .bottom-nav { display: none !important; }
-        body > .flex-1 { height: 100vh !important; height: 100dvh !important; max-height: 100vh !important; max-height: 100dvh !important; overflow: hidden !important; }
+        body > .flex-1 { height: 100vh !important; height: 100dvh !important; max-height: 100vh !important; max-height: 100dvh !important; overflow: hidden !important; padding: 0 !important; }
         @keyframes bounceSlow {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
@@ -1445,19 +1436,20 @@ export default function PostListing() {
           <span className="font-extrabold text-rausch text-lg tracking-tight">findway.</span>
         </Link>
         <div className="flex items-center gap-2.5">
-          <Link href="/" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-full hover:border-ink hover:bg-surface-soft transition-all">
+          <Link href="/" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-[8px] hover:border-ink hover:bg-surface-soft transition-all">
             Home
           </Link>
-          <Link href="/explore" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-full hover:border-ink hover:bg-surface-soft transition-all">
+          <Link href="/explore" className="text-xs font-semibold px-4 py-2 border border-hairline rounded-[8px] hover:border-ink hover:bg-surface-soft transition-all">
             Save & exit
           </Link>
         </div>
       </header>
 
       {/* Main Workspace split */}
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden bg-canvas">
-        {/* Left pane: dynamic descriptive contextual help in light theme */}
-        <div className="w-full md:w-5/12 bg-surface-soft border-b md:border-b-0 md:border-r border-hairline p-4 md:p-12 flex flex-col items-center justify-center text-ink shrink-0">
+      <main className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#f8f3e8]">
+        {/* Left pane: dynamic descriptive contextual help — soft mint wash that
+            echoes the homepage hero (#f5faf7) so the flow reads as one system */}
+        <div className="w-full md:w-5/12 bg-[#eef7f3] border-b md:border-b-0 md:border-r border-hairline p-4 md:p-12 flex flex-col items-center justify-center text-ink shrink-0">
           <div key={active} className="w-full flex flex-col items-center justify-center animate-fade-up">
             <div className="hidden md:block">
               {renderStepCartoonGraphic(active, selectedRole, world)}
@@ -1478,9 +1470,10 @@ export default function PostListing() {
           </div>
         </div>
 
-        {/* Right pane: center-aligned scrollable workspace area */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 flex items-center justify-center bg-canvas">
-          <div key={active} className="w-full max-w-[620px] py-4 animate-fade-up">
+        {/* Right pane: center-aligned scrollable workspace area on the warm
+            beige canvas; the step content floats in a white card like home */}
+        <div className="flex-1 overflow-y-auto p-3 pb-28 md:p-10 md:pb-28 flex flex-col items-center bg-[#f8f3e8] min-h-0">
+          <div key={active} className="w-full max-w-[620px] bg-canvas rounded-[24px] border border-hairline shadow-airbnb p-4 md:p-8 animate-fade-up my-auto shrink-0">
             {/* Step 0: Choose Listing Role & Auth */}
             {active === 0 && (
               <div className="space-y-5">
@@ -1765,34 +1758,36 @@ export default function PostListing() {
                   </div>
                 </div>
 
-                <div>
-                  <label className={labelCls}>Street / Road / Lane</label>
-                  <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
-                      <path d="M4 19h16M4 5h16M12 5v14" />
-                    </svg>
-                    <input
-                      className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
-                      placeholder="e.g. 100 Feet Road"
-                      value={form.street ?? ""}
-                      onChange={(e) => set("street", e.target.value)}
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Street / Road / Lane</label>
+                    <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
+                        <path d="M4 19h16M4 5h16M12 5v14" />
+                      </svg>
+                      <input
+                        className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
+                        placeholder="e.g. 100 Feet Road"
+                        value={form.street ?? ""}
+                        onChange={(e) => set("street", e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className={labelCls}>Nearby Landmark</label>
-                  <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                    </svg>
-                    <input
-                      className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
-                      placeholder="e.g. Near Forum Mall"
-                      value={form.landmark ?? ""}
-                      onChange={(e) => set("landmark", e.target.value)}
-                    />
+                  <div>
+                    <label className={labelCls}>Nearby Landmark</label>
+                    <div className="relative flex items-center border border-hairline rounded-[8px] h-11 px-3 bg-canvas transition-all focus-within:border-ink focus-within:ring-1 focus-within:ring-ink">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-muted shrink-0 mr-2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                      </svg>
+                      <input
+                        className="flex-1 text-sm text-ink placeholder-muted outline-none bg-transparent"
+                        placeholder="e.g. Near Forum Mall"
+                        value={form.landmark ?? ""}
+                        onChange={(e) => set("landmark", e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1981,7 +1976,7 @@ export default function PostListing() {
       </main>
 
       {/* Sticky Bottom Progress & Nav Footer */}
-      <footer className="h-20 border-t border-hairline bg-canvas px-6 md:px-10 flex flex-col justify-center shrink-0">
+      <footer className="fixed bottom-0 left-0 w-full z-50 h-20 border-t border-hairline bg-canvas px-6 md:px-10 flex flex-col justify-center shrink-0">
         <div className="w-full mb-3">
           <div className="h-1 bg-surface-strong w-full rounded-full overflow-hidden">
             <div className={`h-full rounded-full transition-all duration-300 ${theme.bar}`} style={{ width: `${progress}%` }} />

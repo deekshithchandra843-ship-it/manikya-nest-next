@@ -2,6 +2,7 @@
 /**
  * Home hero — skyline photograph fading into white on the left, headline +
  * trust chips, a four-field search bar, and the category/filter band seated
+ * 
  * on the darker foot of the photo (mockup: WhatsApp reference image).
  */
 import { useState, useEffect } from "react";
@@ -234,11 +235,10 @@ function CustomDropdown({
                     onChange(opt.value);
                     onClose();
                   }}
-                  className={`w-full text-left px-4 py-2.5 text-[13.5px] font-semibold transition-colors flex items-center justify-between ${
-                    isSelected 
-                      ? "text-rausch bg-rausch-soft" 
+                  className={`w-full text-left px-4 py-2.5 text-[13.5px] font-semibold transition-colors flex items-center justify-between ${isSelected
+                      ? "text-rausch bg-rausch-soft"
                       : "text-ink hover:bg-surface-soft"
-                  }`}
+                    }`}
                 >
                   <span>{opt.label}</span>
                   {isSelected && (
@@ -278,9 +278,8 @@ function Field({
   return (
     <Container
       onClick={onClick}
-      className={`relative flex items-center gap-2.5 px-3.5 lg:px-4 py-3 min-w-0 cursor-pointer select-none group transition-all duration-150 ${
-        isActive ? "z-30 bg-slate-50 lg:bg-transparent" : "z-10"
-      }`}
+      className={`relative flex items-center gap-2.5 px-3.5 lg:px-4 py-3 min-w-0 cursor-pointer select-none group transition-all duration-150 ${isActive ? "z-30 bg-slate-50 lg:bg-transparent" : "z-10"
+        }`}
     >
       <span className="w-9 h-9 shrink-0 flex items-center justify-center rounded-[10px] bg-surface-soft text-ink group-hover:bg-rausch-soft group-hover:text-rausch transition-colors duration-200 pointer-events-none" aria-hidden="true">
         {icon}
@@ -343,10 +342,10 @@ export default function HomeHero({
     reduced
       ? {}
       : {
-          initial: { opacity: 0, y: 22 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.7, delay, ease: EASE },
-        };
+        initial: { opacity: 0, y: 22 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.7, delay, ease: EASE },
+      };
 
   return (
     <header className="relative overflow-hidden bg-[#f5faf7]" aria-label="Find your perfect space">
@@ -484,7 +483,7 @@ function HeroArt() {
   ];
 
   return (
-    <div className="hidden lg:block absolute right-[2%] top-[8%] bottom-[6%] w-[500px] xl:w-[560px] z-10">
+    <div className="hidden lg:block absolute right-[2%] top-28 bottom-[4%] w-[500px] xl:w-[560px] z-10">
       <div className="relative w-full h-full pointer-events-none">
         {/* Dashed connectors from the pin to each card */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none" aria-hidden="true">

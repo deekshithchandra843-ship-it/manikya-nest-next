@@ -254,20 +254,20 @@ function ContactCard({
 
       {/* Action Buttons Grid */}
       <div className="space-y-1.5">
-        <button
-          type="button"
-          className="w-full py-2 text-xs font-bold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
+        <a
+          href={`tel:${ownerPhone}`}
+          className="flex justify-center items-center w-full py-2 text-xs font-bold text-white bg-rausch rounded-[8px] hover:bg-rausch-active transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rausch"
         >
           {role === "agent" ? "Contact Agent" : role === "builder" ? "Contact Builder" : "Contact Owner"}
-        </button>
+        </a>
 
         <div className="grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            className="py-1.5 text-[11px] font-bold text-ink border border-hairline rounded-[8px] hover:bg-surface-soft active:scale-[0.98] transition-all"
+          <a
+            href={`tel:${ownerPhone}`}
+            className="flex items-center justify-center py-1.5 text-[11px] font-bold text-ink border border-hairline rounded-[8px] hover:bg-surface-soft active:scale-[0.98] transition-all"
           >
             Call
-          </button>
+          </a>
           <a
             href={`https://wa.me/91${ownerPhone}?text=${encodeURIComponent(`Hi, I'm interested in ${listing.title}`)}`}
             target="_blank"
@@ -302,6 +302,7 @@ function ContactCard({
         </button>
         <button
           type="button"
+          onClick={() => alert("Thank you for reporting this listing. Our trust & safety team will review it shortly.")}
           className="inline-flex items-center gap-1 text-muted hover:text-error transition-colors"
         >
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
